@@ -2,20 +2,22 @@
 
 # BEST PRACTICE
 
- * Add `assert!()` in documentation example to replace simple unit tests
+ * Use `?` operator in documentation examples
+    * use `#` to hide boiler plate code in documentation
 
  * Every posix wrapper/construct must be fully usable by just including
     ```
     use my::construct::*;
     ```
-    Add `pub use ...` to achieve this.
+    Add `pub use ...` (re-export) to achieve this.
+    * Evaluate prelude, see: https://doc.rust-lang.org/beta/reference/names/preludes.html
 
  * Never return `Err(...)`, always use `fail!` macro
 
  * When to use what debug level
-    * TRACE - interesting application events
-    * DEBUG - only when the function returns a result that contains an error
-        * name it DBG_ERR
+    * information dedicated for the developer of the application
+        * TRACE - interesting application events, e.g. whenever a resource is created/destroyed
+        * DEBUG - only when the function returns a result that contains an error
     * information dedicated for the user of the application
         * INFO - some interesting stuff for the user
         * WARN - warnings dedicated for the user of the application, the functionality is not
@@ -28,6 +30,8 @@
     `Mutex` & `MutexHandle`, `Barrier` & `BarrierHandle`, `UnnamedSemaphore` & `SemaphoreHandle`
 
 # BUGS
+
+* discovery example deletes service
 
 * unix datagram socket, sending credentials and file descriptors no longer works
     * was introduced with rust 1.71.0
@@ -49,6 +53,32 @@
     not really work. Remove ignore for windows from condition variable tests and fix problem.
 
 * CTRL+c does not work in windows, all examples do not clean up
+
+# Quality of Life improvement
+
+* Evaluate and refactor basic error handling approach based on enums
+
+* Evaluate crate log and tracing as backend for elkodon logger
+    * maybe as a feature so that user can select log backend easily
+
+* Use `&str` and utf8 in `ServiceName`, there is no need for a length or ascii restriction
+* Rename `enable_safe_overflow` into `set_safe_overflow` in `ServiceBuilder` `publish_subscribe`
+    * or maybe rename it into behavior: queue and ringbuffer, get inspired by crossbeam queues
+* rename `publisher::loan` into `publisher::loan_uninit` and provide `publisher::loan` with default
+    constructed type
+* provide `[T]` (slice) as special type for publisher
+    * `loan` and `loan_uninit` with alignment and number of Ts
+* QoS feature for blocking publisher or pub/sub failures to perform custom
+    error handling or expert behavior
+    * explore implementation as trait
+    * explore implementation as callback
+* Explore if it is useful to have the same service name for different messaging patterns
+    * separate them via internal suffix/prefix
+    * simple use case: pub/sub + event to notify subscriber to notify sample send
+    * would reduce error handling: connect to service with wrong messaging pattern
+* Event TriggerId as enum to cover user id and file descriptors
+* Introduce proc macro to generate types that can be sent via shm
+    * ensure that only these types are used for ipc transmission
 
 # continue
 
@@ -267,6 +297,8 @@
     * implement timedwait with gnu libc sem_clockwait
 * ReadWriteMutex
     * implement timedwait with gnu libc pthread_rwlock_clockrdlock. pthread_rwlock_clockwrlock
+* Publisher delivers history only when calling send
+    * new subscriber may waits a long time when send is not called
 
 # Future
 
