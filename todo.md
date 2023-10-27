@@ -29,6 +29,8 @@
 
 # BUGS
 
+* discovery example deletes service
+
 * unix datagram socket, sending credentials and file descriptors no longer works
     * was introduced with rust 1.71.0
     * activate unit test below again
@@ -49,6 +51,30 @@
     not really work. Remove ignore for windows from condition variable tests and fix problem.
 
 * CTRL+c does not work in windows, all examples do not clean up
+
+# Quality of Life improvement
+
+* Evaluate and refactor basic error handling approach based on enums
+
+* Evaluate crate log and tracing as backend for elkodon logger
+    * maybe as a feature so that user can select log backend easily
+
+* Use `&str` and utf8 in `ServiceName`, there is no need for a length or ascii restriction
+* Rename `enable_safe_overflow` into `set_safe_overflow` in `ServiceBuilder` `publish_subscribe`
+    * or maybe rename it into behavior: queue and ringbuffer, get inspired by crossbeam queues
+* rename `publisher::loan` into `publisher::loan_uninit` and provide `publisher::loan` with default
+    constructed type
+* provide `[T]` (slice) as special type for publisher
+    * `loan` and `loan_uninit` with alignment and number of Ts
+* QoS feature for blocking publisher or pub/sub failures to perform custom
+    error handling or expert behavior
+    * explore implementation as trait
+    * explore implementation as callback
+* Explore if it is useful to have the same service name for different messaging patterns
+    * separate them via internal suffix/prefix
+    * simple use case: pub/sub + event to notify subscriber to notify sample send
+    * would reduce error handling: connect to service with wrong messaging pattern
+* Event TriggerId as enum to cover user id and file descriptors
 
 # continue
 
