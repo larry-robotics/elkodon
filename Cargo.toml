@@ -1,0 +1,67 @@
+[workspace]
+members = [
+    "elkodon_bb/lock_free/",
+    "elkodon_bb/threadsafe/",
+    "elkodon_bb/container",
+    "elkodon_bb/elementary",
+    "elkodon_bb/log",
+    "elkodon_bb/memory",
+    "elkodon_bb/posix",
+    "elkodon_bb/system_types",
+    "elkodon_bb/testing",
+
+    "elkodon_cal",
+    "elkodon",
+    "elkodon_pal/concurrency_primitives",
+    "elkodon_pal/posix/",
+    "elkodon_pal/settings/",
+
+    "examples/publish_subscribe",
+    "examples/event",
+    "examples/discovery",
+
+    "benchmarks/publish_subscribe"
+]
+
+[package]
+name = "rust_experiments"
+version = "0.1.0"
+edition = "2021"
+
+[profile.release]
+strip = true
+lto = true
+# opt-level = "z"
+panic = "abort"
+
+[[bin]]
+name = "rust_experiments"
+path = "src/bin/rust_experiments.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elkodon_bb_threadsafe = { path = "elkodon_bb/threadsafe/" }
+elkodon_bb_lock_free = { path = "elkodon_bb/lock_free/" }
+elkodon_bb_container = { path = "elkodon_bb/container/" }
+elkodon_bb_elementary = { path = "elkodon_bb/elementary/" }
+elkodon_bb_log = { path = "elkodon_bb/log/" }
+elkodon_bb_memory = { path = "elkodon_bb/memory/" }
+elkodon_bb_posix = { path = "elkodon_bb/posix/" }
+elkodon_bb_system_types = { path = "elkodon_bb/system_types/" }
+elkodon_bb_testing = { path = "elkodon_bb/testing/" }
+
+elkodon_pal_concurrency_primitives = { path = "elkodon_pal/concurrency_primitives/" }
+elkodon_pal_posix = { path = "elkodon_pal/posix/" }
+elkodon_pal_settings = { path = "elkodon_pal/settings/" }
+
+elkodon_cal = { path = "elkodon_cal" }
+
+elkodon = { path = "elkodon/" }
+
+lazy_static = { version = "1.4.0" }
+serde = { version = "1.0.139", features = ["derive"] }
+cdr = { version = "0.2.4" }
+clap = { version = "3.2.0", features = ["derive"] }
+
+[dev-dependencies]
