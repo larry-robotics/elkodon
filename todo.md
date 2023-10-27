@@ -2,20 +2,22 @@
 
 # BEST PRACTICE
 
- * Add `assert!()` in documentation example to replace simple unit tests
+ * Use `?` operator in documentation examples
+    * use `#` to hide boiler plate code in documentation
 
  * Every posix wrapper/construct must be fully usable by just including
     ```
     use my::construct::*;
     ```
-    Add `pub use ...` to achieve this.
+    Add `pub use ...` (re-export) to achieve this.
+    * Evaluate prelude, see: https://doc.rust-lang.org/beta/reference/names/preludes.html
 
  * Never return `Err(...)`, always use `fail!` macro
 
  * When to use what debug level
-    * TRACE - interesting application events
-    * DEBUG - only when the function returns a result that contains an error
-        * name it DBG_ERR
+    * information dedicated for the developer of the application
+        * TRACE - interesting application events, e.g. whenever a resource is created/destroyed
+        * DEBUG - only when the function returns a result that contains an error
     * information dedicated for the user of the application
         * INFO - some interesting stuff for the user
         * WARN - warnings dedicated for the user of the application, the functionality is not
@@ -75,6 +77,8 @@
     * simple use case: pub/sub + event to notify subscriber to notify sample send
     * would reduce error handling: connect to service with wrong messaging pattern
 * Event TriggerId as enum to cover user id and file descriptors
+* Introduce proc macro to generate types that can be sent via shm
+    * ensure that only these types are used for ipc transmission
 
 # continue
 
@@ -293,6 +297,8 @@
     * implement timedwait with gnu libc sem_clockwait
 * ReadWriteMutex
     * implement timedwait with gnu libc pthread_rwlock_clockrdlock. pthread_rwlock_clockwrlock
+* Publisher delivers history only when calling send
+    * new subscriber may waits a long time when send is not called
 
 # Future
 
