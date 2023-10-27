@@ -1,0 +1,17 @@
+[package]
+name = "elkodon_bb_container"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elkodon_bb_elementary = { path = "../elementary/" }
+elkodon_bb_log = { path = "../log/" }
+
+[dev-dependencies]
+pin-init = { version = "0.2.0" }
+generic-tests = { version = "0.1.2" }
+elkodon_bb_memory = { path = "../memory/" }
+elkodon_bb_system_types = { path = "../system_types/" }
+elkodon_bb_testing = { path = "../testing/" }

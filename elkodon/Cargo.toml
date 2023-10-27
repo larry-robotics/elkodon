@@ -1,0 +1,27 @@
+[package]
+name = "elkodon"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elkodon_bb_container = { path = "../elkodon_bb/container/" }
+elkodon_bb_system_types = { path = "../elkodon_bb/system_types/" }
+elkodon_bb_lock_free = { path = "../elkodon_bb/lock_free/" }
+elkodon_bb_log = { path = "../elkodon_bb/log/" }
+elkodon_bb_memory = { path = "../elkodon_bb/memory/" }
+elkodon_bb_posix = { path = "../elkodon_bb/posix/" }
+elkodon_bb_elementary = { path = "../elkodon_bb/elementary/" }
+elkodon_cal = { path = "../elkodon_cal/" }
+
+lazy_static = { version = "1.4.0" }
+serde = { version = "1.0.139", features = ["derive"] }
+cdr = { version = "0.2.4" }
+generic-tests = { version = "0.1.2" }
+toml = { version = "0.5.9" }
+sha1_smol = { version = "1.0.0" }
+tiny-fn = { version = "0.1.5" }
+
+[dev-dependencies]
+elkodon_bb_testing = { path = "../elkodon_bb/testing/" }

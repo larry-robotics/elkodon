@@ -1,0 +1,19 @@
+[package]
+name = "elkodon_bb_memory"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elkodon_bb_lock_free = { path = "../lock_free/" }
+elkodon_bb_elementary = { path = "../elementary/" }
+elkodon_bb_log = { path = "../log/" }
+elkodon_bb_posix = { path = "../posix/" }
+
+tiny-fn = { version = "0.1.5" }
+lazy_static = { version = "1.4.0" }
+pin-init = { version = "0.2.0" }
+
+[dev-dependencies]
+elkodon_bb_testing = { path = "../testing/" }
