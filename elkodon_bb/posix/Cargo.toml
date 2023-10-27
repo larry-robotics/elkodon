@@ -1,0 +1,25 @@
+[package]
+name = "elkodon_bb_posix"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elkodon_bb_container = { path  = "../container/" }
+elkodon_bb_system_types = { path = "../system_types/" }
+elkodon_bb_elementary = { path = "../elementary/" }
+elkodon_bb_log = { path = "../log/" }
+elkodon_pal_posix = { path = "../../elkodon_pal/posix/" }
+elkodon_pal_settings = { path = "../../elkodon_pal/settings/" }
+
+lazy_static = { version = "1.4.0" }
+bitflags = { version = "1.3.2" }
+nix = { version = "0.25" }
+enum-iterator = { version = "1.2.0" }
+tiny-fn = { version = "0.1.5" }
+
+generic-tests = { version = "0.1.2" }
+
+[dev-dependencies]
+elkodon_bb_testing = { path = "../testing/" }

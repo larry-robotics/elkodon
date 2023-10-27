@@ -1,0 +1,15 @@
+[package]
+name = "elkodon_bb_system_types"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+elkodon_bb_container = { path  = "../container/" }
+elkodon_bb_log = { path  = "../log/" }
+elkodon_pal_settings = { path = "../../elkodon_pal/settings/" }
+serde = { version = "1.0.139", features = ["derive"] }
+
+[dev-dependencies]
+elkodon_bb_testing = { path = "../../elkodon_bb/testing/" }
