@@ -160,10 +160,10 @@ mod unix {
     #[test]
     fn file_path_extract_path_works() {
         let sut = FilePath::new(b"/some/file/path").unwrap();
-        assert_that!(sut.path(), eq b"/some/file/");
+        assert_that!(sut.path(), eq b"/some/file");
 
         let sut = FilePath::new(b"another/path/to/fuuu").unwrap();
-        assert_that!(sut.path(), eq b"another/path/to/");
+        assert_that!(sut.path(), eq b"another/path/to");
 
         let sut = FilePath::new(b"/blubbb").unwrap();
         assert_that!(sut.path(), eq b"/");

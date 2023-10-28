@@ -18,6 +18,7 @@
 use elkodon_bb_container::semantic_string;
 
 use elkodon_bb_log::fail;
+use elkodon_pal_settings::PATH_SEPARATOR;
 
 use crate::{file_name::FileName, file_path::FilePath};
 use elkodon_bb_container::semantic_string::*;
@@ -48,6 +49,19 @@ semantic_string! {
     }
 
     false
+  },
+  comparision: |lhs: &[u8], rhs: &[u8]| {
+      let lhs_normalized = Path::new_normalized(lhs);
+      if lhs_normalized.is_err() {
+          return false;
+      }
+
+      let rhs_normalized = Path::new_normalized(rhs);
+      if rhs_normalized.is_err() {
+          return false;
+      }
+
+      *lhs_normalized.unwrap() == *rhs_normalized.unwrap()
   }
 }
 
@@ -70,6 +84,27 @@ impl Path {
             "{}", msg);
 
         Ok(())
+    }
+
+    pub fn new_normalized(value: &[u8]) -> Result<Path, SemanticStringError> {
+        let mut raw_path = [0u8; PATH_LENGTH];
+
+        let mut previous_char_is_path_separator = false;
+        let mut n = 0;
+        for i in 0..value.len() {
+            if i + 1 == value.len() && value[i] == PATH_SEPARATOR {
+                break;
+            }
+
+            if !(previous_char_is_path_separator && value[i] == PATH_SEPARATOR) {
+                raw_path[n] = value[i];
+                n += 1;
+            }
+
+            previous_char_is_path_separator = value[i] == PATH_SEPARATOR
+        }
+
+        Path::new(&raw_path[0..n])
     }
 }
 

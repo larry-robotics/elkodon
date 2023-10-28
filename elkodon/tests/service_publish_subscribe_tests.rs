@@ -6,7 +6,8 @@ mod service_publish_subscribe {
     use elkodon::service::builder::publish_subscribe::PublishSubscribeCreateError;
     use elkodon::service::builder::publish_subscribe::PublishSubscribeOpenError;
     use elkodon::service::port_factory::publisher::UnableToDeliverStrategy;
-    use elkodon::service::{service_name::ServiceName, Service};
+    use elkodon::service::static_config::StaticConfig;
+    use elkodon::service::{service_name::ServiceName, Details, Service};
     use elkodon_bb_container::semantic_string::*;
     use elkodon_bb_posix::unique_system_id::UniqueSystemId;
     use elkodon_bb_testing::assert_that;
@@ -367,8 +368,8 @@ mod service_publish_subscribe {
         let mut publishers = vec![];
         publishers.reserve(MAX_PUB);
 
-        for i in 0..MAX_PUB {
-            publishers.push(channels[i].publisher().create().unwrap());
+        for c in channels.iter().take(MAX_PUB) {
+            publishers.push(c.publisher().create().unwrap());
         }
 
         let mut subscribers = vec![];
@@ -591,8 +592,8 @@ mod service_publish_subscribe {
                     assert_that!(sut_publisher.send_copy(889), is_ok);
                 }
 
-                for i in 0..max_subscribers {
-                    while let Ok(Some(sample)) = subscribers[i].receive() {
+                for (i, s) in subscribers.iter().enumerate().take(max_subscribers) {
+                    while let Ok(Some(sample)) = s.receive() {
                         borrowed_samples.push((i, sample));
                     }
                 }
@@ -623,8 +624,8 @@ mod service_publish_subscribe {
             // cleanup
             borrowed_samples.clear();
             loaned_samples.clear();
-            for i in 0..max_subscribers {
-                while let Ok(Some(_)) = subscribers[i].receive() {}
+            for s in subscribers.iter().take(max_subscribers) {
+                while let Ok(Some(_)) = s.receive() {}
             }
         }
     }
@@ -833,6 +834,145 @@ mod service_publish_subscribe {
             .unwrap();
 
         assert_that!(sut.subscriber_buffer_size(), eq 1);
+    }
+
+    #[test]
+    fn does_exist_works_single<Sut: Service + Details<'static>>() {
+        let service_name = generate_name();
+        assert_that!(Sut::does_exist(&service_name).unwrap(), eq false);
+
+        let _sut = Sut::new(&service_name)
+            .publish_subscribe()
+            .create::<u64>()
+            .unwrap();
+
+        assert_that!(Sut::does_exist(&service_name).unwrap(), eq true);
+        assert_that!(Sut::does_exist(&service_name).unwrap(), eq true);
+
+        drop(_sut);
+
+        assert_that!(Sut::does_exist(&service_name).unwrap(), eq false);
+    }
+
+    #[test]
+    fn does_exist_works_many<Sut: Service + Details<'static>>() {
+        const NUMBER_OF_SERVICES: usize = 32;
+
+        let mut services = vec![];
+        let mut service_names = vec![];
+
+        for i in 0..NUMBER_OF_SERVICES {
+            let service_name = generate_name();
+            assert_that!(Sut::does_exist(&service_name).unwrap(), eq false);
+
+            services.push(
+                Sut::new(&service_name)
+                    .publish_subscribe()
+                    .create::<u64>()
+                    .unwrap(),
+            );
+            service_names.push(service_name);
+
+            for s in service_names.iter().take(i + 1) {
+                assert_that!(Sut::does_exist(s).unwrap(), eq true);
+            }
+        }
+
+        for i in 0..NUMBER_OF_SERVICES {
+            for s in service_names.iter().take(NUMBER_OF_SERVICES - i) {
+                assert_that!(Sut::does_exist(s).unwrap(), eq true);
+            }
+
+            for s in service_names
+                .iter()
+                .take(NUMBER_OF_SERVICES)
+                .skip(NUMBER_OF_SERVICES - i)
+            {
+                assert_that!(Sut::does_exist(s).unwrap(), eq false);
+            }
+
+            services.pop();
+        }
+    }
+
+    #[test]
+    fn list_works<Sut: Service + Details<'static>>() {
+        const NUMBER_OF_SERVICES: usize = 32;
+
+        let mut services = vec![];
+        let mut service_names = vec![];
+
+        let contains_service_names = |names, state: Vec<StaticConfig>| {
+            for n in names {
+                let mut name_found = false;
+                for s in &state {
+                    if *s.service_name() == n {
+                        name_found = true;
+                        break;
+                    }
+                }
+
+                if !name_found {
+                    return false;
+                }
+            }
+
+            true
+        };
+
+        for i in 0..NUMBER_OF_SERVICES {
+            let service_name = generate_name();
+
+            services.push(
+                Sut::new(&service_name)
+                    .publish_subscribe()
+                    .create::<u64>()
+                    .unwrap(),
+            );
+            service_names.push(service_name);
+
+            let service_list = Sut::list().unwrap();
+            assert_that!(service_list, len i + 1);
+
+            assert_that!(contains_service_names(service_names.clone(), service_list), eq true);
+        }
+
+        for i in 0..NUMBER_OF_SERVICES {
+            services.pop();
+            service_names.pop();
+
+            let service_list = Sut::list().unwrap();
+            assert_that!(service_list, len NUMBER_OF_SERVICES - i - 1);
+            assert_that!(contains_service_names(service_names.clone(), service_list), eq true);
+        }
+    }
+
+    #[test]
+    fn service_remains_as_long_as_there_is_a_user<Sut: Service + Details<'static>>() {
+        let service_name = generate_name();
+
+        let sut_1 = Sut::new(&service_name)
+            .publish_subscribe()
+            .create::<u64>()
+            .unwrap();
+
+        let sut_2 = Sut::new(&service_name).publish_subscribe().open::<u64>();
+        assert_that!(sut_2, is_ok);
+
+        drop(sut_1);
+
+        let sut_3 = Sut::new(&service_name).publish_subscribe().open::<u64>();
+        assert_that!(sut_3, is_ok);
+
+        drop(sut_2);
+        drop(sut_3);
+
+        let sut_4 = Sut::new(&service_name).publish_subscribe().open::<u64>();
+        assert_that!(sut_4, is_err);
+        assert_that!(
+            sut_4.err().unwrap(), eq
+            PublishSubscribeOpenError::DoesNotExist
+        );
     }
 
     #[instantiate_tests(<elkodon::service::zero_copy::Service>)]
