@@ -1,0 +1,34 @@
+#
+# templates
+#
+
+cpu_and_memory_config_for_builds_template: &CPU_AND_MEMORY_CONFIG_FOR_BUILDS_TEMPLATE
+  cpu: 4
+  memory: 8GB
+
+#
+# Basic tests
+#
+
+test_task:
+  matrix:
+    - container:
+        image: rust:latest
+        << : *CPU_AND_MEMORY_CONFIG_FOR_BUILDS_TEMPLATE
+    - allow_failures: true
+      container:
+        image: rustlang/rust:nightly
+        << : *CPU_AND_MEMORY_CONFIG_FOR_BUILDS_TEMPLATE
+  indstall_dependencies_script:
+    - apt update && apt install -y clang libacl1-dev
+    - rustup component add clippy rustfmt
+  create_users_and_groups_script:
+    - useradd testuser1
+    - useradd testuser2
+    - groupadd testgroup1
+    - groupadd testgroup2
+  run_cargo_fmt_and_clippy_script:
+    - cargo fmt --all -- --check
+    - cargo clippy -- -D warnings
+  build_script: cargo build --workspace --all
+  test_script: cargo test --workspace --all
