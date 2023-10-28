@@ -37,5 +37,8 @@ semantic_string! {
     }
 
     false
+  },
+  comparision: |lhs: &[u8], rhs: &[u8]| {
+      *lhs == *rhs
   }
 }

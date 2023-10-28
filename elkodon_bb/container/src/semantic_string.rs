@@ -263,7 +263,8 @@ pub trait SemanticString<const CAPACITY: usize>:
 macro_rules! semantic_string {
     {$(#[$documentation:meta])*
      name: $string_name:ident, capacity: $capacity:expr,
-     invalid_content: $invalid_content:expr, invalid_characters: $invalid_characters:expr} => {
+     invalid_content: $invalid_content:expr, invalid_characters: $invalid_characters:expr,
+     comparision: $comparision:expr} => {
         $(#[$documentation])*
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
         pub struct $string_name {
@@ -286,9 +287,6 @@ macro_rules! semantic_string {
             }
         }
 
-        unsafe impl Send for $string_name {}
-        unsafe impl Sync for $string_name {}
-
         impl std::fmt::Display for $string_name {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 std::write!(f, "{}", self.value)
@@ -297,25 +295,25 @@ macro_rules! semantic_string {
 
         impl PartialEq<&[u8]> for $string_name {
             fn eq(&self, other: &&[u8]) -> bool {
-                *self.value.as_bytes() == **other
+                $comparision(self.value.as_bytes(), *other)
             }
         }
 
         impl PartialEq<&[u8]> for &$string_name {
             fn eq(&self, other: &&[u8]) -> bool {
-                *self.value.as_bytes() == **other
+                $comparision(self.value.as_bytes(), *other)
             }
         }
 
         impl<const CAPACITY: usize> PartialEq<[u8; CAPACITY]> for $string_name {
             fn eq(&self, other: &[u8; CAPACITY]) -> bool {
-                *self.value.as_bytes() == *other
+                $comparision(self.value.as_bytes(), other)
             }
         }
 
         impl<const CAPACITY: usize> PartialEq<&[u8; CAPACITY]> for $string_name {
             fn eq(&self, other: &&[u8; CAPACITY]) -> bool {
-                *self.value.as_bytes() == **other
+                $comparision(self.value.as_bytes(), *other)
             }
         }
 
