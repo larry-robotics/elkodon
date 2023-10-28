@@ -259,6 +259,7 @@ pub trait Details<'global_config>: Debug + Sized {
                     Self::StaticStorage,
                 >>::new(&service_storage)
                 .config(&static_storage_config.clone())
+                .has_ownership(false)
                 .open()
                 {
                     Ok(reader) => reader,
@@ -324,6 +325,7 @@ pub trait Details<'global_config>: Debug + Sized {
                     Self::StaticStorage,
                 >>::new(&service_storage)
                 .config(&static_storage_config.clone())
+                .has_ownership(false)
                 .open()
                 {
                     Ok(reader) => reader,
