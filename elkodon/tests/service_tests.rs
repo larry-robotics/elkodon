@@ -6,7 +6,7 @@ mod service_publish_subscribe {
     use elkodon::service::builder::publish_subscribe::PublishSubscribeCreateError;
     use elkodon::service::builder::publish_subscribe::PublishSubscribeOpenError;
     use elkodon::service::port_factory::publisher::UnableToDeliverStrategy;
-    use elkodon::service::{service_name::ServiceName, Service};
+    use elkodon::service::{service_name::ServiceName, Details, Service};
     use elkodon_bb_container::semantic_string::*;
     use elkodon_bb_posix::unique_system_id::UniqueSystemId;
     use elkodon_bb_testing::assert_that;
@@ -833,6 +833,21 @@ mod service_publish_subscribe {
             .unwrap();
 
         assert_that!(sut.subscriber_buffer_size(), eq 1);
+    }
+
+    #[test]
+    fn discovering_service_does_not_remove_service<Sut: Service + Details<'static>>() {
+        let service_name = generate_name();
+        let _sut = Sut::new(&service_name)
+            .publish_subscribe()
+            .create::<u64>()
+            .unwrap();
+
+        assert_that!(Sut::does_exist(&service_name).unwrap(), eq true);
+
+        let service_list = Sut::list().unwrap();
+        assert_that!(service_list, len 1);
+        assert_that!(*service_list[0].service_name(), eq service_name);
     }
 
     #[instantiate_tests(<elkodon::service::zero_copy::Service>)]
