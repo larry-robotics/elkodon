@@ -836,8 +836,10 @@ mod service_publish_subscribe {
     }
 
     #[test]
-    fn discovering_service_does_not_remove_service<Sut: Service + Details<'static>>() {
+    fn does_exist_works<Sut: Service + Details<'static>>() {
         let service_name = generate_name();
+        assert_that!(Sut::does_exist(&service_name).unwrap(), eq false);
+
         let _sut = Sut::new(&service_name)
             .publish_subscribe()
             .create::<u64>()
@@ -845,9 +847,9 @@ mod service_publish_subscribe {
 
         assert_that!(Sut::does_exist(&service_name).unwrap(), eq true);
 
-        let service_list = Sut::list().unwrap();
-        assert_that!(service_list, len 1);
-        assert_that!(*service_list[0].service_name(), eq service_name);
+        drop(_sut);
+
+        assert_that!(Sut::does_exist(&service_name).unwrap(), eq false);
     }
 
     #[instantiate_tests(<elkodon::service::zero_copy::Service>)]

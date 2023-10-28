@@ -10,7 +10,10 @@ semantic_string! {
   invalid_content: |value: &[u8]| {
                         matches!(value, b"")
                     },
-  invalid_characters: |_: &[u8]| { false }
+  invalid_characters: |_: &[u8]| { false },
+  comparision: |lhs: &[u8], rhs: &[u8]| {
+      *lhs == *rhs
+  }
 }
 
 struct ServiceNameVisitor;

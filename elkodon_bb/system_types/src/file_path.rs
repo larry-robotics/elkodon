@@ -71,6 +71,9 @@ semantic_string! {
     }
 
     false
+  },
+  comparision: |lhs: &[u8], rhs: &[u8]| {
+      *lhs == *rhs
   }
 }
 
@@ -121,7 +124,8 @@ impl FilePath {
     pub fn path(&self) -> &[u8] {
         match self.rfind(PATH_SEPARATOR) {
             None => unsafe { std::slice::from_raw_parts(self.as_ptr(), 0) },
-            Some(pos) => self.as_bytes().get(0..pos + 1).unwrap(),
+            Some(0) => self.as_bytes().get(0..1).unwrap(),
+            Some(pos) => self.as_bytes().get(0..pos).unwrap(),
         }
     }
 }
