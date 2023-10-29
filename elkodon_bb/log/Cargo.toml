@@ -7,4 +7,4 @@ repository = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
-termsize = { version = "0.1" }
+termsize = { workspace = true }

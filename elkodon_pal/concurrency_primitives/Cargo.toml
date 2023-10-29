@@ -9,4 +9,4 @@ edition = { workspace = true }
 [dependencies]
 
 [dev-dependencies]
-elkodon_bb_testing = { path = "../../elkodon_bb/testing/" }
+elkodon_bb_testing = { workspace = true }
