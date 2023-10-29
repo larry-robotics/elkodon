@@ -1,18 +1,18 @@
 [package]
 name = "example_event"
-version = "0.1.0"
-edition = "2021"
+description = "Elkodon: example that demonstrates how events can be sent between processes"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[[bin]]
+[[example]]
 name = "example_event_listener"
 path = "src/listener.rs"
-[[bin]]
+[[example]]
 name = "example_event_notifier"
 path = "src/notifier.rs"
 
 [dependencies]
-elkodon = { path = "../../elkodon/" }
-elkodon_bb_posix = { path = "../../elkodon_bb/posix/" }
-elkodon_bb_container = { path = "../../elkodon_bb/container/" }
+elkodon = { workspace = true }
+elkodon_bb_posix = { workspace = true }
+elkodon_bb_container = { workspace = true }

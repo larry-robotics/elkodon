@@ -1,9 +1,10 @@
 [package]
 name = "elkodon_cal"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Elkodon: high-level traits and implementations that represents OS primitives in an exchangeable fashion"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
 elkodon_bb_posix = { path = "../elkodon_bb/posix/" }
