@@ -322,7 +322,7 @@ impl Directory {
                             "{} since the directory contents of {} could not be read.", msg, path);
 
         for entry in contents {
-            let mut sub_path = path.clone();
+            let mut sub_path = *path;
             sub_path
                 .add_path_entry(entry.name().as_string())
                 .expect("always a valid path entry");
