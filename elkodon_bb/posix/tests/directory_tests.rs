@@ -75,7 +75,7 @@ impl TestFixture {
     }
 
     fn generate_directory_name(&mut self) -> Path {
-        let mut directory = TEMP_DIRECTORY;
+        let mut directory = TEST_DIRECTORY;
         directory.push(PATH_SEPARATOR).unwrap();
         directory.push_bytes(b"dir_tests_").unwrap();
         directory
@@ -95,7 +95,7 @@ impl TestFixture {
 
 #[test]
 fn directory_temp_directory_does_exist() {
-    assert_that!(Directory::does_exist(&TEMP_DIRECTORY).unwrap(), eq true);
+    assert_that!(Directory::does_exist(&TEST_DIRECTORY).unwrap(), eq true);
 }
 
 #[test]

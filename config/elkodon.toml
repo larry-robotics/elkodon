@@ -1,5 +1,5 @@
 [global]
-root_path                                   = '/tmp/'
+root_path                                   = '/tmp/elkodon/'
 
 [global.service]
 directory                                   = 'services'

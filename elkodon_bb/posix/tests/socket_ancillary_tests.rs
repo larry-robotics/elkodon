@@ -17,7 +17,7 @@ fn generate_file_name() -> FilePath {
     file.push_bytes(UniqueId::new().value().to_string().as_bytes())
         .unwrap();
 
-    FilePath::from_path_and_file(&TEMP_DIRECTORY, &file).unwrap()
+    FilePath::from_path_and_file(&TEST_DIRECTORY, &file).unwrap()
 }
 
 struct TestFixture {

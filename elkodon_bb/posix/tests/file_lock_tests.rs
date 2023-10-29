@@ -26,7 +26,7 @@ fn generate_file_name() -> FilePath {
     )
     .unwrap();
 
-    FilePath::from_path_and_file(&TEMP_DIRECTORY, &file).unwrap()
+    FilePath::from_path_and_file(&TEST_DIRECTORY, &file).unwrap()
 }
 
 const TIMEOUT: Duration = Duration::from_millis(10);
