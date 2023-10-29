@@ -57,8 +57,9 @@ pub enum StaticStorageUnlockError {
 /// [`StaticStorage`] with implementation specific settings.
 pub trait StaticStorageConfiguration: Clone + Default + NamedConceptConfiguration {}
 
-/// Creates either a [`StaticStorage`], which owns the storage and removes it when it lifetime
-/// ends, or a [`StaticStorageReader`].
+/// Creates either a [`StaticStorage`], that can own the [`StaticStorage`] if it was created with
+/// [`StaticStorageBuilder::has_ownership()`] (default = true) or a [`StaticStorageLocked`] that is
+/// not yet set.
 pub trait StaticStorageBuilder<T: StaticStorage>: Sized + NamedConceptBuilder<T> {
     /// Defines if a newly created [`StaticStorage`] owns the underlying resources
     fn has_ownership(self, value: bool) -> Self;
@@ -98,7 +99,7 @@ pub trait StaticStorage: Debug + Sized + NamedConceptMgmt + NamedConcept {
     type Locked: StaticStorageLocked<Self>;
 
     /// Returns the length of the content. Required to provide a buffer in
-    /// [`StaticStorageReader::read()`] which is large enough.
+    /// [`StaticStorage::read()`] which is large enough.
     fn len(&self) -> u64;
 
     /// Returns true if it does not contain any content, otherwise false.
