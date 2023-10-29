@@ -1,15 +1,16 @@
 [package]
 name = "example_discovery"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Elkodon: example that demonstrates service discovery"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [[bin]]
 name = "example_discovery_list_services"
 path = "src/list_services.rs"
 
 [dependencies]
-elkodon = { path = "../../elkodon/" }
-elkodon_bb_posix = { path = "../../elkodon_bb/posix/" }
-elkodon_bb_container = { path = "../../elkodon_bb/container/" }
+elkodon = { workspace = true }
+elkodon_bb_posix = { workspace = true }
+elkodon_bb_container = { workspace = true }

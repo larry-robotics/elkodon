@@ -1,12 +1,13 @@
 [package]
 name = "benchmark_publish_subscribe"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Elkodon: benchmark for publish-subscribe messaging pattern"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
-elkodon_bb_log = { path = "../../elkodon_bb/log/" }
-elkodon = { path = "../../elkodon/" }
-elkodon_bb_posix = { path = "../../elkodon_bb/posix/" }
-elkodon_bb_container = { path = "../../elkodon_bb/container/" }
+elkodon_bb_log = { workspace = true }
+elkodon = { workspace = true }
+elkodon_bb_posix = { workspace = true }
+elkodon_bb_container = { workspace = true }
