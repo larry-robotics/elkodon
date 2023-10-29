@@ -1,5 +1,6 @@
 use elkodon_bb_posix::access_control_list::*;
-use elkodon_bb_posix::config::TEMP_DIRECTORY;
+use elkodon_bb_posix::config::TEST_DIRECTORY;
+use elkodon_bb_posix::directory::*;
 use elkodon_bb_posix::file::*;
 use elkodon_bb_posix::file_descriptor::FileDescriptorBased;
 use elkodon_bb_posix::group::*;
@@ -40,7 +41,8 @@ fn access_control_list_string_conversion_works() {
 fn access_control_list_apply_to_file_works() {
     test_requires!(posix::POSIX_SUPPORT_ACL);
 
-    let file_path = FilePath::from_path_and_file(&TEMP_DIRECTORY, unsafe {
+    Directory::create(&TEST_DIRECTORY, Permission::OWNER_ALL).unwrap();
+    let file_path = FilePath::from_path_and_file(&TEST_DIRECTORY, unsafe {
         &FileName::new_unchecked(b"access_control_list_test")
     })
     .unwrap();

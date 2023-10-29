@@ -1,8 +1,9 @@
+use elkodon_bb_container::byte_string::FixedSizeByteString;
 use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_elementary::lazy_singleton::*;
 use elkodon_bb_posix::{file::FileBuilder, shared_memory::AccessMode};
 use elkodon_bb_system_types::file_path::FilePath;
-use elkodon_bb_system_types::{file_name::FileName, path::Path};
+use elkodon_bb_system_types::path::Path;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -76,9 +77,9 @@ impl Default for Entries {
         Self {
             global: Global {
                 #[cfg(not(target_os = "windows"))]
-                root_path: "/tmp/".to_string(),
+                root_path: "/tmp/elkodon/".to_string(),
                 #[cfg(target_os = "windows")]
-                root_path: "C:\\Windows\\Temp\\".to_string(),
+                root_path: "C:\\Windows\\Temp\\elkodon\\".to_string(),
                 service: Service {
                     directory: "services".to_string(),
                     publisher_data_segment_suffix: ".publisher_data".to_string(),
@@ -111,8 +112,10 @@ impl Default for Entries {
 impl Global {
     pub fn get_absolute_service_dir(&self) -> Path {
         let mut path = Path::new(self.root_path.as_bytes()).unwrap();
-        path.add_path_entry(&FileName::new(self.service.directory.as_bytes()).unwrap())
-            .unwrap();
+        path.add_path_entry(
+            &FixedSizeByteString::from_bytes(self.service.directory.as_bytes()).unwrap(),
+        )
+        .unwrap();
         path
     }
 }

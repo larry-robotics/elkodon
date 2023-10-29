@@ -73,18 +73,16 @@ impl Path {
         &mut self,
         entry: &FixedSizeByteString<FILENAME_LENGTH>,
     ) -> Result<(), SemanticStringError> {
-        let msg = format!("Unable to add entry \"{}\" to path since it would exceed the maximum supported path length of {}.",
+        let msg = format!("Unable to add entry \"{}\" to path since it would exceed the maximum supported path length of {} or the entry contains invalid symbols.",
             entry, PATH_LENGTH);
         if !self.is_empty()
             && self.as_bytes()[self.len() - 1] != elkodon_pal_settings::PATH_SEPARATOR
         {
             fail!(from self, when self.push(elkodon_pal_settings::PATH_SEPARATOR),
-                with SemanticStringError::ExceedsMaximumLength,
                 "{}", msg);
         }
 
         fail!(from self, when self.push_bytes(entry.as_bytes()),
-            with SemanticStringError::ExceedsMaximumLength,
             "{}", msg);
 
         Ok(())

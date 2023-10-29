@@ -28,6 +28,8 @@ pub const ADAPTIVE_WAIT_FINAL_WAITING_TIME: Duration = Duration::from_millis(10)
 // directories
 pub const TEMP_DIRECTORY: Path =
     unsafe { Path::new_unchecked(elkodon_pal_settings::TEMP_DIRECTORY) };
+pub const TEST_DIRECTORY: Path =
+    unsafe { Path::new_unchecked(elkodon_pal_settings::TEST_DIRECTORY) };
 pub const SHARED_MEMORY_DIRECTORY: Path =
     unsafe { Path::new_unchecked(elkodon_pal_settings::SHARED_MEMORY_DIRECTORY) };
 

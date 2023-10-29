@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 use elkodon_bb_container::semantic_string::SemanticString;
+use elkodon_bb_container::semantic_string::SemanticStringAccessor;
 use elkodon_bb_log::fatal_panic;
 pub use elkodon_bb_system_types::file_name::FileName;
 pub use elkodon_bb_system_types::file_path::FilePath;
@@ -48,7 +49,7 @@ pub trait NamedConceptConfiguration: Default + Clone + Debug {
     /// Returns the full path for a given value under the given configuration.
     fn path_for(&self, value: &FileName) -> FilePath {
         let mut path = *self.get_path_hint();
-        fatal_panic!(from self, when path.add_path_entry(value),
+        fatal_panic!(from self, when path.add_path_entry(value.as_string()),
                     "The path hint \"{}\" in combination with the file name \"{}\" exceed the maximum supported path length of {} of the operating system.",
                     path, value, Path::max_len());
         fatal_panic!(from self, when path.push_bytes(self.get_suffix()),
