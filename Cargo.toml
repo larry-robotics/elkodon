@@ -17,9 +17,7 @@ members = [
     "elkodon_pal/posix/",
     "elkodon_pal/settings/",
 
-    "examples/publish_subscribe",
-    "examples/event",
-    "examples/discovery",
+    "examples",
 
     "benchmarks/publish_subscribe"
 ]
