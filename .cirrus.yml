@@ -1,35 +1,195 @@
 #
-# templates
+# Notes
+#
+# Cirrus CI has a concurrency limit of 24 CPU cores for open source projects.
+# This means we should not have more than 12 pipelines with more than 2 CPUs
+# in each pipeline running parallel
+#
+# Documentation:
+# - https://cirrus-ci.org/examples/
+# - https://cirrus-ci.org/guide/writing-tasks/
 #
 
-cpu_and_memory_config_for_builds_template: &CPU_AND_MEMORY_CONFIG_FOR_BUILDS_TEMPLATE
-  cpu: 4
-  memory: 8GB
+---
 
 #
-# Basic tests
+# Templates
 #
 
-test_task:
-  matrix:
-    - container:
-        image: rust:latest
-        << : *CPU_AND_MEMORY_CONFIG_FOR_BUILDS_TEMPLATE
-    - allow_failures: true
-      container:
-        image: rustlang/rust:nightly
-        << : *CPU_AND_MEMORY_CONFIG_FOR_BUILDS_TEMPLATE
-  indstall_dependencies_script:
-    - apt update && apt install -y clang libacl1-dev
-    - rustup component add clippy rustfmt
-  create_users_and_groups_script:
-    - useradd testuser1
-    - useradd testuser2
-    - groupadd testgroup1
-    - groupadd testgroup2
-  run_cargo_fmt_and_clippy_script:
-    - cargo fmt --all -- --check
-    - cargo clippy -- -D warnings
-  doc_script: RUSTDOCFLAGS="-D warnings" cargo doc
-  build_script: cargo build --workspace --all --examples
+# Constants
+
+elk_task_timeout_template: &ELK_TASK_TIMEOUT
+  timeout_in: 15m  # This needs to be reasonable large in order not to run in a timeout in the docker image re-builds
+
+elk_common_cpu_and_memory_config_for_build_and_test_template: &ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+  cpu: 2
+  memory: 4GB
+
+# Container
+
+elk_container_ubuntu_22_04_x64_template: &ELK_CONTAINER_UBUNTU_22_04_X64
+  <<: *ELK_TASK_TIMEOUT
+  container:
+    dockerfile: internal/docker/ubuntu-22.04
+    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+
+elk_container_ubuntu_22_04_aarch64_template: &ELK_CONTAINER_UBUNTU_22_04_AARCH64
+  <<: *ELK_TASK_TIMEOUT
+  arm_container:
+    dockerfile: internal/docker/ubuntu-22.04
+    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+
+elk_container_arch_linux_x64_template: &ELK_CONTAINER_ARCH_LINUX_X64
+  <<: *ELK_TASK_TIMEOUT
+  container:
+    dockerfile: internal/docker/archlinux-base-devel
+    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+
+elk_container_windows_server_2019_x64_template: &ELK_CONTAINER_WINDOWS_SERVER_2019_X64
+  <<: *ELK_TASK_TIMEOUT
+  windows_container:
+    dockerfile: internal/docker/windowsservercore-2019
+    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+
+# Build and Test
+
+elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
+  build_script: cargo build --workspace --all --examples --benches
+
+elk_common_build_and_test_debug_template: &ELK_COMMON_BUILD_AND_TEST_DEBUG
+  env:
+    RUSTDOCFLAGS: -D warnings
+  <<: *ELK_COMMON_BUILD_DEBUG
+  doc_script: cargo doc
   test_script: cargo test --workspace --all
+
+elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
+  build_script: cargo build --release --workspace --all --examples --benches
+
+elk_common_build_and_test_release_template: &ELK_COMMON_BUILD_AND_TEST_RELEASE
+  env:
+    RUSTDOCFLAGS: -D warnings
+  <<: *ELK_COMMON_BUILD_RELEASE
+  doc_script: cargo doc --release
+  test_script: cargo test --release --workspace --all
+
+#
+# Preflight-Check with Ubuntu x86 stable debug
+#
+
+preflight_check_task:
+  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  set_toolchain_script: rustup default stable
+  # TODO elk-#8: add more preflight-checks here
+  <<: *ELK_COMMON_BUILD_DEBUG # only build without tests to not slow down other tasks due to flaky tests
+
+#
+# Ubuntu x86
+#
+
+# Pipeline 1
+
+# TODO elk-#8: Add code coverage
+# ubuntu_22_04_x64_stable_debug_coverage_task:
+#   depends_on: preflight_check
+#   <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+#   set_toolchain_script: rustup default stable
+#   <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+# Pipeline 2
+
+ubuntu_22_04_x64_stable_debug_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  set_toolchain_script: rustup default stable
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+ubuntu_22_04_x64_beta_debug_task:
+  depends_on: ubuntu_22_04_x64_stable_debug
+  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  set_toolchain_script: rustup default beta
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+ubuntu_22_04_x64_nightly_debug_task:
+  depends_on: ubuntu_22_04_x64_beta_debug
+  allow_failures: true
+  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  set_toolchain_script: rustup default nightly
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+# Pipeline 3
+
+ubuntu_22_04_x64_stable_release_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  set_toolchain_script: rustup default stable
+  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+
+#
+# Ubuntu aarch64
+#
+
+# Pipeline 4
+
+ubuntu_22_04_aarch64_stable_debug_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_UBUNTU_22_04_AARCH64
+  set_toolchain_script: rustup default stable
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+ubuntu_22_04_aarch64_beta_debug_task:
+  depends_on: ubuntu_22_04_aarch64_stable_debug
+  allow_failures: true
+  <<: *ELK_CONTAINER_UBUNTU_22_04_AARCH64
+  set_toolchain_script: rustup default beta
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+# Pipeline 5
+
+ubuntu_22_04_aarch64_stable_release_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_UBUNTU_22_04_AARCH64
+  set_toolchain_script: rustup default stable
+  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+
+#
+# Arch Linux x86
+#
+
+# Pipeline 6
+
+arch_linux_x64_stable_debug_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_ARCH_LINUX_X64
+  set_toolchain_script: rustup default stable
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+arch_linux_x64_beta_debug_task:
+  depends_on: arch_linux_x64_stable_debug
+  <<: *ELK_CONTAINER_ARCH_LINUX_X64
+  set_toolchain_script: rustup default beta
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+# Pipeline 7
+
+arch_linux_x64_stable_release_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_ARCH_LINUX_X64
+  set_toolchain_script: rustup default stable
+  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+
+#
+# Windows Server 2019 x86
+#
+
+# Pipeline 8
+
+windows_server_2019_x64_stable_debug_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_WINDOWS_SERVER_2019_X64
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+windows_server_2019_x64_stable_release_task:
+  depends_on: windows_server_2019_x64_stable_debug
+  <<: *ELK_CONTAINER_WINDOWS_SERVER_2019_X64
+  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
