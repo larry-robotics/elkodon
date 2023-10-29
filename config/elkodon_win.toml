@@ -1,5 +1,5 @@
 [global]
-root_path                                   = 'c:\Windows\Temp\'
+root_path                                   = 'c:\Windows\Temp\elkodon\'
 
 [global.service]
 directory                                   = 'services'

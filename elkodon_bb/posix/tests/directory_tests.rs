@@ -1,3 +1,4 @@
+use elkodon_bb_container::byte_string::FixedSizeByteString;
 use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_posix::config::*;
 use elkodon_bb_posix::directory::*;
@@ -57,7 +58,7 @@ impl TestFixture {
 
     fn create_dir(&mut self, directory: &Path) -> Directory {
         let mut directory = *directory;
-        let mut file = FileName::new(b"dir_tests_").unwrap();
+        let mut file = FixedSizeByteString::from_bytes(b"dir_tests_").unwrap();
         file.push_bytes(
             UniqueSystemId::new()
                 .unwrap()
@@ -74,7 +75,7 @@ impl TestFixture {
     }
 
     fn generate_directory_name(&mut self) -> Path {
-        let mut directory = TEMP_DIRECTORY;
+        let mut directory = TEST_DIRECTORY;
         directory.push(PATH_SEPARATOR).unwrap();
         directory.push_bytes(b"dir_tests_").unwrap();
         directory
@@ -94,7 +95,7 @@ impl TestFixture {
 
 #[test]
 fn directory_temp_directory_does_exist() {
-    assert_that!(Directory::does_exist(&TEMP_DIRECTORY).unwrap(), eq true);
+    assert_that!(Directory::does_exist(&TEST_DIRECTORY).unwrap(), eq true);
 }
 
 #[test]
@@ -108,7 +109,7 @@ fn directory_file_is_not_a_directory() {
         .creation_mode(CreationMode::PurgeAndCreate)
         .create()
         .unwrap();
-    assert_that!(!Directory::does_exist(&Path::new(b"no_directory").unwrap()).unwrap(), eq true);
+    assert_that!(Directory::does_exist(&Path::new(b"no_directory").unwrap()).unwrap(), eq false);
     File::remove(&FilePath::new(b"no_directory").unwrap()).unwrap();
 }
 
@@ -118,7 +119,34 @@ fn directory_create_from_path_works() {
 
     let sut_name = test.generate_directory_name();
 
-    assert_that!(!Directory::does_exist(&sut_name).unwrap(), eq true);
+    assert_that!(Directory::does_exist(&sut_name).unwrap(), eq false);
+    let sut_create = Directory::create(&sut_name, Permission::OWNER_ALL);
+    assert_that!(sut_create, is_ok);
+    assert_that!(Directory::does_exist(&sut_name).unwrap(), eq true);
+}
+
+#[test]
+fn directory_create_from_path_works_recursively() {
+    let mut test = TestFixture::new();
+
+    let mut sut_name = test.generate_directory_name();
+    sut_name
+        .add_path_entry(&FixedSizeByteString::from_bytes(b"all").unwrap())
+        .unwrap();
+    sut_name
+        .add_path_entry(&FixedSizeByteString::from_bytes(b"glory").unwrap())
+        .unwrap();
+    sut_name
+        .add_path_entry(&FixedSizeByteString::from_bytes(b"to").unwrap())
+        .unwrap();
+    sut_name
+        .add_path_entry(&FixedSizeByteString::from_bytes(b"the").unwrap())
+        .unwrap();
+    sut_name
+        .add_path_entry(&FixedSizeByteString::from_bytes(b"hypnotoad").unwrap())
+        .unwrap();
+
+    assert_that!(Directory::does_exist(&sut_name).unwrap(), eq false);
     let sut_create = Directory::create(&sut_name, Permission::OWNER_ALL);
     assert_that!(sut_create, is_ok);
     assert_that!(Directory::does_exist(&sut_name).unwrap(), eq true);

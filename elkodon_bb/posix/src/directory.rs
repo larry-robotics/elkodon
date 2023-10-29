@@ -24,14 +24,17 @@
 //! ```
 use elkodon_bb_container::byte_string::strlen;
 use elkodon_bb_container::semantic_string::SemanticString;
+use elkodon_bb_container::semantic_string::SemanticStringAccessor;
 use elkodon_bb_elementary::enum_gen;
-use elkodon_bb_log::{error, fatal_panic, trace};
-use elkodon_bb_system_types::{file_name::FileName, path::Path};
+use elkodon_bb_log::{error, fail, fatal_panic, trace};
+use elkodon_bb_system_types::{file_name::FileName, file_path::FilePath, path::Path};
 use elkodon_pal_posix::posix::Struct;
 use elkodon_pal_posix::*;
 use elkodon_pal_posix::{posix::errno::Errno, posix::S_IFDIR};
 use elkodon_pal_settings::PATH_SEPARATOR;
 
+use crate::file::{File, FileRemoveError};
+use crate::file_type::FileType;
 pub use crate::permission::Permission;
 use crate::{config::EINTR_REPETITIONS, file_descriptor::*, metadata::*};
 
@@ -85,8 +88,8 @@ enum_gen! { DirectoryCreateError
     DirectoryOpenError
 }
 
-#[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
-pub enum DirectoryRemoveError {
+enum_gen! { DirectoryRemoveError
+  entry:
     InsufficientPermissions,
     CurrentlyInUse,
     NotEmptyOrHardLinksPointingToTheDirectory,
@@ -97,7 +100,11 @@ pub enum DirectoryRemoveError {
     NotADirectory,
     ResidesOnReadOnlyFileSystem,
     DanglingSymbolicLink,
-    UnknownError(i32),
+    UnknownError(i32)
+  mapping:
+    DirectoryOpenError,
+    DirectoryReadError,
+    FileRemoveError
 }
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
@@ -230,8 +237,10 @@ impl Directory {
         })
     }
 
-    /// Creates a new directory at the provided path.
-    pub fn create(path: &Path, permission: Permission) -> Result<Self, DirectoryCreateError> {
+    fn create_single_directory(
+        path: &Path,
+        permission: Permission,
+    ) -> Result<(), DirectoryCreateError> {
         let msg = format!("Unable to create directory \"{}\"", path);
 
         if unsafe { posix::mkdir(path.as_c_str(), permission.as_mode()) } == -1 {
@@ -248,16 +257,50 @@ impl Directory {
             );
         }
 
+        Ok(())
+    }
+
+    /// Creates a new directory at the provided path.
+    pub fn create(path: &Path, permission: Permission) -> Result<Self, DirectoryCreateError> {
+        let msg = format!("Unable to create directory \"{}\"", path);
+        let entries = path.entries();
+
+        let mut inc_path = if path.is_absolute() {
+            Path::new_root_path()
+        } else {
+            Path::new_empty()
+        };
+
+        for entry in entries {
+            inc_path
+                .add_path_entry(&entry)
+                .expect("Always works since it recreates the provided path");
+
+            match Directory::does_exist(&inc_path) {
+                Ok(true) => (),
+                Ok(false) => Directory::create_single_directory(&inc_path, permission)?,
+                Err(DirectoryAccessError::InsufficientPermissions) => {
+                    fail!(from "Directory::create()", with DirectoryCreateError::InsufficientPermissions,
+                        "{} since the path {} could not be accessed due to insufficient permissions.", msg, inc_path);
+                }
+                Err(DirectoryAccessError::PathPrefixIsNotADirectory) => {
+                    fail!(from "Directory::create()", with DirectoryCreateError::PartsOfThePathAreNotADirectory,
+                        "{} since the path {} is not a directory.", msg, inc_path);
+                }
+                Err(v) => {
+                    fail!(from "Directory::create()", with DirectoryCreateError::UnknownError(0),
+                        "{} due to a failure while accessing {} ({:?}).", msg, inc_path, v);
+                }
+            };
+        }
+
         match Directory::new(path) {
             Ok(d) => {
                 trace!(from d, "created");
                 Ok(d)
             }
             Err(e) => {
-                error!(from "Directory::create", "Failed to open newly created directory \"{}\". Removing directory again.", path);
-                if Self::remove(path).is_err() {
-                    error!(from "Directory::create", "Failed to remove newly created directory \"{}\" after an open failure.", path);
-                }
+                error!(from "Directory::create", "Failed to open newly created directory \"{}\".", path);
                 Err(e.into())
             }
         }
@@ -268,9 +311,29 @@ impl Directory {
         &self.path
     }
 
-    /// Removes and existing empty directory.
+    /// Removes and existing directory with all of its contents.
     pub fn remove(path: &Path) -> Result<(), DirectoryRemoveError> {
         let msg = format!("Unable to remove directory \"{}\"", path);
+        let origin = "Directory::remove()";
+
+        let dir = fail!(from origin, when Directory::new(path),
+                            "{} since the directory {} could not be opened.", msg, path);
+        let contents = fail!(from origin, when dir.contents(),
+                            "{} since the directory contents of {} could not be read.", msg, path);
+
+        for entry in contents {
+            let mut sub_path = *path;
+            sub_path
+                .add_path_entry(entry.name().as_string())
+                .expect("always a valid path entry");
+            if entry.metadata().file_type() == FileType::Directory {
+                fail!(from origin, when Directory::remove(&sub_path),
+                    "{} since the sub-path {} could not be removed.", msg, sub_path);
+            } else {
+                fail!(from origin, when File::remove(&unsafe{FilePath::new_unchecked(sub_path.as_bytes())}),
+                    "{} since the file {} could not be removed.", msg, sub_path);
+            }
+        }
 
         if unsafe { posix::rmdir(path.as_c_str()) } == -1 {
             handle_errno!(DirectoryRemoveError, from "Directory::remove",
