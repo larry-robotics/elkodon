@@ -1,5 +1,4 @@
 use elkodon_bb_container::semantic_string::*;
-use elkodon_bb_system_types::file_name::FileName;
 use elkodon_bb_system_types::path::*;
 use elkodon_bb_testing::assert_that;
 
@@ -64,6 +63,8 @@ mod windows {
 
 #[cfg(not(target_os = "windows"))]
 mod unix {
+    use elkodon_bb_container::byte_string::FixedSizeByteString;
+
     use super::*;
 
     #[test]
@@ -99,23 +100,23 @@ mod unix {
     #[test]
     fn path_add_works() {
         let mut sut = Path::new(b"/some").unwrap();
-        sut.add_path_entry(&FileName::new(b"file").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"file").unwrap())
             .unwrap();
-        sut.add_path_entry(&FileName::new(b"path").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"path").unwrap())
             .unwrap();
         assert_that!(sut, eq b"/some/file/path");
 
         let mut sut = Path::new(b"").unwrap();
-        sut.add_path_entry(&FileName::new(b"another").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"another").unwrap())
             .unwrap();
-        sut.add_path_entry(&FileName::new(b"testy").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"testy").unwrap())
             .unwrap();
         assert_that!(sut, eq b"another/testy");
 
         let mut sut = Path::new(b"fuu/").unwrap();
-        sut.add_path_entry(&FileName::new(b"blaaaha").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"blaaaha").unwrap())
             .unwrap();
-        sut.add_path_entry(&FileName::new(b"blub.ma").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"blub.ma").unwrap())
             .unwrap();
         assert_that!(sut, eq b"fuu/blaaaha/blub.ma");
     }
@@ -124,6 +125,7 @@ mod unix {
     fn path_list_all_entries_works() {
         let sut = Path::new(b"/some/file/path/").unwrap();
         let entries = sut.entries();
+
         assert_that!(entries, len 3);
         assert_that!(entries[0], eq b"some");
         assert_that!(entries[1], eq b"file");
@@ -184,5 +186,23 @@ mod unix {
         assert_that!(entries[0], eq b"slashes");
         assert_that!(entries[1], eq b"everywhere");
         assert_that!(entries[2], eq b"oh_no");
+    }
+
+    #[test]
+    fn path_is_absolute_works() {
+        let sut = Path::new(b"/").unwrap();
+        assert_that!(sut.is_absolute(), eq true);
+
+        let sut = Path::new(b"/what/ever").unwrap();
+        assert_that!(sut.is_absolute(), eq true);
+
+        let sut = Path::new(b"./").unwrap();
+        assert_that!(sut.is_absolute(), eq false);
+
+        let sut = Path::new(b"").unwrap();
+        assert_that!(sut.is_absolute(), eq false);
+
+        let sut = Path::new(b"what/ever/").unwrap();
+        assert_that!(sut.is_absolute(), eq false);
     }
 }
