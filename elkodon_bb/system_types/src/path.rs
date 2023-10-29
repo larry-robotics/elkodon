@@ -106,6 +106,31 @@ impl Path {
 
         Path::new(&raw_path[0..n])
     }
+
+    pub fn entries(&self) -> Vec<FileName> {
+        let mut entry_vec = vec![];
+        let mut start_pos = 0;
+        let raw_path = self.as_bytes();
+        for i in 0..raw_path.len() {
+            if raw_path[i] == PATH_SEPARATOR {
+                if i - start_pos == 0 {
+                    start_pos = i + 1;
+                    continue;
+                }
+
+                entry_vec.push(FileName::new(&raw_path[start_pos..i]).expect("Creating file name from path always works since every entry is a valid file name."));
+                start_pos = i + 1;
+            }
+        }
+
+        if start_pos < raw_path.len() {
+            entry_vec.push(FileName::new(&raw_path[start_pos..raw_path.len()]).expect(
+                "Creating file name from path always works since every entry is a valid file name.",
+            ));
+        }
+
+        entry_vec
+    }
 }
 
 impl From<FilePath> for Path {
