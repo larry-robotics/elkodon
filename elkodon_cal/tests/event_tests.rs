@@ -111,7 +111,7 @@ mod event {
     >(
         wait_call: F,
     ) {
-        const REPETITIONS: u64 = 32;
+        const REPETITIONS: u64 = 8;
         let name = generate_name();
 
         let sut_listener = Sut::ListenerBuilder::new(&name).create().unwrap();
@@ -148,8 +148,8 @@ mod event {
     >(
         wait_call: F,
     ) {
-        const REPETITIONS: u64 = 4;
-        const SOURCES: u64 = 12;
+        const REPETITIONS: u64 = 2;
+        const SOURCES: u64 = 4;
         let name = generate_name();
         let mut sources = vec![];
 

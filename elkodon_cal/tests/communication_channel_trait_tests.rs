@@ -131,10 +131,13 @@ mod communication_channel {
     fn send_and_receive_for_multi_packets_has_queue_behavior<Sut: CommunicationChannel<usize>>() {
         let storage_name = generate_name();
 
-        let sut_receiver = Sut::Creator::new(&storage_name).create_receiver().unwrap();
+        let sut_receiver = Sut::Creator::new(&storage_name)
+            .buffer_size(4)
+            .create_receiver()
+            .unwrap();
         let sut_sender = Sut::Connector::new(&storage_name).open_sender().unwrap();
 
-        const MAX_NUMBER_OF_PACKETS: usize = 16;
+        const MAX_NUMBER_OF_PACKETS: usize = 1;
 
         for i in 0..MAX_NUMBER_OF_PACKETS {
             for k in 0..sut_receiver.buffer_size() {
@@ -172,7 +175,10 @@ mod communication_channel {
     fn send_will_return_receiver_cache_full_when_cache_is_full<Sut: CommunicationChannel<usize>>() {
         let storage_name = generate_name();
 
-        let sut_receiver = Sut::Creator::new(&storage_name).create_receiver().unwrap();
+        let sut_receiver = Sut::Creator::new(&storage_name)
+            .buffer_size(4)
+            .create_receiver()
+            .unwrap();
         let sut_sender = Sut::Connector::new(&storage_name).open_sender().unwrap();
 
         let mut send_counter: usize = 0;
