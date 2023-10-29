@@ -106,7 +106,25 @@
 //!     }
 //! }
 //! ```
+//! ## Setting custom logger on application startup
 //!
+//! In this example we use the [`crate::logger::buffer::Logger`], that stores every log
+//! message in an internal buffer, and use it as the default logger.
+//!
+//! ```
+//! use elkodon_bb_log::{set_logger, info};
+//!
+//! static LOGGER: elkodon_bb_log::logger::buffer::Logger =
+//!     elkodon_bb_log::logger::buffer::Logger::new();
+//!
+//! assert!(set_logger(&LOGGER));
+//! info!("hello world");
+//! let log_content = LOGGER.content();
+//!
+//! for entry in log_content {
+//!     println!("{:?} {} {}", entry.log_level, entry.origin, entry.message);
+//! }
+//! ```
 
 #[macro_use]
 pub mod log;
