@@ -7,13 +7,13 @@ repository = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
-elkodon_bb_log = { path = "../log/" }
-elkodon_bb_elementary = { path = "../elementary/" }
+elkodon_bb_log = { workspace = true }
+elkodon_bb_elementary = { workspace = true }
 
-tiny-fn = { version = "0.1.5" }
+tiny-fn = { workspace = true }
 
 [dev-dependencies]
-elkodon_bb_posix = { path = "../posix/" }
-elkodon_bb_memory = { path = "../memory/" }
-elkodon_bb_testing = { path = "../testing/" }
-pin-init = { version = "0.2.0" }
+elkodon_bb_posix = { workspace = true }
+elkodon_bb_memory = { workspace = true }
+elkodon_bb_testing = { workspace = true }
+pin-init = { workspace = true }
