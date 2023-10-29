@@ -12,11 +12,11 @@ use crate::service::port_factory::publisher::UnableToDeliverStrategy;
 
 #[cfg(target_os = "windows")]
 pub const DEFAULT_CONFIG_FILE: FilePath =
-    unsafe { FilePath::new_unchecked(b"config\\iceoryx_win.toml") };
+    unsafe { FilePath::new_unchecked(b"config\\elkodon_win.toml") };
 
 #[cfg(not(target_os = "windows"))]
 pub const DEFAULT_CONFIG_FILE: FilePath =
-    unsafe { FilePath::new_unchecked(b"config/iceoryx.toml") };
+    unsafe { FilePath::new_unchecked(b"config/elkodon.toml") };
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum ConfigCreationError {

@@ -1,7 +1,7 @@
 use elkodon::service::{service_name::ServiceName, zero_copy, Service};
 use elkodon_bb_container::semantic_string::*;
 use elkodon_bb_posix::signal::SignalHandler;
-use example_publish_subscribe_transmission_data::TransmissionData;
+use transmission_data::TransmissionData;
 
 fn main() {
     let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();

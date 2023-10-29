@@ -1,18 +1,17 @@
 [package]
 name = "elkodon_bb_elementary"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+description = "Elkodon: elementary constructs that have no dependencies at all"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dev-dependencies]
-elkodon_bb_container = { path = "../container/" }
-elkodon_bb_memory = { path = "../memory/" }
-elkodon_bb_lock_free = { path = "../lock_free/" }
-elkodon_bb_testing = { path = "../testing/" }
+elkodon_bb_container = { workspace = true }
+elkodon_bb_memory = { workspace = true }
+elkodon_bb_lock_free = { workspace = true }
+elkodon_bb_testing = { workspace = true }
 
-generic-tests = { version = "0.1.2" }
-pin-init = { version = "0.2.0" }
+generic-tests = { workspace = true }
+pin-init = { workspace = true }
 

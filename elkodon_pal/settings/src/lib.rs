@@ -1,7 +1,7 @@
 #![no_std]
 
 #[cfg(not(target_os = "windows"))]
-pub mod settings_unix {
+pub mod settings {
     pub const TEMP_DIRECTORY: &[u8] = b"/tmp/";
     pub const SHARED_MEMORY_DIRECTORY: &[u8] = b"/dev/shm/";
     pub const PATH_SEPARATOR: u8 = b'/';
@@ -10,10 +10,10 @@ pub mod settings_unix {
     pub const PATH_LENGTH: usize = 4096;
 }
 #[cfg(not(target_os = "windows"))]
-pub use settings_unix::*;
+pub use settings::*;
 
 #[cfg(target_os = "windows")]
-pub mod settings_win {
+pub mod settings {
     pub const TEMP_DIRECTORY: &[u8] = b"C:\\Windows\\Temp\\";
     pub const SHARED_MEMORY_DIRECTORY: &[u8] = b"C:\\Windows\\Temp\\Shm\\";
     pub const PATH_SEPARATOR: u8 = b'\\';
@@ -22,4 +22,4 @@ pub mod settings_win {
     pub const PATH_LENGTH: usize = 255;
 }
 #[cfg(target_os = "windows")]
-pub use settings_win::*;
+pub use settings::*;

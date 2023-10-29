@@ -1,9 +1,10 @@
 [package]
 name = "elkodon_bb_log"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Elkodon: the internal logger"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
-termsize = { version = "0.1" }
+termsize = { workspace = true }

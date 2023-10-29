@@ -1,8 +1,9 @@
 [package]
 name = "elkodon_bb_testing"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Elkodon: simple testing primitives"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]

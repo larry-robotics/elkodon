@@ -31,5 +31,5 @@ test_task:
     - cargo fmt --all -- --check
     - cargo clippy -- -D warnings
   doc_script: RUSTDOCFLAGS="-D warnings" cargo doc
-  build_script: cargo build --workspace --all
+  build_script: cargo build --workspace --all --examples
   test_script: cargo test --workspace --all

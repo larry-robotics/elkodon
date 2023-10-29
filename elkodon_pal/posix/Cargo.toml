@@ -1,21 +1,22 @@
 [package]
 name = "elkodon_pal_posix"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Elkodon: A posix layer that ensures uniform posix behavior on all platforms according to https://posix.opengroup.org"
+rust-version = { workspace = true }
+version = { workspace = true }
+repository = { workspace = true }
+edition = { workspace = true }
 
 [build-dependencies]
-cc = { version = "1.0" }
-bindgen = { version = "0.65.1" }
+cc = { workspace = true }
+bindgen = { workspace = true }
 
 [dependencies]
-elkodon_pal_concurrency_primitives = { path = "../../elkodon_pal/concurrency_primitives/" }
-elkodon_pal_settings = { path = "../../elkodon_pal/settings/" }
-lazy_static = { version = "1.4.0" }
+elkodon_pal_concurrency_primitives = { workspace = true }
+elkodon_pal_settings = { workspace = true }
+lazy_static = { workspace = true }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.48.0", features = ["Win32_Security", "Win32_Security_Authorization", "Win32_System_Memory", "Win32_System_Threading", "Win32_Foundation", "Win32_System_WindowsProgramming", "Win32_Storage_FileSystem", "Win32_System_IO", "Win32_System_Diagnostics_Debug", "Win32_System_SystemInformation", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Console", "Win32_Networking_WinSock"] }
+windows-sys = { workspace = true }
 
 [dev-dependencies]
-elkodon_bb_testing = { path = "../../elkodon_bb/testing/" }
+elkodon_bb_testing = { workspace = true }
