@@ -89,7 +89,7 @@ impl Path {
     }
 
     pub fn is_absolute(&self) -> bool {
-        if self.as_bytes().len() == 0 {
+        if self.as_bytes().is_empty() {
             return false;
         }
 
