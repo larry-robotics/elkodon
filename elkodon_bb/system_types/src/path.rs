@@ -15,12 +15,13 @@
 //! assert!(invalid_name.is_err());
 //! ```
 
+use elkodon_bb_container::byte_string::FixedSizeByteString;
 use elkodon_bb_container::semantic_string;
 
 use elkodon_bb_log::fail;
-use elkodon_pal_settings::PATH_SEPARATOR;
+use elkodon_pal_settings::{FILENAME_LENGTH, PATH_SEPARATOR, ROOT};
 
-use crate::{file_name::FileName, file_path::FilePath};
+use crate::file_path::FilePath;
 use elkodon_bb_container::semantic_string::*;
 
 const PATH_LENGTH: usize = elkodon_pal_settings::PATH_LENGTH;
@@ -68,7 +69,10 @@ semantic_string! {
 impl Path {
     /// Adds a new file or directory entry to the path. It adds it in a fashion that a slash is
     /// added when the path does not end with a slash - except when it is empty.
-    pub fn add_path_entry(&mut self, entry: &FileName) -> Result<(), SemanticStringError> {
+    pub fn add_path_entry(
+        &mut self,
+        entry: &FixedSizeByteString<FILENAME_LENGTH>,
+    ) -> Result<(), SemanticStringError> {
         let msg = format!("Unable to add entry \"{}\" to path since it would exceed the maximum supported path length of {}.",
             entry, PATH_LENGTH);
         if !self.is_empty()
@@ -84,6 +88,22 @@ impl Path {
             "{}", msg);
 
         Ok(())
+    }
+
+    pub fn is_absolute(&self) -> bool {
+        if self.as_bytes().len() == 0 {
+            return false;
+        }
+
+        self.as_bytes()[0] == PATH_SEPARATOR
+    }
+
+    pub fn new_root_path() -> Path {
+        Path::new(ROOT).expect("the root path is always valid")
+    }
+
+    pub fn new_empty() -> Path {
+        Path::new(b"").expect("the empty path is always valid")
     }
 
     pub fn new_normalized(value: &[u8]) -> Result<Path, SemanticStringError> {
@@ -107,7 +127,7 @@ impl Path {
         Path::new(&raw_path[0..n])
     }
 
-    pub fn entries(&self) -> Vec<FileName> {
+    pub fn entries(&self) -> Vec<FixedSizeByteString<FILENAME_LENGTH>> {
         let mut entry_vec = vec![];
         let mut start_pos = 0;
         let raw_path = self.as_bytes();
@@ -118,15 +138,16 @@ impl Path {
                     continue;
                 }
 
-                entry_vec.push(FileName::new(&raw_path[start_pos..i]).expect("Creating file name from path always works since every entry is a valid file name."));
+                entry_vec
+                    .push(unsafe { FixedSizeByteString::new_unchecked(&raw_path[start_pos..i]) });
                 start_pos = i + 1;
             }
         }
 
         if start_pos < raw_path.len() {
-            entry_vec.push(FileName::new(&raw_path[start_pos..raw_path.len()]).expect(
-                "Creating file name from path always works since every entry is a valid file name.",
-            ));
+            entry_vec.push(unsafe {
+                FixedSizeByteString::new_unchecked(&raw_path[start_pos..raw_path.len()])
+            });
         }
 
         entry_vec
