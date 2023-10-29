@@ -41,7 +41,7 @@ use elkodon_bb_posix::{
 
 const FINAL_PERMISSIONS: Permission = Permission::OWNER_READ;
 
-/// The custom configuration of [``].
+/// The custom configuration of the [`Storage`].
 #[derive(Clone, Debug)]
 pub struct Configuration {
     path: Path,
@@ -281,8 +281,9 @@ impl crate::static_storage::StaticStorage for Storage {
     }
 }
 
-/// Creates [``] which owns the file and removes it when going out of scope
-/// or [`Reader`].
+/// Creates [`Storage`] or [`Locked`], a static storage that is not yet set. When
+/// [`Builder::has_ownership()`] is set the constructs owns the static storage and removes it
+/// when it goes out of scope.
 #[derive(Debug)]
 pub struct Builder {
     storage_name: FileName,
@@ -348,7 +349,7 @@ impl crate::static_storage::StaticStorageBuilder<Storage> for Builder {
 
     fn open(self) -> Result<Storage, StaticStorageOpenError> {
         let msg = "Unable to open static storage";
-        let origin = "static_storage::File::Reader::new()";
+        let origin = "static_storage::File::Builder::open()";
 
         let file = fail!(from origin,
             when FileBuilder::new(&self.config.path_for(&self.storage_name)).open_existing(AccessMode::Read),

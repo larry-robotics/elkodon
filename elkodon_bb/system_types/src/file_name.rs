@@ -45,7 +45,6 @@ semantic_string! {
             _ => (),
         }
     }
-
     false
   },
   comparision: |lhs: &[u8], rhs: &[u8]| {

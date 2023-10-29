@@ -30,5 +30,6 @@ test_task:
   run_cargo_fmt_and_clippy_script:
     - cargo fmt --all -- --check
     - cargo clippy -- -D warnings
+  doc_script: RUSTDOCFLAGS="-D warnings" cargo doc
   build_script: cargo build --workspace --all
   test_script: cargo test --workspace --all
