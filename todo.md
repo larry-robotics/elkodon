@@ -194,7 +194,7 @@
 
 * subscriber internal cache which orders samples from multiple publishers
 
-* iceoryx_ipc finalize
+* elkodon_ipc finalize
     * remove all unwrap()
     * global_config.rs use correct string types
         * introduce file_suffix_name.rs and use it there
@@ -290,7 +290,7 @@
 
 # Open Problems
 
-* iceoryx_config use lock free singleton approach from iceoryx
+* elkodon_config use lock free singleton approach from elkodon
 * remove ENAMETOOLONG and replace it with a path/filename string with maximum size
     * see unlink, does_file_exist
 * semaphore
