@@ -47,6 +47,14 @@ impl DynamicConfig {
         self.notifiers.capacity()
     }
 
+    pub fn number_of_listeners(&self) -> usize {
+        self.listeners.len()
+    }
+
+    pub fn number_of_notifiers(&self) -> usize {
+        self.notifiers.len()
+    }
+
     pub fn add_listener_id(&self, id: UniqueListenerId) -> Option<UniqueIndex> {
         unsafe { self.listeners.add(id) }
     }

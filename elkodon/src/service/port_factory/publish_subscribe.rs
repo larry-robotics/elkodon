@@ -42,22 +42,22 @@ impl<'global_config, Service: service::Details<'global_config>, MessageType: Deb
         self.service.state().static_config.service_name()
     }
 
-    pub fn current_number_of_publishers(&self) -> usize {
+    pub fn number_of_publishers(&self) -> usize {
         self.service
             .state()
             .dynamic_storage
             .get()
             .publish_subscribe()
-            .current_number_of_publishers()
+            .number_of_publishers()
     }
 
-    pub fn current_number_of_subscribers(&self) -> usize {
+    pub fn number_of_subscribers(&self) -> usize {
         self.service
             .state()
             .dynamic_storage
             .get()
             .publish_subscribe()
-            .current_number_of_subscribers()
+            .number_of_subscribers()
     }
 
     pub fn max_supported_publishers(&self) -> usize {

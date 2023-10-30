@@ -301,6 +301,78 @@ mod service_event {
         }
     }
 
+    #[test]
+    fn number_of_notifiers_works<Sut: Service>() {
+        let service_name = generate_name();
+        const MAX_NOTIFIERS: usize = 8;
+
+        let sut = Sut::new(&service_name)
+            .event()
+            .max_notifiers(MAX_NOTIFIERS)
+            .create()
+            .unwrap();
+
+        let sut2 = Sut::new(&service_name).event().open().unwrap();
+
+        let mut notifiers = vec![];
+
+        for i in 0..MAX_NOTIFIERS / 2 {
+            notifiers.push(sut.notifier().create().unwrap());
+            assert_that!(sut.number_of_notifiers(), eq 2 * i + 1);
+            assert_that!(sut2.number_of_notifiers(), eq 2 * i + 1);
+            assert_that!(sut.number_of_listeners(), eq 0);
+            assert_that!(sut2.number_of_listeners(), eq 0);
+
+            notifiers.push(sut2.notifier().create().unwrap());
+            assert_that!(sut.number_of_notifiers(), eq 2 * i + 2);
+            assert_that!(sut2.number_of_notifiers(), eq 2 * i + 2);
+            assert_that!(sut.number_of_listeners(), eq 0);
+            assert_that!(sut2.number_of_listeners(), eq 0);
+        }
+
+        for i in 0..MAX_NOTIFIERS {
+            notifiers.pop();
+            assert_that!(sut.number_of_notifiers(), eq MAX_NOTIFIERS - i - 1);
+            assert_that!(sut2.number_of_notifiers(), eq MAX_NOTIFIERS - i - 1);
+        }
+    }
+
+    #[test]
+    fn number_of_listeners_works<Sut: Service>() {
+        let service_name = generate_name();
+        const MAX_LISTENERS: usize = 8;
+
+        let sut = Sut::new(&service_name)
+            .event()
+            .max_listeners(MAX_LISTENERS)
+            .create()
+            .unwrap();
+
+        let sut2 = Sut::new(&service_name).event().open().unwrap();
+
+        let mut listeners = vec![];
+
+        for i in 0..MAX_LISTENERS / 2 {
+            listeners.push(sut.listener().create().unwrap());
+            assert_that!(sut.number_of_listeners(), eq 2 * i + 1);
+            assert_that!(sut2.number_of_listeners(), eq 2 * i + 1);
+            assert_that!(sut.number_of_notifiers(), eq 0);
+            assert_that!(sut2.number_of_notifiers(), eq 0);
+
+            listeners.push(sut2.listener().create().unwrap());
+            assert_that!(sut.number_of_listeners(), eq 2 * i + 2);
+            assert_that!(sut2.number_of_listeners(), eq 2 * i + 2);
+            assert_that!(sut.number_of_notifiers(), eq 0);
+            assert_that!(sut2.number_of_notifiers(), eq 0);
+        }
+
+        for i in 0..MAX_LISTENERS {
+            listeners.pop();
+            assert_that!(sut.number_of_listeners(), eq MAX_LISTENERS - i - 1);
+            assert_that!(sut2.number_of_listeners(), eq MAX_LISTENERS - i - 1);
+        }
+    }
+
     #[instantiate_tests(<elkodon::service::zero_copy::Service>)]
     mod zero_copy {}
 
