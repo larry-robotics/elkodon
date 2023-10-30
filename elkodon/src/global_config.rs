@@ -125,7 +125,7 @@ pub struct Config {
     entries: Entries,
 }
 
-static ICEORYX_CONFIG: LazySingleton<Config> = LazySingleton::<Config>::new();
+static ELKODON_CONFIG: LazySingleton<Config> = LazySingleton::<Config>::new();
 
 impl Config {
     pub fn from_file(config_file: &FilePath) -> Result<Config, ConfigCreationError> {
@@ -164,30 +164,30 @@ impl Config {
     }
 
     pub fn setup_from_file(config_file: &FilePath) -> Result<&'static Config, ConfigCreationError> {
-        if ICEORYX_CONFIG.is_initialized() {
-            return Ok(ICEORYX_CONFIG.get());
+        if ELKODON_CONFIG.is_initialized() {
+            return Ok(ELKODON_CONFIG.get());
         }
 
-        if !ICEORYX_CONFIG.set_value(Config::from_file(config_file)?) {
+        if !ELKODON_CONFIG.set_value(Config::from_file(config_file)?) {
             warn!(
-                from ICEORYX_CONFIG.get(),
+                from ELKODON_CONFIG.get(),
                 "Configuration already loaded and set up, cannot load another one."
             );
-            return Ok(ICEORYX_CONFIG.get());
+            return Ok(ELKODON_CONFIG.get());
         }
 
-        trace!(from ICEORYX_CONFIG.get(), "Set as global config.");
-        Ok(ICEORYX_CONFIG.get())
+        trace!(from ELKODON_CONFIG.get(), "Set as global config.");
+        Ok(ELKODON_CONFIG.get())
     }
 
     pub fn get_global_config() -> &'static Config {
-        if !ICEORYX_CONFIG.is_initialized()
+        if !ELKODON_CONFIG.is_initialized()
             && Config::setup_from_file(&DEFAULT_CONFIG_FILE).is_err()
         {
             warn!(from "Config::get_global_config()", "Unable to load default config file, populate config with default values.");
-            ICEORYX_CONFIG.set_value(Config::default());
+            ELKODON_CONFIG.set_value(Config::default());
         }
 
-        ICEORYX_CONFIG.get()
+        ELKODON_CONFIG.get()
     }
 }
