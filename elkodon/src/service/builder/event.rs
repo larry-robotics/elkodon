@@ -123,10 +123,11 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
                         "{} since the event does not exist.", msg);
                 }
                 Ok(Some((static_config, static_storage))) => {
+                    let static_config = self.verify_service_properties(&static_config)?;
+
                     let dynamic_config = fail!(from self, when self.base.open_dynamic_config_storage(),
                             with EventOpenError::UnableToOpenDynamicServiceInformation,
                             "{} since the dynamic service informations could not be opened.", msg);
-                    let static_config = self.verify_service_properties(&static_config)?;
 
                     self.base.service_config.messaging_pattern =
                         MessagingPattern::Event(static_config);
