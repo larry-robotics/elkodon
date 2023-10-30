@@ -70,6 +70,24 @@ fn mpmc_unique_index_set_acquire_and_release_works() {
 }
 
 #[test]
+fn mpmc_unique_index_set_borrowed_indices_works() {
+    let sut = FixedSizeUniqueIndexSet::<CAPACITY>::new();
+    let mut ids = vec![];
+
+    for i in 0..CAPACITY {
+        let e = sut.acquire();
+        assert_that!(e, is_some);
+        ids.push(e.unwrap());
+        assert_that!(sut.borrowed_indices(), eq i + 1);
+    }
+
+    for i in 0..CAPACITY {
+        ids.pop();
+        assert_that!(sut.borrowed_indices(), eq CAPACITY - i - 1);
+    }
+}
+
+#[test]
 fn mpmc_unique_index_set_acquire_and_release_works_with_uninitialized_memory() {
     init_stack!(
         memory =

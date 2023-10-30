@@ -215,10 +215,11 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
                         "{} since the service does not exist.", msg);
                 }
                 Ok(Some((static_config, static_storage))) => {
+                    let static_config = self.verify_service_properties(&static_config)?;
+
                     let dynamic_config = fail!(from self, when self.base.open_dynamic_config_storage(),
                             with PublishSubscribeOpenError::UnableToOpenDynamicServiceInformation,
                             "{} since the dynamic service information could not be opened.", msg);
-                    let static_config = self.verify_service_properties(&static_config)?;
 
                     self.base.service_config.messaging_pattern =
                         MessagingPattern::PublishSubscribe(static_config.clone());
@@ -443,7 +444,7 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         }
 
         if self.verify_enable_safe_overflow
-            && existing_settings.enable_safe_overflow == required_settings.enable_safe_overflow
+            && existing_settings.enable_safe_overflow != required_settings.enable_safe_overflow
         {
             fail!(from self, with PublishSubscribeOpenError::IncompatibleOverflowBehavior,
                                 "{} since the service has an incompatible safe overflow behavior.",

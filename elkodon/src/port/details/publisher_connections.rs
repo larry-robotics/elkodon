@@ -122,16 +122,6 @@ impl<'global_config, Service: service::Details<'global_config>>
         Ok(())
     }
 
-    pub fn number_of_publishers(&self) -> usize {
-        self.connections
-            .iter()
-            .filter(|&connection| match unsafe { &*connection.get() } {
-                None => false,
-                Some(c) => c.receiver.is_connected(),
-            })
-            .count()
-    }
-
     pub(crate) fn remove(&self, index: usize) {
         *self.get_mut(index) = None;
     }

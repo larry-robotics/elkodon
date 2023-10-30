@@ -1,5 +1,7 @@
 use std::{fmt::Debug, marker::PhantomData};
 
+use elkodon_cal::dynamic_storage::DynamicStorage;
+
 use crate::service;
 use crate::service::service_name::ServiceName;
 
@@ -38,6 +40,24 @@ impl<'global_config, Service: service::Details<'global_config>, MessageType: Deb
 
     pub fn name(&self) -> &ServiceName {
         self.service.state().static_config.service_name()
+    }
+
+    pub fn number_of_publishers(&self) -> usize {
+        self.service
+            .state()
+            .dynamic_storage
+            .get()
+            .publish_subscribe()
+            .number_of_publishers()
+    }
+
+    pub fn number_of_subscribers(&self) -> usize {
+        self.service
+            .state()
+            .dynamic_storage
+            .get()
+            .publish_subscribe()
+            .number_of_subscribers()
     }
 
     pub fn max_supported_publishers(&self) -> usize {

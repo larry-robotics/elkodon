@@ -12,6 +12,10 @@
  * [ ] Lua
  * [ ] Zig
 
+## Building Blocks
+
+ *  [ ] WaitSet - event multiplexer based on reactor pattern
+
 ## Gateways
 
  * [ ] zbus

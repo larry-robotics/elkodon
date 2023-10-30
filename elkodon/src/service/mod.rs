@@ -11,6 +11,7 @@ pub mod zero_copy;
 use std::fmt::Debug;
 
 use crate::global_config;
+use crate::port::event_id::EventId;
 use crate::port::port_identifiers::{UniqueListenerId, UniquePublisherId, UniqueSubscriberId};
 use crate::service::dynamic_config::DynamicConfig;
 use crate::service::static_config::*;
@@ -223,7 +224,7 @@ pub trait Details<'global_config>: Debug + Sized {
     type DynamicStorage: DynamicStorage<DynamicConfig>;
     type SharedMemory: SharedMemory<PoolAllocator>;
     type Connection: ZeroCopyConnection;
-    type Event: Event<u64>;
+    type Event: Event<EventId>;
 
     fn from_state(
         state: ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>,

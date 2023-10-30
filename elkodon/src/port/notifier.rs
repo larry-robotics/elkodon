@@ -8,7 +8,7 @@ use elkodon_cal::named_concept::NamedConceptBuilder;
 use elkodon_cal::{dynamic_storage::DynamicStorage, event::NotifierBuilder};
 use std::{cell::UnsafeCell, marker::PhantomData};
 
-use super::port_identifiers::UniqueListenerId;
+use super::{event_id::EventId, port_identifiers::UniqueListenerId};
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum NotifierCreateError {
@@ -24,7 +24,7 @@ pub enum NotifierConnectionUpdateFailure {
 struct ListenerConnections<'global_config, Service: service::Details<'global_config>> {
     #[allow(clippy::type_complexity)]
     connections:
-        Vec<UnsafeCell<Option<<Service::Event as elkodon_cal::event::Event<u64>>::Notifier>>>,
+        Vec<UnsafeCell<Option<<Service::Event as elkodon_cal::event::Event<EventId>>::Notifier>>>,
 }
 
 impl<'global_config, Service: service::Details<'global_config>>
@@ -46,7 +46,7 @@ impl<'global_config, Service: service::Details<'global_config>>
     fn create(&self, index: usize, listener_id: UniqueListenerId) -> Result<(), ()> {
         let event_name = event_concept_name(&listener_id);
         if self.get(index).is_none() {
-            let notifier = fail!(from self, when <Service::Event as elkodon_cal::event::Event<u64>>::NotifierBuilder::new(&event_name).open(),
+            let notifier = fail!(from self, when <Service::Event as elkodon_cal::event::Event<EventId>>::NotifierBuilder::new(&event_name).open(),
                                     with (),
                                     "Unable to establish a connection to Listener port {:?}.", listener_id);
             *self.get_mut(index) = Some(notifier);
@@ -58,7 +58,7 @@ impl<'global_config, Service: service::Details<'global_config>>
     fn get(
         &self,
         index: usize,
-    ) -> &Option<<Service::Event as elkodon_cal::event::Event<u64>>::Notifier> {
+    ) -> &Option<<Service::Event as elkodon_cal::event::Event<EventId>>::Notifier> {
         unsafe { &(*self.connections[index].get()) }
     }
 
@@ -66,7 +66,7 @@ impl<'global_config, Service: service::Details<'global_config>>
     fn get_mut(
         &self,
         index: usize,
-    ) -> &mut Option<<Service::Event as elkodon_cal::event::Event<u64>>::Notifier> {
+    ) -> &mut Option<<Service::Event as elkodon_cal::event::Event<EventId>>::Notifier> {
         unsafe { &mut (*self.connections[index].get()) }
     }
 
@@ -83,7 +83,7 @@ impl<'global_config, Service: service::Details<'global_config>>
 pub struct Notifier<'a, 'global_config: 'a, Service: service::Details<'global_config>> {
     listener_connections: ListenerConnections<'global_config, Service>,
     listener_list_state: UnsafeCell<ContainerState<'a, UniqueListenerId>>,
-    default_trigger_id: u64,
+    default_trigger_id: EventId,
     _dynamic_config_guard: Option<UniqueIndex<'a>>,
     _phantom_a: PhantomData<&'a Service>,
     _phantom_b: PhantomData<&'global_config ()>,
@@ -94,7 +94,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
 {
     pub(crate) fn new(
         service: &'a Service,
-        default_trigger_id: u64,
+        default_trigger_id: EventId,
     ) -> Result<Self, NotifierCreateError> {
         let msg = "Unable to create Notifier port";
         let origin = "Notifier::new()";
@@ -179,7 +179,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
 
     pub fn notify_with_custom_trigger_id(
         &self,
-        value: u64,
+        value: EventId,
     ) -> Result<usize, NotifierConnectionUpdateFailure> {
         fail!(from self, when self.update_connections(),
             "Unable to notify event since the connections could not be updated.");
