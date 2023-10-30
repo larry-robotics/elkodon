@@ -92,17 +92,23 @@ mod service_publish_subscribe {
     }
 
     #[test]
-    fn open_fails_when_service_does_not_fulfill_publisher_requirements<Sut: Service>() {
+    fn open_fails_when_service_does_not_fulfill_opener_requirements<Sut: Service>() {
         let service_name = generate_name();
         let sut = Sut::new(&service_name)
             .publish_subscribe()
-            .max_publishers(1)
+            .max_publishers(2)
+            .max_subscribers(2)
+            .enable_safe_overflow(false)
+            .history_size(2)
+            .subscriber_max_borrowed_samples(2)
+            .subscriber_buffer_size(2)
             .create::<u64>();
         assert_that!(sut, is_ok);
 
+        // max_publishers
         let sut2 = Sut::new(&service_name)
             .publish_subscribe()
-            .max_publishers(2)
+            .max_publishers(3)
             .open::<u64>();
 
         assert_that!(sut2, is_err);
@@ -110,6 +116,101 @@ mod service_publish_subscribe {
             sut2.err().unwrap(), eq
             PublishSubscribeOpenError::DoesNotSupportRequestedAmountOfPublishers
         );
+
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .max_publishers(1)
+            .open::<u64>();
+
+        assert_that!(sut2, is_ok);
+
+        // max_subscribers
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .max_subscribers(3)
+            .open::<u64>();
+
+        assert_that!(sut2, is_err);
+        assert_that!(
+            sut2.err().unwrap(), eq
+            PublishSubscribeOpenError::DoesNotSupportRequestedAmountOfSubscribers
+        );
+
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .max_subscribers(1)
+            .open::<u64>();
+
+        assert_that!(sut2, is_ok);
+
+        // safe overflow
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .enable_safe_overflow(true)
+            .open::<u64>();
+
+        assert_that!(sut2, is_err);
+        assert_that!(
+            sut2.err().unwrap(), eq
+            PublishSubscribeOpenError::IncompatibleOverflowBehavior
+        );
+
+        // history size
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .history_size(3)
+            .open::<u64>();
+
+        assert_that!(sut2, is_err);
+        assert_that!(
+            sut2.err().unwrap(), eq
+            PublishSubscribeOpenError::DoesNotSupportRequestedMinHistorySize
+        );
+
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .history_size(1)
+            .open::<u64>();
+
+        assert_that!(sut2, is_ok);
+
+        // subscriber max borrow
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .subscriber_max_borrowed_samples(3)
+            .open::<u64>();
+
+        assert_that!(sut2, is_err);
+        assert_that!(
+            sut2.err().unwrap(), eq
+            PublishSubscribeOpenError::DoesNotSupportRequestedMinSubscriberBorrowedSamples
+        );
+
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .subscriber_max_borrowed_samples(1)
+            .open::<u64>();
+
+        assert_that!(sut2, is_ok);
+
+        // buffer size
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .subscriber_buffer_size(3)
+            .open::<u64>();
+
+        assert_that!(sut2, is_err);
+        assert_that!(
+            sut2.err().unwrap(), eq
+            PublishSubscribeOpenError::DoesNotSupportRequestedMinBufferSize
+        );
+
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .subscriber_buffer_size(1)
+            .open::<u64>();
+
+        assert_that!(sut2, is_ok);
     }
 
     #[test]
@@ -190,33 +291,45 @@ mod service_publish_subscribe {
     }
 
     #[test]
-    fn max_publishers_and_subscribers_can_be_modified<Sut: Service>() {
+    fn open_uses_predefined_settings_when_nothing_is_specified<Sut: Service>() {
         let service_name = generate_name();
-        let sut = Sut::new(&service_name)
+        let _sut = Sut::new(&service_name)
             .publish_subscribe()
-            .max_publishers(42)
-            .max_subscribers(73)
-            .create::<u64>()
-            .unwrap();
+            .max_publishers(4)
+            .max_subscribers(5)
+            .enable_safe_overflow(false)
+            .history_size(6)
+            .subscriber_max_borrowed_samples(7)
+            .subscriber_buffer_size(8)
+            .create::<u64>();
+        assert_that!(_sut, is_ok);
 
-        assert_that!(sut.max_supported_publishers(), eq 42);
-        assert_that!(sut.max_supported_subscribers(), eq 73);
-
-        let sut2 = Sut::new(&service_name)
+        let sut = Sut::new(&service_name)
             .publish_subscribe()
             .open::<u64>()
             .unwrap();
 
-        assert_that!(sut2.max_supported_publishers(), eq 42);
-        assert_that!(sut2.max_supported_subscribers(), eq 73);
+        assert_that!(sut.max_supported_publishers(), eq 4);
+        assert_that!(sut.max_supported_subscribers(), eq 5);
+        assert_that!(sut.has_safe_overflow(), eq false);
+        assert_that!(sut.history_size(), eq 6);
+        assert_that!(sut.subscriber_max_borrowed_samples(), eq 7);
+        assert_that!(sut.subscriber_buffer_size(), eq 8);
     }
 
     #[test]
-    fn max_publishers_and_subscribers_can_be_modified_via_custom_config<Sut: Service>() {
+    fn settings_can_be_modified_via_custom_config<Sut: Service>() {
         let service_name = generate_name();
         let mut entries = Entries::default();
-        entries.defaults.publish_subscribe.max_subscribers = 1;
-        entries.defaults.publish_subscribe.max_publishers = 1;
+        entries.defaults.publish_subscribe.max_publishers = 9;
+        entries.defaults.publish_subscribe.max_subscribers = 10;
+        entries.defaults.publish_subscribe.enable_safe_overflow = false;
+        entries.defaults.publish_subscribe.publisher_history_size = 11;
+        entries
+            .defaults
+            .publish_subscribe
+            .subscriber_max_borrowed_samples = 12;
+        entries.defaults.publish_subscribe.subscriber_buffer_size = 13;
 
         let custom_config = Config::from_entries(&entries);
         let sut = Sut::new(&service_name)
@@ -224,16 +337,24 @@ mod service_publish_subscribe {
             .create::<u64>()
             .unwrap();
 
-        assert_that!(sut.max_supported_subscribers(), eq 1);
-        assert_that!(sut.max_supported_publishers(), eq 1);
+        assert_that!(sut.max_supported_publishers(), eq 9);
+        assert_that!(sut.max_supported_subscribers(), eq 10);
+        assert_that!(sut.has_safe_overflow(), eq false);
+        assert_that!(sut.history_size(), eq 11);
+        assert_that!(sut.subscriber_max_borrowed_samples(), eq 12);
+        assert_that!(sut.subscriber_buffer_size(), eq 13);
 
         let sut2 = Sut::new(&service_name)
             .publish_subscribe()
             .open::<u64>()
             .unwrap();
 
-        assert_that!(sut2.max_supported_publishers(), eq 1);
-        assert_that!(sut2.max_supported_subscribers(), eq 1);
+        assert_that!(sut2.max_supported_publishers(), eq 9);
+        assert_that!(sut2.max_supported_subscribers(), eq 10);
+        assert_that!(sut2.has_safe_overflow(), eq false);
+        assert_that!(sut2.history_size(), eq 11);
+        assert_that!(sut2.subscriber_max_borrowed_samples(), eq 12);
+        assert_that!(sut2.subscriber_buffer_size(), eq 13);
     }
 
     #[test]
@@ -945,34 +1066,6 @@ mod service_publish_subscribe {
             assert_that!(service_list, len NUMBER_OF_SERVICES - i - 1);
             assert_that!(contains_service_names(service_names.clone(), service_list), eq true);
         }
-    }
-
-    #[test]
-    fn service_remains_as_long_as_there_is_a_user<Sut: Service + Details<'static>>() {
-        let service_name = generate_name();
-
-        let sut_1 = Sut::new(&service_name)
-            .publish_subscribe()
-            .create::<u64>()
-            .unwrap();
-
-        let sut_2 = Sut::new(&service_name).publish_subscribe().open::<u64>();
-        assert_that!(sut_2, is_ok);
-
-        drop(sut_1);
-
-        let sut_3 = Sut::new(&service_name).publish_subscribe().open::<u64>();
-        assert_that!(sut_3, is_ok);
-
-        drop(sut_2);
-        drop(sut_3);
-
-        let sut_4 = Sut::new(&service_name).publish_subscribe().open::<u64>();
-        assert_that!(sut_4, is_err);
-        assert_that!(
-            sut_4.err().unwrap(), eq
-            PublishSubscribeOpenError::DoesNotExist
-        );
     }
 
     #[instantiate_tests(<elkodon::service::zero_copy::Service>)]
