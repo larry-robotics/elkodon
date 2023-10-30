@@ -39,11 +39,11 @@ impl DynamicConfig {
             + Container::<UniquePublisherId>::memory_size(config.number_of_publishers)
     }
 
-    pub fn current_number_of_publishers(&self) -> usize {
+    pub fn number_of_publishers(&self) -> usize {
         self.publishers.len()
     }
 
-    pub fn current_number_of_subscribers(&self) -> usize {
+    pub fn number_of_subscribers(&self) -> usize {
         self.subscribers.len()
     }
 

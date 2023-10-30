@@ -1,3 +1,5 @@
+use elkodon_cal::dynamic_storage::DynamicStorage;
+
 use crate::service;
 use crate::service::ServiceName;
 use std::marker::PhantomData;
@@ -40,6 +42,24 @@ impl<'global_config, Service: service::Details<'global_config>>
 
     pub fn max_supported_notifiers(&self) -> usize {
         self.service.state().static_config.event().max_notifiers
+    }
+
+    pub fn number_of_listeners(&self) -> usize {
+        self.service
+            .state()
+            .dynamic_storage
+            .get()
+            .event()
+            .number_of_listeners()
+    }
+
+    pub fn number_of_notifiers(&self) -> usize {
+        self.service
+            .state()
+            .dynamic_storage
+            .get()
+            .event()
+            .number_of_notifiers()
     }
 
     pub fn notifier<'a>(&'a self) -> PortFactoryNotifier<'a, 'global_config, Service> {
