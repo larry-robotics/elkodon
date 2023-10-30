@@ -417,10 +417,6 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
         Ok(())
     }
 
-    pub fn number_of_subscribers(&self) -> usize {
-        self.subscriber_connections.number_of_subscribers()
-    }
-
     pub fn send<'publisher>(
         &'publisher self,
         sample: SampleMut<'a, 'publisher, 'global_config, Service, Header, MessageType>,

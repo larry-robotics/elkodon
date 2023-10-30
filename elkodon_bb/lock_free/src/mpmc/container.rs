@@ -220,6 +220,16 @@ impl<T: Copy + Debug> Container<T> {
         self.capacity
     }
 
+    /// Returns the current len of the container
+    pub fn len(&self) -> usize {
+        self.index_set.borrowed_indices()
+    }
+
+    /// Returns true if the container is empty, otherwise false
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Adds a new element to the [`Container`]. If there is no more space available it returns
     /// [`None`], otherwise [`Some`] containing the [`UniqueIndex`] to the underlying element.
     /// If the [`UniqueIndex`] goes out of scope the added element is removed.

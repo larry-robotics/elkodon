@@ -358,6 +358,84 @@ mod service_publish_subscribe {
     }
 
     #[test]
+    fn number_of_publishers_works<Sut: Service>() {
+        let service_name = generate_name();
+        const MAX_PUBLISHERS: usize = 2;
+
+        let sut = Sut::new(&service_name)
+            .publish_subscribe()
+            .max_publishers(MAX_PUBLISHERS)
+            .create::<u64>()
+            .unwrap();
+
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .open::<u64>()
+            .unwrap();
+
+        let mut publishers = vec![];
+
+        for i in 0..MAX_PUBLISHERS / 2 {
+            publishers.push(sut.publisher().create().unwrap());
+            assert_that!(sut.current_number_of_publishers(), eq 2 * i + 1);
+            assert_that!(sut2.current_number_of_publishers(), eq 2 * i + 1);
+            assert_that!(sut.current_number_of_subscribers(), eq 0);
+            assert_that!(sut2.current_number_of_subscribers(), eq 0);
+
+            publishers.push(sut2.publisher().create().unwrap());
+            assert_that!(sut.current_number_of_publishers(), eq 2 * i + 2);
+            assert_that!(sut2.current_number_of_publishers(), eq 2 * i + 2);
+            assert_that!(sut.current_number_of_subscribers(), eq 0);
+            assert_that!(sut2.current_number_of_subscribers(), eq 0);
+        }
+
+        for i in 0..MAX_PUBLISHERS {
+            publishers.pop();
+            assert_that!(sut.current_number_of_publishers(), eq MAX_PUBLISHERS - i - 1);
+            assert_that!(sut2.current_number_of_publishers(), eq MAX_PUBLISHERS - i - 1);
+        }
+    }
+
+    #[test]
+    fn number_of_subscribers_works<Sut: Service>() {
+        let service_name = generate_name();
+        const MAX_SUBSCRIBERS: usize = 8;
+
+        let sut = Sut::new(&service_name)
+            .publish_subscribe()
+            .max_subscribers(MAX_SUBSCRIBERS)
+            .create::<u64>()
+            .unwrap();
+
+        let sut2 = Sut::new(&service_name)
+            .publish_subscribe()
+            .open::<u64>()
+            .unwrap();
+
+        let mut subscribers = vec![];
+
+        for i in 0..MAX_SUBSCRIBERS / 2 {
+            subscribers.push(sut.subscriber().create().unwrap());
+            assert_that!(sut.current_number_of_subscribers(), eq 2 * i + 1);
+            assert_that!(sut2.current_number_of_subscribers(), eq 2 * i + 1);
+            assert_that!(sut.current_number_of_publishers(), eq 0);
+            assert_that!(sut2.current_number_of_publishers(), eq 0);
+
+            subscribers.push(sut2.subscriber().create().unwrap());
+            assert_that!(sut.current_number_of_subscribers(), eq 2 * i + 2);
+            assert_that!(sut2.current_number_of_subscribers(), eq 2 * i + 2);
+            assert_that!(sut.current_number_of_publishers(), eq 0);
+            assert_that!(sut2.current_number_of_publishers(), eq 0);
+        }
+
+        for i in 0..MAX_SUBSCRIBERS {
+            subscribers.pop();
+            assert_that!(sut.current_number_of_subscribers(), eq MAX_SUBSCRIBERS - i - 1);
+            assert_that!(sut2.current_number_of_subscribers(), eq MAX_SUBSCRIBERS - i - 1);
+        }
+    }
+
+    #[test]
     fn simple_communication_works_subscriber_created_first<Sut: Service>() {
         let service_name = generate_name();
 

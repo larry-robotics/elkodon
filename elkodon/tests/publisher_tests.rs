@@ -27,23 +27,6 @@ mod publisher {
     }
 
     #[test]
-    fn number_of_subscriber_works<Sut: Service>() {
-        let service_name = generate_name();
-        let service = Sut::new(&service_name)
-            .publish_subscribe()
-            .create::<u64>()
-            .unwrap();
-
-        let sut = service.publisher().create().unwrap();
-        assert_that!(sut.number_of_subscribers(), eq 0);
-
-        let _subscriber = service.subscriber().create();
-        assert_that!(sut.number_of_subscribers(), eq 0);
-        assert_that!(sut.update_connections(), is_ok);
-        assert_that!(sut.number_of_subscribers(), eq 1);
-    }
-
-    #[test]
     fn publisher_can_borrow_multiple_sample_at_once<Sut: Service>() {
         let service_name = generate_name();
         let service = Sut::new(&service_name)
