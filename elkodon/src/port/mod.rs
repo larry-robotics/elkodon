@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use tiny_fn::tiny_fn;
 
 pub(crate) mod details;
+pub mod event_id;
 pub mod listener;
 pub mod notifier;
 pub mod port_identifiers;

@@ -1,6 +1,7 @@
 #[generic_tests::define]
 mod service_event {
     use elkodon::global_config::{Config, Entries};
+    use elkodon::port::event_id::EventId;
     use elkodon::service::{
         builder::event::{EventCreateError, EventOpenError},
         service_name::ServiceName,
@@ -134,8 +135,8 @@ mod service_event {
     fn settings_can_be_modified_via_custom_config<Sut: Service>() {
         let service_name = generate_name();
         let mut entries = Entries::default();
-        entries.defaults.event.max_listeners = 9;
-        entries.defaults.event.max_notifiers = 10;
+        entries.defaults.event.max_notifiers = 9;
+        entries.defaults.event.max_listeners = 10;
 
         let custom_config = Config::from_entries(&entries);
         let sut = Sut::new(&service_name)
@@ -162,7 +163,11 @@ mod service_event {
         let sut2 = Sut::new(&service_name).event().open().unwrap();
 
         let listener = sut.listener().create().unwrap();
-        let notifier = sut2.notifier().default_trigger_id(432).create().unwrap();
+        let notifier = sut2
+            .notifier()
+            .default_trigger_id(EventId::new(432))
+            .create()
+            .unwrap();
 
         assert_that!(notifier.notify(), is_ok);
         assert_that!(notifier.notify(), is_ok);

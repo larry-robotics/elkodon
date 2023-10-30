@@ -1,6 +1,9 @@
 use std::fmt::Debug;
 
-use crate::port::notifier::{Notifier, NotifierCreateError};
+use crate::port::{
+    event_id::EventId,
+    notifier::{Notifier, NotifierCreateError},
+};
 use elkodon_bb_log::fail;
 
 use crate::service;
@@ -11,7 +14,7 @@ use super::event::PortFactory;
 pub struct PortFactoryNotifier<'factory, 'global_config, Service: service::Details<'global_config>>
 {
     pub(crate) factory: &'factory PortFactory<'global_config, Service>,
-    default_trigger_id: u64,
+    default_trigger_id: EventId,
 }
 
 impl<'factory, 'global_config, Service: service::Details<'global_config>>
@@ -20,11 +23,11 @@ impl<'factory, 'global_config, Service: service::Details<'global_config>>
     pub(crate) fn new(factory: &'factory PortFactory<'global_config, Service>) -> Self {
         Self {
             factory,
-            default_trigger_id: 0,
+            default_trigger_id: EventId::default(),
         }
     }
 
-    pub fn default_trigger_id(mut self, value: u64) -> Self {
+    pub fn default_trigger_id(mut self, value: EventId) -> Self {
         self.default_trigger_id = value;
         self
     }
