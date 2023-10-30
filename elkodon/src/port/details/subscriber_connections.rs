@@ -3,7 +3,7 @@ use std::cell::UnsafeCell;
 use elkodon_bb_log::fail;
 use elkodon_cal::named_concept::NamedConceptBuilder;
 use elkodon_cal::zero_copy_connection::{
-    ZeroCopyConnection, ZeroCopyConnectionBuilder, ZeroCopyCreationError, ZeroCopyPortDetails,
+    ZeroCopyConnection, ZeroCopyConnectionBuilder, ZeroCopyCreationError,
 };
 
 use crate::service::connection_config;
@@ -94,19 +94,6 @@ impl<'global_config, Service: service::Details<'global_config>>
         } else {
             Ok(false)
         }
-    }
-
-    pub(crate) fn number_of_subscribers(&self) -> usize {
-        self.connections
-            .iter()
-            .filter(|&connection| {
-                let connection = unsafe { &*connection.get() };
-                match connection {
-                    None => false,
-                    Some(c) => c.sender.is_connected(),
-                }
-            })
-            .count()
     }
 
     pub(crate) fn len(&self) -> usize {

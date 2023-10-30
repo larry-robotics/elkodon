@@ -249,8 +249,4 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
 
         Ok(())
     }
-
-    pub fn number_of_publishers(&self) -> usize {
-        self.publisher_connections.number_of_publishers()
-    }
 }

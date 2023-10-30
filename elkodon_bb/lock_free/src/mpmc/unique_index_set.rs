@@ -78,7 +78,7 @@ use elkodon_bb_log::{fail, fatal_panic};
 use std::alloc::Layout;
 use std::cell::UnsafeCell;
 use std::fmt::Debug;
-use std::sync::atomic::{fence, AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{fence, AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use tiny_fn::tiny_fn;
 
 tiny_fn! {
@@ -186,6 +186,7 @@ impl Drop for UniqueIndex<'_> {
 pub struct UniqueIndexSet {
     data_ptr: RelocatablePointer<UnsafeCell<u32>>,
     capacity: u32,
+    borrowed_indices: AtomicUsize,
     pub(crate) head: AtomicU64,
     is_memory_initialized: AtomicBool,
 }
@@ -198,6 +199,7 @@ impl RelocatableContainer for UniqueIndexSet {
         Self {
             data_ptr: RelocatablePointer::new_uninit(),
             capacity: capacity as u32,
+            borrowed_indices: AtomicUsize::new(0),
             head: AtomicU64::new(0),
             is_memory_initialized: AtomicBool::new(false),
         }
@@ -229,6 +231,7 @@ impl RelocatableContainer for UniqueIndexSet {
         Self {
             data_ptr: RelocatablePointer::new(distance_to_data),
             capacity: capacity as u32,
+            borrowed_indices: AtomicUsize::new(0),
             head: AtomicU64::new(0),
             is_memory_initialized: AtomicBool::new(true),
         }
@@ -293,6 +296,11 @@ impl UniqueIndexSet {
         self.capacity
     }
 
+    /// Returns the current len.
+    pub fn borrowed_indices(&self) -> usize {
+        self.borrowed_indices.load(Ordering::Relaxed)
+    }
+
     /// Acquires a raw ([`u32`]) index from the [`UniqueIndexSet`]. Returns [`None`] when no more
     /// indices are available. The index **must** be returned manually with
     /// [`UniqueIndexSet::release_raw_index()`].
@@ -354,7 +362,7 @@ impl UniqueIndexSet {
         *self.get_next_free_index(index) = self.capacity + 1;
 
         fence(Ordering::Acquire);
-
+        self.borrowed_indices.fetch_add(1, Ordering::Relaxed);
         Some(index)
     }
 
@@ -387,7 +395,10 @@ impl UniqueIndexSet {
                     .head
                     .compare_exchange(old, new, Ordering::AcqRel, Ordering::Acquire)
                 {
-                    Ok(_) => return,
+                    Ok(_) => {
+                        self.borrowed_indices.fetch_sub(1, Ordering::Relaxed);
+                        return;
+                    }
                     Err(v) => {
                         old = v;
                         Self::extract_head_and_aba(v)
@@ -527,5 +538,10 @@ impl<const CAPACITY: usize> FixedSizeUniqueIndexSet<CAPACITY> {
     ///
     pub unsafe fn release_raw_index(&self, index: u32) {
         self.state.release_raw_index(index)
+    }
+
+    /// Returns the current len.
+    pub fn borrowed_indices(&self) -> usize {
+        self.state.borrowed_indices()
     }
 }
