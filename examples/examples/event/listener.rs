@@ -10,21 +10,18 @@ fn main() {
         .open_or_create()
         .expect("failed to create/open event");
 
-    let listener = event
+    let mut listener = event
         .listener()
         .create()
         .expect("failed to create listener");
 
     while !SignalHandler::was_ctrl_c_pressed() {
-        listener
-            .timed_wait(
-                |e| {
-                    println!("event was triggered with id: {:?}", e);
-                    true
-                },
-                std::time::Duration::from_secs(1),
-            )
-            .expect("failed to wait on listener");
+        for event_id in listener
+            .timed_wait(std::time::Duration::from_secs(1))
+            .expect("failed to wait on listener")
+        {
+            println!("event was triggered with id: {:?}", event_id);
+        }
     }
 
     println!("exit ...");
