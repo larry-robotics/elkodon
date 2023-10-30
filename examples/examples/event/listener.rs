@@ -19,7 +19,7 @@ fn main() {
         listener
             .timed_wait(
                 |e| {
-                    println!("event was triggered with id: {}", e);
+                    println!("event was triggered with id: {:?}", e);
                     true
                 },
                 std::time::Duration::from_secs(1),

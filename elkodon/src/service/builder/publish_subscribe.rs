@@ -443,7 +443,7 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         }
 
         if self.verify_enable_safe_overflow
-            && existing_settings.enable_safe_overflow == required_settings.enable_safe_overflow
+            && existing_settings.enable_safe_overflow != required_settings.enable_safe_overflow
         {
             fail!(from self, with PublishSubscribeOpenError::IncompatibleOverflowBehavior,
                                 "{} since the service has an incompatible safe overflow behavior.",

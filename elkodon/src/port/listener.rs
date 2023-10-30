@@ -8,6 +8,8 @@ use crate::service::event_concept_name;
 use crate::{port::port_identifiers::UniqueListenerId, service};
 use std::{marker::PhantomData, time::Duration};
 
+use super::event_id::EventId;
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum ListenerCreateError {
     ExceedsMaxSupportedListeners,
@@ -17,7 +19,7 @@ pub enum ListenerCreateError {
 #[derive(Debug)]
 pub struct Listener<'a, 'global_config: 'a, Service: service::Details<'global_config>> {
     _dynamic_config_guard: Option<UniqueIndex<'a>>,
-    listener: <Service::Event as elkodon_cal::event::Event<u64>>::Listener,
+    listener: <Service::Event as elkodon_cal::event::Event<EventId>>::Listener,
     _phantom_a: PhantomData<&'a Service>,
     _phantom_b: PhantomData<&'global_config ()>,
 }
@@ -32,7 +34,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
 
         let event_name = event_concept_name(&port_id);
         let listener = fail!(from origin,
-                             when <Service::Event as elkodon_cal::event::Event<u64>>::ListenerBuilder::new(&event_name).create(),
+                             when <Service::Event as elkodon_cal::event::Event<EventId>>::ListenerBuilder::new(&event_name).create(),
                              with ListenerCreateError::ResourceCreationFailed,
                              "{} since the underlying event concept \"{}\" could not be created.", msg, event_name);
 
@@ -65,7 +67,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
         Ok(new_self)
     }
 
-    pub fn try_wait<F: FnMut(u64) -> bool>(
+    pub fn try_wait<F: FnMut(EventId) -> bool>(
         &self,
         mut notification_received_callback: F,
     ) -> Result<u64, ListenerWaitError> {
@@ -84,7 +86,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
         Ok(number_of_events)
     }
 
-    pub fn timed_wait<F: FnMut(u64) -> bool>(
+    pub fn timed_wait<F: FnMut(EventId) -> bool>(
         &self,
         mut notification_received_callback: F,
         timeout: Duration,
@@ -102,7 +104,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
         Ok(1)
     }
 
-    pub fn blocking_wait<F: FnMut(u64) -> bool>(
+    pub fn blocking_wait<F: FnMut(EventId) -> bool>(
         &self,
         mut notification_received_callback: F,
     ) -> Result<u64, ListenerWaitError> {
