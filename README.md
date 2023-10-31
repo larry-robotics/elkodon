@@ -28,13 +28,13 @@
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%">
-          <a href="https://github.com/elboberido">
-          <img src="https://avatars.githubusercontent.com/u/56729607" width="100px;" alt="Mathias Kraus"/><br />
-          <sub><b>Mathias »elBoberido« Kraus</b></sub></a></td>
-      <td align="center" valign="top" width="14.28%">
           <a href="https://github.com/elfenpiff">
-          <img src="https://avatars.githubusercontent.com/u/56729169" width="100px;" alt="Christian Eltzschig"/><br />
+          <img src="https://avatars.githubusercontent.com/u/56729169" width="100px;" alt="Christian »elfenpiff« Eltzschig"/><br />
           <sub><b>Christian »elfenpiff« Eltzschig</b></sub></a></td>
+      <td align="center" valign="top" width="14.28%">
+          <a href="https://github.com/elboberido">
+          <img src="https://avatars.githubusercontent.com/u/56729607" width="100px;" alt="Mathias »elBoberido« Kraus"/><br />
+          <sub><b>Mathias »elBoberido« Kraus</b></sub></a></td>
     </tr>
   </tbody>
 </table>
