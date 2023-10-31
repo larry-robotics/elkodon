@@ -30,8 +30,8 @@
 
     ```rust
     // old
-    let fuu = Hello().IsItMeYouAreLookingFor()
+    let fuu = hello().is_it_me_you_re_looking_for()
 
     // new
-    let fuu = Hello().MyNameIsBlobb()
+    let fuu = hypnotoad().all_glory_to_the_hypnotoad()
     ```

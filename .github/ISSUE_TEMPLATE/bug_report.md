@@ -10,13 +10,18 @@ assignees: ''
 ## Required information
 
 **Operating system:**
-Output of: `uname -a`
+ * OS name, version
+ * Additionally, on Linux, Mac Os, Unix, output of: `uname -a`
+ * Additionally, on Windows, output of: `ver`
 
 **Rust version:**
 Output of: `rustc --version`
 
+**Cargo version:**
+Output of: `cargo --version`
+
 **elkodon version:**
-E.g. `v1.2.3` or `master` branch
+E.g. `v1.2.3` or `main` branch
 
 **Observed result or behaviour:**
 A minimalistic running code example that reproduces the bug or

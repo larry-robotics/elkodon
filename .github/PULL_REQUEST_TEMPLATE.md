@@ -9,7 +9,7 @@
 1. [ ] Every source code file has the SPDX header `SPDX-License-Identifier: $(LICENSE_CODE)`
 1. [ ] Branch follows the naming format (`elk-123-introduce-posix-ipc-example`)
 1. [ ] Commits messages are according to this [guideline][commit-guidelines]
-    - [ ] Commit messages have the issue ID (`[#123] add posix ipc example`)
+    - [ ] Commit messages have the issue ID (`[#123] Add posix ipc example`)
     - [ ] Commit author matches [Eclipse Contributor Agreement][eca] (and ECA is signed)
 1. [ ] Tests follow the [best practice for testing][testing]
 1. [ ] Changelog updated [in the unreleased section][changelog] including API breaking changes
@@ -34,4 +34,4 @@
 
 ## References
 
-- Closes **TBD**
+<!-- Use 'Closes #123' or 'Relates to #123' -->
