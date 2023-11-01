@@ -149,11 +149,12 @@ mod publisher {
                 let subscriber = service.subscriber().create().unwrap();
                 barrier.wait();
                 std::thread::sleep(TIMEOUT);
-                let sample = subscriber.receive().unwrap().unwrap();
-                assert_that!(*sample, eq 8192);
+                let sample_1 = subscriber.receive().unwrap().unwrap();
                 std::thread::sleep(TIMEOUT);
-                let sample = subscriber.receive().unwrap().unwrap();
-                assert_that!(*sample, eq 2);
+                let sample_2 = subscriber.receive().unwrap().unwrap();
+
+                assert_that!(*sample_1, eq 8192);
+                assert_that!(*sample_2, eq 2);
             });
 
             barrier.wait();

@@ -22,7 +22,7 @@ fn condition_variable_notify_one_unblocks_one() {
         s.spawn(|| {
             barrier.wait(|_, _| {}, |_| {});
             mtx.lock(|_, _| true);
-            assert_that!(sut.wait(
+            let wait_result = sut.wait(
                 &mtx,
                 |_| {},
                 |_, _| {
@@ -31,16 +31,17 @@ fn condition_variable_notify_one_unblocks_one() {
                     }
                     true
                 },
-                |_, _| true
-            ), eq true);
+                |_, _| true,
+            );
             counter.fetch_add(1, Ordering::Relaxed);
             mtx.unlock(|_| {});
+            assert_that!(wait_result, eq true);
         });
 
         s.spawn(|| {
             barrier.wait(|_, _| {}, |_| {});
             mtx.lock(|_, _| true);
-            assert_that!(sut.wait(
+            let wait_result = sut.wait(
                 &mtx,
                 |_| {},
                 |_, _| {
@@ -49,16 +50,17 @@ fn condition_variable_notify_one_unblocks_one() {
                     }
                     true
                 },
-                |_, _| true
-            ), eq true);
+                |_, _| true,
+            );
             counter.fetch_add(1, Ordering::Relaxed);
             mtx.unlock(|_| {});
+            assert_that!(wait_result, eq true);
         });
 
         s.spawn(|| {
             barrier.wait(|_, _| {}, |_| {});
             mtx.lock(|_, _| true);
-            assert_that!(sut.wait(
+            let wait_result = sut.wait(
                 &mtx,
                 |_| {},
                 |_, _| {
@@ -67,10 +69,11 @@ fn condition_variable_notify_one_unblocks_one() {
                     }
                     true
                 },
-                |_, _| true
-            ), eq true);
+                |_, _| true,
+            );
             counter.fetch_add(1, Ordering::Relaxed);
             mtx.unlock(|_| {});
+            assert_that!(wait_result, eq true);
         });
 
         barrier.wait(|_, _| {}, |_| {});
@@ -101,7 +104,7 @@ fn condition_variable_notify_all_unblocks_all() {
             s.spawn(|| {
                 barrier.wait(|_, _| {}, |_| {});
                 mtx.lock(|_, _| true);
-                assert_that!(sut.wait(
+                let wait_result = sut.wait(
                     &mtx,
                     |_| {},
                     |_, _| {
@@ -110,10 +113,11 @@ fn condition_variable_notify_all_unblocks_all() {
                         }
                         true
                     },
-                    |_, _| true
-                ), eq true);
+                    |_, _| true,
+                );
                 counter.fetch_add(1, Ordering::Relaxed);
                 mtx.unlock(|_| {});
+                assert_that!(wait_result, eq true);
             });
         }
 
@@ -143,7 +147,7 @@ fn condition_variable_mutex_is_locked_when_wait_returns() {
             s.spawn(|| {
                 barrier.wait(|_, _| {}, |_| {});
                 mtx.lock(|_, _| true);
-                assert_that!(sut.wait(
+                let wait_result = sut.wait(
                     &mtx,
                     |_| {},
                     |_, _| {
@@ -152,9 +156,10 @@ fn condition_variable_mutex_is_locked_when_wait_returns() {
                         }
                         true
                     },
-                    |_, _| true
-                ), eq true);
+                    |_, _| true,
+                );
                 counter.fetch_add(1, Ordering::Relaxed);
+                assert_that!(wait_result, eq true);
             });
         }
 

@@ -378,11 +378,12 @@ mod zero_copy_connection {
 
                 barrier.wait();
                 std::thread::sleep(TIMEOUT);
-                let sample = sut_receiver.receive().unwrap().unwrap();
-                assert_that!(sample.value(), eq 7789);
+                let sample_1 = sut_receiver.receive();
                 std::thread::sleep(TIMEOUT);
-                let sample = sut_receiver.receive().unwrap().unwrap();
-                assert_that!(sample.value(), eq 227789);
+                let sample_2 = sut_receiver.receive();
+
+                assert_that!(sample_1.unwrap().unwrap().value(), eq 7789);
+                assert_that!(sample_2.unwrap().unwrap().value(), eq 227789);
             });
 
             barrier.wait();

@@ -482,17 +482,15 @@ mod reactor {
                 barrier.wait();
 
                 let mut triggered_fds = vec![];
-                assert_that!(
-                    sut.timed_wait(
-                        |fd| triggered_fds.push(unsafe { fd.native_handle() }),
-                        INFINITE_TIMEOUT
-                    ),
-                    is_ok
+                let timed_wait_result = sut.timed_wait(
+                    |fd| triggered_fds.push(unsafe { fd.native_handle() }),
+                    INFINITE_TIMEOUT,
                 );
 
-                assert_that!(triggered_fds, len 1);
-
                 counter.fetch_add(1, Ordering::Relaxed);
+
+                assert_that!(triggered_fds, len 1);
+                assert_that!(timed_wait_result, is_ok);
             });
 
             barrier.wait();
@@ -523,14 +521,13 @@ mod reactor {
                 barrier.wait();
 
                 let mut triggered_fds = vec![];
-                assert_that!(
-                    sut.blocking_wait(|fd| triggered_fds.push(unsafe { fd.native_handle() })),
-                    is_ok
-                );
-
-                assert_that!(triggered_fds, len 1);
+                let blocking_wait_result =
+                    sut.blocking_wait(|fd| triggered_fds.push(unsafe { fd.native_handle() }));
 
                 counter.fetch_add(1, Ordering::Relaxed);
+
+                assert_that!(triggered_fds, len 1);
+                assert_that!(blocking_wait_result, is_ok);
             });
 
             barrier.wait();

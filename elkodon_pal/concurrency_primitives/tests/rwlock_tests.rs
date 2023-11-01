@@ -162,10 +162,11 @@ fn rwlock_reader_preference_write_lock_blocks_everything() {
                 let current_read_counter = read_counter.load(Ordering::Relaxed);
                 write_counter.fetch_add(1, Ordering::Relaxed);
                 std::thread::sleep(TIMEOUT);
-                assert_that!(current_read_counter, eq read_counter.load(Ordering::Relaxed));
+                let test_result = current_read_counter == read_counter.load(Ordering::Relaxed);
                 sut.unlock(|_| {});
 
                 barrier_end.wait(|_, _| {}, |_| {});
+                assert_that!(test_result, eq true);
             });
         }
 
@@ -305,10 +306,11 @@ fn rwlock_writer_preference_write_lock_blocks_everything() {
                 let current_read_counter = read_counter.load(Ordering::Relaxed);
                 write_counter.fetch_add(1, Ordering::Relaxed);
                 std::thread::sleep(TIMEOUT);
-                assert_that!(current_read_counter, eq read_counter.load(Ordering::Relaxed));
+                let test_result = current_read_counter == read_counter.load(Ordering::Relaxed);
                 sut.unlock(|_| {}, |_| {});
 
                 barrier_end.wait(|_, _| {}, |_| {});
+                assert_that!(test_result, eq true);
             });
         }
 
