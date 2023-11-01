@@ -265,8 +265,9 @@ fn udp_socket_client_blocking_receive_does_block() {
         let t1 = s.spawn(|| {
             barrier.wait();
             let mut recv_buffer = [0u8; 8];
-            assert_that!(sut_client.blocking_receive(&mut recv_buffer).unwrap(), eq 3);
+            let receive_result = sut_client.blocking_receive(&mut recv_buffer);
             counter.store(1, Ordering::Relaxed);
+            assert_that!(receive_result.unwrap(), eq 3);
         });
 
         barrier.wait();
@@ -301,11 +302,9 @@ fn udp_socket_server_blocking_receive_from_does_block() {
         let t1 = s.spawn(|| {
             barrier.wait();
             let mut recv_buffer = [0u8; 8];
-            assert_that!(
-                sut_server.blocking_receive_from(&mut recv_buffer).unwrap(),
-                is_some
-            );
+            let receive_result = sut_server.blocking_receive_from(&mut recv_buffer);
             counter.store(1, Ordering::Relaxed);
+            assert_that!(receive_result.unwrap(), is_some);
         });
 
         barrier.wait();
@@ -347,8 +346,9 @@ fn udp_socket_client_timed_receive_does_blocks() {
         let t1 = s.spawn(|| {
             barrier.wait();
             let mut recv_buffer = [0u8; 8];
-            assert_that!(sut_client.timed_receive(&mut recv_buffer, TIMEOUT * 100).unwrap(), eq 3);
+            let timed_receive_result = sut_client.timed_receive(&mut recv_buffer, TIMEOUT * 100);
             counter.store(1, Ordering::Relaxed);
+            assert_that!(timed_receive_result.unwrap(), eq 3);
         });
 
         barrier.wait();
@@ -383,13 +383,10 @@ fn udp_socket_server_timed_receive_from_does_block() {
         let t1 = s.spawn(|| {
             barrier.wait();
             let mut recv_buffer = [0u8; 8];
-            assert_that!(
-                sut_server
-                    .timed_receive_from(&mut recv_buffer, TIMEOUT * 100)
-                    .unwrap(),
-                is_some
-            );
+            let timed_receive_result =
+                sut_server.timed_receive_from(&mut recv_buffer, TIMEOUT * 100);
             counter.store(1, Ordering::Relaxed);
+            assert_that!(timed_receive_result.unwrap(), is_some)
         });
 
         barrier.wait();

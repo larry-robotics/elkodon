@@ -39,7 +39,7 @@ fn mutex_lock_with_timeout_blocks() {
         sut.try_lock();
 
         let t1 = s.spawn(|| {
-            assert_that!(sut.lock(|atomic, value| {
+            let lock_result = sut.lock(|atomic, value| {
                 let start = Instant::now();
                 while atomic.load(Ordering::Relaxed) == *value {
                     if start.elapsed() > TIMEOUT * 2 {
@@ -48,9 +48,10 @@ fn mutex_lock_with_timeout_blocks() {
                 }
 
                 true
-            }), eq true);
+            });
             counter.fetch_add(1, Ordering::Relaxed);
             sut.unlock(|_| {});
+            assert_that!(lock_result, eq true);
         });
 
         std::thread::sleep(TIMEOUT);
