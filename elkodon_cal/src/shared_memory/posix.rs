@@ -319,11 +319,7 @@ impl<Allocator: ShmAllocator + Debug> NamedConceptMgmt for Memory<Allocator> {
         let origin = "shared_memory::Posix::remove_cfg()";
 
         match elkodon_bb_posix::shared_memory::SharedMemory::remove(&full_name) {
-            Ok(()) => Ok(true),
-            Err(elkodon_bb_posix::shared_memory::SharedMemoryRemoveError::DoesNotExist) => {
-                Ok(false)
-            }
-
+            Ok(v) => Ok(v),
             Err(
                 elkodon_bb_posix::shared_memory::SharedMemoryRemoveError::InsufficientPermissions,
             ) => {

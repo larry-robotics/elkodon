@@ -34,7 +34,7 @@
 pub use crate::named_concept::*;
 pub use crate::static_storage::*;
 
-use elkodon_bb_log::{error, fail, warn};
+use elkodon_bb_log::{fail, trace, warn};
 use elkodon_bb_posix::{
     directory::*, file::*, file_descriptor::FileDescriptorManagement, file_type::FileType,
 };
@@ -323,7 +323,7 @@ impl crate::static_storage::StaticStorageBuilder<Storage> for Builder {
             fail!(from self, when Directory::create(&self.config.path, directory_permission ),
                 with StaticStorageCreateError::Creation,
                 "{} due to a failure while creating the service root directory.", msg);
-            error!(from self, "Created service root directory \"{}\" since it did not exist before.", self.config.path);
+            trace!(from self, "Created service root directory \"{}\" since it did not exist before.", self.config.path);
         }
 
         let file = fail!(from self, when

@@ -116,7 +116,7 @@ use crate::socket_ancillary::*;
 use elkodon_bb_container::semantic_string::*;
 use elkodon_bb_elementary::enum_gen;
 use elkodon_bb_elementary::scope_guard::ScopeGuardBuilder;
-use elkodon_bb_log::{error, fail, fatal_panic, trace};
+use elkodon_bb_log::{fail, fatal_panic, trace};
 use elkodon_bb_system_types::file_path::FilePath;
 use elkodon_pal_posix::posix::errno::Errno;
 use elkodon_pal_posix::posix::Struct;
@@ -438,10 +438,7 @@ impl UnixDatagramSocket {
         );
     }
 
-    fn connect(
-        &self,
-        quiet_when_unable_to_connect: bool,
-    ) -> Result<(), UnixDatagramSenderCreationError> {
+    fn connect(&self) -> Result<(), UnixDatagramSenderCreationError> {
         let socket_address = self.create_socket_address();
         let ptr: *const posix::sockaddr_un = &socket_address;
         if unsafe {
@@ -457,7 +454,7 @@ impl UnixDatagramSocket {
 
         let msg = "Failed to connect";
         handle_errno!(UnixDatagramSenderCreationError, from self,
-            quiet_when quiet_when_unable_to_connect, Errno::ENOENT => (DoesNotExist, "{} since the unix datagram receiver does not exist.", msg),
+            Errno::ENOENT => (DoesNotExist, "{} since the unix datagram receiver does not exist.", msg),
             Errno::EACCES => (InsufficientPermissions, "{} due to insufficient permissions.", msg),
             Errno::EADDRINUSE => (AlreadyConnected, "{} since it is already connected.", msg),
             Errno::ECONNREFUSED => (ConnectionRefused, "{} since the connection was refused.", msg),
@@ -513,14 +510,7 @@ impl UnixDatagramSenderBuilder {
 
     /// Creates a new [`UnixDatagramSender`].
     pub fn create(self) -> Result<UnixDatagramSender, UnixDatagramSenderCreationError> {
-        UnixDatagramSender::new(self, false)
-    }
-
-    /// Creates a new [`UnixDatagramSender`]. In contrast to the counterpart
-    /// [`UnixDatagramSenderBuilder::create()`] it does not print an error message when the
-    /// receiver does not exist.
-    pub fn try_create(self) -> Result<UnixDatagramSender, UnixDatagramSenderCreationError> {
-        UnixDatagramSender::new(self, true)
+        UnixDatagramSender::new(self)
     }
 }
 
@@ -539,21 +529,16 @@ impl Drop for UnixDatagramSender {
 }
 
 impl UnixDatagramSender {
-    fn new(
-        config: UnixDatagramSenderBuilder,
-        quiet_when_unable_to_connect: bool,
-    ) -> Result<Self, UnixDatagramSenderCreationError> {
+    fn new(config: UnixDatagramSenderBuilder) -> Result<Self, UnixDatagramSenderCreationError> {
         let msg = "Failed to created UnixDatagramSender";
         let new_socket = UnixDatagramSender {
             socket: fail!(from config, when UnixDatagramSocket::new(&config.name), "{}.", msg),
         };
 
-        match new_socket.socket.connect(quiet_when_unable_to_connect) {
+        match new_socket.socket.connect() {
             Err(UnixDatagramSenderCreationError::DoesNotExist) => {
-                if !quiet_when_unable_to_connect {
-                    error!(from new_socket, "{} since the connection could not be established.", msg);
-                }
-                return Err(UnixDatagramSenderCreationError::DoesNotExist);
+                fail!(from config, with UnixDatagramSenderCreationError::DoesNotExist,
+                    "{} since the connection could not be established.", msg);
             }
             Err(v) => {
                 return Err(v);

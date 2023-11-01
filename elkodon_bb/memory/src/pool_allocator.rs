@@ -39,7 +39,6 @@ use elkodon_bb_elementary::math::align;
 use elkodon_bb_elementary::math::align_to;
 use elkodon_bb_elementary::relocatable_container::*;
 use elkodon_bb_lock_free::mpmc::unique_index_set::*;
-use elkodon_bb_log::error;
 
 pub use elkodon_bb_elementary::allocator::*;
 use elkodon_bb_log::fail;
@@ -152,13 +151,13 @@ impl BaseAllocator for PoolAllocator {
         self.verify_init("allocate");
 
         if layout.size() > self.bucket_size {
-            error!(from self, "The requested allocation size {} is greater than the maximum supported size of {}.", layout.size(), self.bucket_size);
-            return Err(AllocationError::SizeTooLarge);
+            fail!(from self, with AllocationError::SizeTooLarge,
+                "The requested allocation size {} is greater than the maximum supported size of {}.", layout.size(), self.bucket_size);
         }
 
         if layout.align() > self.bucket_alignment {
-            error!(from self, "The requested allocation alignment {} is greater than the maximum supported alignment of {}.", layout.align(), self.bucket_alignment);
-            return Err(AllocationError::AlignmentFailure);
+            fail!(from self, with AllocationError::AlignmentFailure,
+                "The requested allocation alignment {} is greater than the maximum supported alignment of {}.", layout.align(), self.bucket_alignment);
         }
 
         match unsafe { self.buckets.acquire_raw_index() } {
@@ -169,9 +168,9 @@ impl BaseAllocator for PoolAllocator {
                 ))
             }),
             None => {
-                error!(from self, "No more buckets available to allocate {} bytes with an alignment of {}.",
+                fail!(from self, with AllocationError::OutOfMemory,
+                    "No more buckets available to allocate {} bytes with an alignment of {}.",
                         layout.size(), layout.align());
-                Err(AllocationError::OutOfMemory)
             }
         }
     }
@@ -189,8 +188,8 @@ impl BaseAllocator for PoolAllocator {
                 Ok(())
             }
             None => {
-                error!(from self, "Tried to release memory ({}) which does not belong to this allocator.", ptr.as_ptr() as usize);
-                Err(DeallocationError::ProvidedPointerNotContainedInAllocator)
+                fail!(from self, with DeallocationError::ProvidedPointerNotContainedInAllocator,
+                    "Tried to release memory ({}) which does not belong to this allocator.", ptr.as_ptr() as usize);
             }
         }
     }
@@ -208,23 +207,23 @@ impl Allocator for PoolAllocator {
 
         let msg = "Unable to grow memory chunk";
         if self.get_index(ptr).is_none() {
-            error!(from self, "{} since the ptr is not managed by this allocator.", msg);
-            return Err(AllocationGrowError::ProvidedPointerNotContainedInAllocator);
+            fail!(from self, with AllocationGrowError::ProvidedPointerNotContainedInAllocator,
+                "{} since the ptr is not managed by this allocator.", msg);
         }
 
         if old_layout.size() >= new_layout.size() {
-            error!(from self, "{} since the new size of {} would be smaller than the old size of {}. Use Allocator::shrink instead.", msg, new_layout.size(), old_layout.size());
-            return Err(AllocationGrowError::GrowWouldShrink);
+            fail!(from self, with AllocationGrowError::GrowWouldShrink,
+                "{} since the new size of {} would be smaller than the old size of {}. Use Allocator::shrink instead.", msg, new_layout.size(), old_layout.size());
         }
 
         if self.bucket_alignment < new_layout.align() {
-            error!(from self, "{} since the new alignment {} exceeds the maximum supported alignment.", msg, new_layout.align() );
-            return Err(AllocationGrowError::AlignmentFailure);
+            fail!(from self, with AllocationGrowError::AlignmentFailure,
+                "{} since the new alignment {} exceeds the maximum supported alignment.", msg, new_layout.align() );
         }
 
         if self.bucket_size < new_layout.size() {
-            error!(from self, "{} since the new size {} exceeds the maximum supported size.", msg, new_layout.size());
-            return Err(AllocationGrowError::OutOfMemory);
+            fail!(from self, with AllocationGrowError::OutOfMemory,
+                "{} since the new size {} exceeds the maximum supported size.", msg, new_layout.size());
         }
 
         Ok(NonNull::new(std::slice::from_raw_parts_mut(
@@ -244,18 +243,18 @@ impl Allocator for PoolAllocator {
 
         let msg = "Unable to shrink memory chunk";
         if self.get_index(ptr).is_none() {
-            error!(from self, "{} since the ptr is not managed by this allocator.", msg);
-            return Err(AllocationShrinkError::ProvidedPointerNotContainedInAllocator);
+            fail!(from self, with AllocationShrinkError::ProvidedPointerNotContainedInAllocator,
+                "{} since the ptr is not managed by this allocator.", msg);
         }
 
         if old_layout.size() <= new_layout.size() {
-            error!(from self, "{} since the new size of {} would be greater than the old size of {}. Use Allocator::grow instead.", msg, new_layout.size(), old_layout.size());
-            return Err(AllocationShrinkError::ShrinkWouldGrow);
+            fail!(from self, with AllocationShrinkError::ShrinkWouldGrow,
+                "{} since the new size of {} would be greater than the old size of {}. Use Allocator::grow instead.", msg, new_layout.size(), old_layout.size());
         }
 
         if self.bucket_alignment < new_layout.align() {
-            error!(from self, "{} since the new alignment {} exceeds the maximum supported alignment.", msg, new_layout.align() );
-            return Err(AllocationShrinkError::AlignmentFailure);
+            fail!(from self, with AllocationShrinkError::AlignmentFailure,
+                "{} since the new alignment {} exceeds the maximum supported alignment.", msg, new_layout.align() );
         }
 
         Ok(NonNull::new(std::slice::from_raw_parts_mut(

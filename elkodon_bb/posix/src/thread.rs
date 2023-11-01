@@ -75,7 +75,7 @@ use std::{cell::UnsafeCell, fmt::Debug};
 use crate::handle_errno;
 use elkodon_bb_container::byte_string::FixedSizeByteString;
 use elkodon_bb_elementary::{enum_gen, scope_guard::ScopeGuardBuilder};
-use elkodon_bb_log::{error, fail, fatal_panic, warn};
+use elkodon_bb_log::{fail, fatal_panic, warn};
 use elkodon_pal_posix::posix::errno::Errno;
 use elkodon_pal_posix::posix::Struct;
 use elkodon_pal_posix::*;
@@ -654,8 +654,8 @@ impl ThreadProperties for ThreadHandle {
                 fatal_panic!(from self, "{} since the provided buffer is too small. Increase MAX_THREAD_NAME_LENGTH for this platform.", msg);
             }
             v => {
-                error!(from self, "{} since an unknown error has occurred ({}).", msg, v);
-                Err(ThreadGetNameError::UnknownError(v as i32))
+                fail!(from self, with ThreadGetNameError::UnknownError(v as i32),
+                    "{} since an unknown error has occurred ({}).", msg, v);
             }
         }
     }

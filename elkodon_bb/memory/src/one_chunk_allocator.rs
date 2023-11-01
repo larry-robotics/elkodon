@@ -31,7 +31,7 @@
 //! unsafe{ allocator.deallocate(NonNull::new(grown_memory.as_mut().as_mut_ptr()).unwrap(),
 //!                              Layout::from_size_align_unchecked(32, 4))};
 //! ```
-use elkodon_bb_log::error;
+use elkodon_bb_log::fail;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub use elkodon_bb_elementary::allocator::*;
@@ -81,14 +81,14 @@ impl BaseAllocator for OneChunkAllocator {
         let msg = "Unable to allocate chunk";
 
         if !self.has_chunk_available() {
-            error!(from self, "{} since there is no more chunk available.", msg);
-            return Err(AllocationError::OutOfMemory);
+            fail!(from self, with AllocationError::OutOfMemory,
+                "{} since there is no more chunk available.", msg);
         }
 
         let available_size = self.size - (adjusted_start - self.start);
         if available_size <= layout.size() {
-            error!(from self, "{} due to insufficient available memory.", msg);
-            return Err(AllocationError::OutOfMemory);
+            fail!(from self, with AllocationError::OutOfMemory,
+                "{} due to insufficient available memory.", msg);
         }
 
         self.allocated_chunk_start
@@ -110,8 +110,8 @@ impl BaseAllocator for OneChunkAllocator {
                 Ok(())
             }
             false => {
-                error!(from self, "Tried to release memory ({}) which does not belong to this allocator.", ptr.as_ptr() as usize);
-                Err(DeallocationError::ProvidedPointerNotContainedInAllocator)
+                fail!(from self, with DeallocationError::ProvidedPointerNotContainedInAllocator,
+                    "Tried to release memory ({}) which does not belong to this allocator.", ptr.as_ptr() as usize);
             }
         }
     }
@@ -126,26 +126,26 @@ impl Allocator for OneChunkAllocator {
     ) -> Result<NonNull<[u8]>, AllocationGrowError> {
         let msg = "Unable to grow memory chunk";
         if !self.is_allocated_chunk(&ptr) {
-            error!(from self, "{} since the provided pointer is not contained in this allocator.", msg);
-            return Err(AllocationGrowError::ProvidedPointerNotContainedInAllocator);
+            fail!(from self, with AllocationGrowError::ProvidedPointerNotContainedInAllocator,
+                "{} since the provided pointer is not contained in this allocator.", msg);
         }
 
         if old_layout.size() >= new_layout.size() {
-            error!(from self, "{} since the new size {} is smaller than the old size {}.", msg, new_layout.size(), old_layout.size());
-            return Err(AllocationGrowError::GrowWouldShrink);
+            fail!(from self, with AllocationGrowError::GrowWouldShrink,
+                "{} since the new size {} is smaller than the old size {}.", msg, new_layout.size(), old_layout.size());
         }
 
         if old_layout.align() < new_layout.align() {
-            error!(from self, "{} since this allocator does not support to any alignment increase in this operation.", msg);
-            return Err(AllocationGrowError::AlignmentFailure);
+            fail!(from self, with AllocationGrowError::AlignmentFailure,
+                "{} since this allocator does not support to any alignment increase in this operation.", msg);
         }
 
         let available_size =
             self.size - (self.allocated_chunk_start.load(Ordering::Relaxed) - self.start);
 
         if available_size < new_layout.size() {
-            error!(from self, "{} since the size of {} exceeds the available memory size of {}.", msg, new_layout.size(), available_size);
-            return Err(AllocationGrowError::OutOfMemory);
+            fail!(from self, with AllocationGrowError::OutOfMemory,
+                "{} since the size of {} exceeds the available memory size of {}.", msg, new_layout.size(), available_size);
         }
 
         Ok(NonNull::new(std::slice::from_raw_parts_mut(ptr.as_ptr(), available_size)).unwrap())
@@ -159,18 +159,18 @@ impl Allocator for OneChunkAllocator {
     ) -> Result<NonNull<[u8]>, AllocationShrinkError> {
         let msg = "Unable to shrink memory chunk";
         if !self.is_allocated_chunk(&ptr) {
-            error!(from self, "{} since the provided pointer is not contained in this allocator.", msg);
-            return Err(AllocationShrinkError::ProvidedPointerNotContainedInAllocator);
+            fail!(from self, with AllocationShrinkError::ProvidedPointerNotContainedInAllocator,
+                "{} since the provided pointer is not contained in this allocator.", msg);
         }
 
         if old_layout.size() <= new_layout.size() {
-            error!(from self, "{} since the new size {} is greater than the old size {}.", msg, new_layout.size(), old_layout.size());
-            return Err(AllocationShrinkError::ShrinkWouldGrow);
+            fail!(from self, with AllocationShrinkError::ShrinkWouldGrow,
+                "{} since the new size {} is greater than the old size {}.", msg, new_layout.size(), old_layout.size());
         }
 
         if old_layout.align() < new_layout.align() {
-            error!(from self, "{} since this allocator does not support to any alignment increase in this operation.", msg);
-            return Err(AllocationShrinkError::AlignmentFailure);
+            fail!(from self, with AllocationShrinkError::AlignmentFailure,
+                "{} since this allocator does not support to any alignment increase in this operation.", msg);
         }
 
         Ok(NonNull::new(std::slice::from_raw_parts_mut(

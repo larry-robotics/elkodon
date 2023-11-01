@@ -43,11 +43,11 @@
 #[macro_export(local_inner_macros)]
 macro_rules! fail {
     (with $error_value:expr, $($message:expr),*) => {
-        error!($($message),*);
+        debug!($($message),*);
         return Err($error_value);
     };
     (from $origin:expr, with $error_value:expr, $($message:expr),*) => {
-        error!(from $origin, $($message),*);
+        debug!(from $origin, $($message),*);
         return Err($error_value);
     };
     (from $origin:expr, when $call:expr, with $error_value:expr, $($message:expr),*) => {
@@ -55,7 +55,7 @@ macro_rules! fail {
             let result = $call;
             match result.is_err() {
                 true => {
-                    error!(from $origin, $($message),*);
+                    debug!(from $origin, $($message),*);
                     return Err($error_value);
                 }
                 false => {
@@ -70,7 +70,7 @@ macro_rules! fail {
         {
             match $call {
                 Err(e) => {
-                    error!(from $origin, $($message),*);
+                    debug!(from $origin, $($message),*);
                     match e {
                         $($error_origin => return Err($error_value)),*,
                         _ => return Err($error_unmatched),
@@ -89,7 +89,7 @@ macro_rules! fail {
             let result = $call;
             match result.is_err() {
                 true => {
-                    error!($($message),*);
+                    debug!($($message),*);
                     result?
                 }
                 false => {
@@ -103,7 +103,7 @@ macro_rules! fail {
             let result = $call;
             match result.is_err() {
                 true => {
-                    error!(from $origin, $($message),*);
+                    debug!(from $origin, $($message),*);
                     let error = <$error>::from(result.err().unwrap());
                     Err(error)?
                 }
@@ -118,7 +118,7 @@ macro_rules! fail {
             let result = $call;
             match result.is_err() {
                 true => {
-                    error!(from $origin, $($message),*);
+                    debug!(from $origin, $($message),*);
                     result?
                 }
                 false => {
