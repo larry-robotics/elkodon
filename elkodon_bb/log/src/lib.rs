@@ -144,7 +144,7 @@ use logger::Logger;
 
 static DEFAULT_LOGGER: logger::console::Logger = logger::console::Logger::new();
 static mut LOGGER: Option<&'static dyn logger::Logger> = None;
-static LOG_LEVEL: AtomicU8 = AtomicU8::new(LogLevel::Trace as u8);
+static LOG_LEVEL: AtomicU8 = AtomicU8::new(LogLevel::Info as u8);
 static INIT: Once = Once::new();
 
 /// Describes the log level.
