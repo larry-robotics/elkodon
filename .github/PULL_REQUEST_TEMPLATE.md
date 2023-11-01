@@ -34,4 +34,6 @@
 
 ## References
 
-<!-- Use 'Closes #123' or 'Relates to #123' -->
+Use either 'Closes #123' or 'Relates to #123' to reference the corresponding issue.
+
+Closes #**ISSUE-NUMBER**
