@@ -24,7 +24,7 @@ members = [
 
 [workspace.package]
 rust-version = "1.72.1"
-version = "0.1.0"
+version = "0.0.1"
 repository = "https://github.com/larry-robotics/elkodon"
 edition = "2021"
 categories = ["network-programming"]

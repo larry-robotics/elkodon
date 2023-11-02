@@ -1,5 +1,7 @@
 # elkodon - Zero-Copy Lock-Free IPC Purely Written In Rust
 
+ - add social media links here, gitter, bi weekly iceoryx developer meetup maybe
+
  1. [Introduction](#introduction)
  2. [Links](#links)
  3. [Getting Started](#getting-started)
