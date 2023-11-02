@@ -51,6 +51,12 @@ elk_container_windows_server_2019_x64_template: &ELK_CONTAINER_WINDOWS_SERVER_20
     dockerfile: internal/docker/windowsservercore-2019
     <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
+elk_container_freebsd_x64_template: &ELK_CONTAINER_FREEBSD_X64
+  <<: *ELK_TASK_TIMEOUT
+  freebsd_instance:
+    image_family: freebsd-13-2
+    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+
 # Build and Test
 
 elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
@@ -187,9 +193,34 @@ arch_linux_x64_stable_release_task:
 windows_server_2019_x64_stable_debug_task:
   depends_on: preflight_check
   <<: *ELK_CONTAINER_WINDOWS_SERVER_2019_X64
+  set_toolchain_script: rustup default stable
   <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
 
 windows_server_2019_x64_stable_release_task:
   depends_on: windows_server_2019_x64_stable_debug
   <<: *ELK_CONTAINER_WINDOWS_SERVER_2019_X64
+  set_toolchain_script: rustup default stable
   <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+
+#
+# FreeBSD
+#
+
+# Pipeline 9
+
+freebsd_x64_stable_debug_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_FREEBSD_X64
+  env:
+    PATH: /root/.cargo/bin:$PATH
+    HOME: /root  # must be set manually to '/root' or 'rustup' will throw an error
+  setup_script:
+    - pkg install -y git llvm
+    - pw useradd testuser1
+    - pw useradd testuser2
+    - pw groupadd testgroup1
+    - pw groupadd testgroup2
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
+    - rustup component add clippy rustfmt
+  set_toolchain_script: rustup default stable
+  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
