@@ -1,8 +1,4 @@
-use elkodon::{
-    port::event_id::EventId,
-    service::{service_name::ServiceName, zero_copy, Service},
-};
-use elkodon_bb_container::semantic_string::SemanticString;
+use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 
 fn main() {
