@@ -1,23 +1,34 @@
 # elkodon - Zero-Copy Lock-Free IPC Purely Written In Rust
 
+ 1. [Introduction](#introduction)
+ 2. [Links](#links)
+ 3. [Getting Started](#getting-started)
+    1. [Publish Subscribe](#publish-subscribe)
+    2. [Events](#events)
+ 4. [Supported Platforms](#supported-platforms)
+ 5. [Thanks To All Contributors](#thanks-to-all-contributors)
+
+## Introduction
+
 - problems with inter process communication - too many copies
 - zero copy is the solution
 - goal, embedded safety certified code
 - link to roadmap, contribution, code of conduct, faq, maintainer
 
-## Examples
+## Links
 
-### Getting Started
+- [changelog](CHANGELOG.md)
+- [contributing](CONTRIBUTING.md)
+- [examples](examples/README.md)
+- [roadmap](ROADMAP.md)
+
+## Getting Started
 
 ### Publish Subscribe
 
 ### Events
 
 ## Supported Platforms
-
-### Target Platforms
-
-### Developer Platforms
 
 ## Thanks To All Contributors
 
