@@ -19,7 +19,7 @@
 # Constants
 
 elk_task_timeout_template: &ELK_TASK_TIMEOUT
-  timeout_in: 15m  # This needs to be reasonable large in order not to run in a timeout in the docker image re-builds
+  timeout_in: 30m  # This needs to be reasonable large in order not to run in a timeout in the docker image re-builds
 
 elk_common_cpu_and_memory_config_for_build_and_test_template: &ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
   cpu: 2
