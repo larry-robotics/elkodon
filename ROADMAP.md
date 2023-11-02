@@ -20,6 +20,7 @@
 
 ## Gateways
 
+ * [ ] Host2Host Communication based on https://github.com/smoltcp-rs/smoltcp
  * [ ] zbus
  * [ ] sommr
  * [ ] data-rs
