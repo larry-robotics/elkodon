@@ -569,11 +569,7 @@ impl NamedConceptMgmt for Connection {
         let origin = "zero_copy_connection::posix_shared_memory::Connection::remove_cfg()";
 
         match elkodon_bb_posix::shared_memory::SharedMemory::remove(&full_name) {
-            Ok(()) => Ok(true),
-            Err(elkodon_bb_posix::shared_memory::SharedMemoryRemoveError::DoesNotExist) => {
-                Ok(false)
-            }
-
+            Ok(v) => Ok(v),
             Err(
                 elkodon_bb_posix::shared_memory::SharedMemoryRemoveError::InsufficientPermissions,
             ) => {

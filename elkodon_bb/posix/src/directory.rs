@@ -300,8 +300,8 @@ impl Directory {
                 Ok(d)
             }
             Err(e) => {
-                error!(from "Directory::create", "Failed to open newly created directory \"{}\".", path);
-                Err(e.into())
+                fail!(from "Directory::create()", with e.into(),
+                    "Failed to open newly created directory \"{}\".", path);
             }
         }
     }

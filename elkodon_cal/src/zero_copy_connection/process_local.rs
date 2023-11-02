@@ -343,8 +343,14 @@ pub struct Receiver {
 
 fn cleanup_connection<T: Debug>(origin: &T, name: &FileName, config: &Configuration, state: State) {
     let msg = "Unable to cleanup port";
-    let mut guard = error!(from "ZeroCopyConnection::does_exist", when PROCESS_LOCAL_STORAGE.lock(),
-            "{} due to a failure while acquiring the lock to the global zero copy connections.", msg);
+
+    let mut guard = match PROCESS_LOCAL_STORAGE.lock() {
+        Ok(g) => g,
+        Err(_) => {
+            error!(from origin, "{} due to a failure while acquiring the lock to the global zero copy connections.", msg);
+            return;
+        }
+    };
 
     let full_path = config.path_for(name);
     match guard.get(&full_path) {
@@ -450,8 +456,14 @@ impl NamedConceptMgmt for Connection {
         cfg: &Self::Configuration,
     ) -> Result<bool, NamedConceptDoesExistError> {
         let msg = "Unable to determine if connection exists";
-        let guard = error!(from "ZeroCopyConnection::does_exist", when PROCESS_LOCAL_STORAGE.lock(),
-            "{} due to a failure while acquiring the lock to the global zero copy connections.", msg);
+        let origin = "ZeroCopyConnection::does_exist()";
+        let guard = match PROCESS_LOCAL_STORAGE.lock() {
+            Ok(g) => g,
+            Err(_) => {
+                error!(from origin, "{} due to a failure while acquiring the lock to the global zero copy connections.", msg);
+                return Err(NamedConceptDoesExistError::InternalError);
+            }
+        };
 
         Ok(guard.get(&cfg.path_for(name)).is_some())
     }

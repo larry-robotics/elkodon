@@ -31,7 +31,7 @@ use crate::config::{
 };
 use crate::scheduler::yield_now;
 use elkodon_bb_elementary::enum_gen;
-use elkodon_bb_log::{error, fail};
+use elkodon_bb_log::fail;
 
 /// The AdaptiveWaitBuilder is required to produce an [`AdaptiveWait`] object.
 /// The default value for clock is defined in [`ClockType::default()`].
@@ -166,10 +166,8 @@ impl AdaptiveWait {
 
             let result = self.wait();
             if result.is_err() {
-                error!(from self, "{} since the underlying wait failed.", msg);
-                return Err(AdaptiveTimedWaitWhileError::AdaptiveWaitError(
-                    result.err().unwrap(),
-                ));
+                fail!(from self, with AdaptiveTimedWaitWhileError::AdaptiveWaitError(result.err().unwrap()),
+                    "{} since the underlying wait failed.", msg);
             }
 
             if result.unwrap() > timeout {

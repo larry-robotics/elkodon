@@ -260,7 +260,7 @@ impl MessageQueueBuilder {
 ///    is not owned by any object in any process on the system.
 ///
 pub unsafe fn remove_message_queue(name: &FileName) -> Result<(), MessageQueueRemoveError> {
-    internal::MessageQueue::mq_unlink(name, false)
+    internal::MessageQueue::mq_unlink(name)
 }
 
 /// Returns true if the message queue exists, otherwise false
@@ -283,7 +283,7 @@ mod internal {
 
     impl Drop for MessageQueue {
         fn drop(&mut self) {
-            if self.has_ownership && Self::mq_unlink(&self.name, false).is_err() {
+            if self.has_ownership && Self::mq_unlink(&self.name).is_err() {
                 error!(from self, "The was already removed by a different instance. This should not happen!");
             }
 
@@ -336,7 +336,6 @@ mod internal {
 
         fn mq_open(
             config: &mut MessageQueueBuilder,
-            quiet_when_non_existing: bool,
         ) -> Result<posix::mqd_t, MessageQueueOpenError> {
             let attributes = Self::create_attributes(config);
 
@@ -372,13 +371,13 @@ mod internal {
             }
 
             handle_errno!(MessageQueueOpenError, from config,
-            quiet_when quiet_when_non_existing, Errno::ENOENT => (DoesNotExist, "{} since the queue does not exist.", msg),
-                      Errno::EACCES => (PermissionDenied, "{} due to insufficient permissions.", msg),
-                      Errno::EINTR => (Interrupt, "{} since an interrupt signal was received.", msg),
-                      Errno::EMFILE => (PerProcessFileHandleLimitReached, "{} since the per-process limit of file handles was reached.", msg),
-                      Errno::ENFILE => (SystemMessageQueueLimitReached, "{} since the system limit of message queue was reached.", msg),
-                      v => (UnknownError(v as i32), "{} since an unknown error occurred ({}).", msg, v)
-                  )
+              Errno::ENOENT => (DoesNotExist, "{} since the queue does not exist.", msg),
+              Errno::EACCES => (PermissionDenied, "{} due to insufficient permissions.", msg),
+              Errno::EINTR => (Interrupt, "{} since an interrupt signal was received.", msg),
+              Errno::EMFILE => (PerProcessFileHandleLimitReached, "{} since the per-process limit of file handles was reached.", msg),
+              Errno::ENFILE => (SystemMessageQueueLimitReached, "{} since the system limit of message queue was reached.", msg),
+              v => (UnknownError(v as i32), "{} since an unknown error occurred ({}).", msg, v)
+            )
         }
 
         pub(super) fn does_exist<T>(name: &FileName) -> Result<bool, MessageQueueOpenError> {
@@ -427,17 +426,14 @@ mod internal {
             self.is_non_blocking = is_non_blocking;
         }
 
-        pub(super) fn mq_unlink(
-            name: &FileName,
-            print_no_error_when_non_existing: bool,
-        ) -> Result<(), MessageQueueRemoveError> {
+        pub(super) fn mq_unlink(name: &FileName) -> Result<(), MessageQueueRemoveError> {
             if unsafe { posix::mq_unlink(Self::add_slash(name).as_string().as_c_str()) } != -1 {
                 return Ok(());
             }
 
             let msg = format!("Unable to remove message queue \"{}\"", name);
             handle_errno!(MessageQueueRemoveError, from "MessageQueue::remove",
-                quiet_when print_no_error_when_non_existing, Errno::ENOENT => (DoesNotExist, "{} since the queue does not exist.", msg),
+                Errno::ENOENT => (DoesNotExist, "{} since the queue does not exist.", msg),
                 Errno::EACCES => (PermissionDenied, "{} due to insufficient permissions.", msg),
                 Errno::EINTR => (Interrupt, "{} since an interrupt signal was received.", msg),
                 v => (UnknownError(v as i32), "{} since an unknown error occurred ({}).", msg, v)
@@ -460,7 +456,7 @@ mod internal {
             let (mqdes, has_ownership) = match mode {
                 CreationMode::CreateExclusive => (Self::mq_create(&config)?, true),
                 CreationMode::PurgeAndCreate => {
-                    match Self::mq_unlink(&config.name, true) {
+                    match Self::mq_unlink(&config.name) {
                         Ok(_) | Err(MessageQueueRemoveError::DoesNotExist) => (),
                         Err(v) => {
                             fail!(from config, with MessageQueueCreationError::MessageQueueRemoveError(v),
@@ -469,7 +465,7 @@ mod internal {
                     }
                     (Self::mq_create(&config)?, true)
                 }
-                CreationMode::OpenOrCreate => match Self::mq_open(&mut config, true) {
+                CreationMode::OpenOrCreate => match Self::mq_open(&mut config) {
                     Ok(v) => (v, false),
                     Err(MessageQueueOpenError::DoesNotExist) => (Self::mq_create(&config)?, true),
                     Err(v) => return Err(MessageQueueCreationError::MessageQueueOpenError(v)),
@@ -488,7 +484,7 @@ mod internal {
 
         pub(super) fn open(mut config: MessageQueueBuilder) -> Result<Self, MessageQueueOpenError> {
             Ok(Self {
-                mqdes: Self::mq_open(&mut config, false)?,
+                mqdes: Self::mq_open(&mut config)?,
                 has_ownership: false,
                 name: config.name,
                 clock_type: config.clock_type,

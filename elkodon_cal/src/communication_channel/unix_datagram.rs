@@ -293,7 +293,7 @@ impl<T: Copy + Debug> CommunicationChannelConnector<T, Channel<T>> for Connector
         // is created at the same time. The uds is called as second in create_receiver and
         // it cannot exist when not everything is already set up.
         let full_name = self.config.path_for(&self.channel_name);
-        let sender = UnixDatagramSenderBuilder::new(&full_name).try_create();
+        let sender = UnixDatagramSenderBuilder::new(&full_name).create();
         self.verify_and_open_sender(sender)
     }
 }

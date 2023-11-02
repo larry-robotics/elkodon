@@ -8,7 +8,7 @@ pub use crate::unmovable_ipc_handle::IpcCapable;
 use crate::unmovable_ipc_handle::{internal::*, IpcHandleState};
 use elkodon_bb_container::semantic_string::*;
 use elkodon_bb_elementary::enum_gen;
-use elkodon_bb_log::{debug, error, fail, fatal_panic};
+use elkodon_bb_log::{debug, fail, fatal_panic};
 use elkodon_bb_system_types::file_name::FileName;
 use elkodon_bb_system_types::file_path::*;
 use elkodon_bb_system_types::path::*;
@@ -187,12 +187,12 @@ pub trait SemaphoreInterface: internal::SemaphoreHandle + Debug {
                 ) {
                     Ok(v) => Ok(v),
                     Err(AdaptiveTimedWaitWhileError::PredicateFailure(v)) => {
-                        error!(from self, "{} since try_wait() failed with ({:?}).", msg, v);
-                        Err(SemaphoreTimedWaitError::from(v))
+                        fail!(from self, with SemaphoreTimedWaitError::from(v),
+                            "{} since try_wait() failed with ({:?}).", msg, v);
                     }
                     Err(AdaptiveTimedWaitWhileError::AdaptiveWaitError(v)) => {
-                        error!(from self, "{} since adaptive wait failed with ({:?}).", msg, v);
-                        Err(SemaphoreTimedWaitError::from(v))
+                        fail!(from self, with SemaphoreTimedWaitError::from(v),
+                             "{} since adaptive wait failed with ({:?}).", msg, v);
                     }
                 }
             }

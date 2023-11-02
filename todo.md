@@ -31,8 +31,6 @@
 
 # BUGS
 
-* discovery example deletes service
-
 * unix datagram socket, sending credentials and file descriptors no longer works
     * was introduced with rust 1.71.0
     * activate unit test below again
@@ -53,32 +51,6 @@
     not really work. Remove ignore for windows from condition variable tests and fix problem.
 
 * CTRL+c does not work in windows, all examples do not clean up
-
-# Quality of Life improvement
-
-* Evaluate and refactor basic error handling approach based on enums
-
-* Evaluate crate log and tracing as backend for elkodon logger
-    * maybe as a feature so that user can select log backend easily
-
-* Use `&str` and utf8 in `ServiceName`, there is no need for a length or ascii restriction
-* Rename `enable_safe_overflow` into `set_safe_overflow` in `ServiceBuilder` `publish_subscribe`
-    * or maybe rename it into behavior: queue and ringbuffer, get inspired by crossbeam queues
-* rename `publisher::loan` into `publisher::loan_uninit` and provide `publisher::loan` with default
-    constructed type
-* provide `[T]` (slice) as special type for publisher
-    * `loan` and `loan_uninit` with alignment and number of Ts
-* QoS feature for blocking publisher or pub/sub failures to perform custom
-    error handling or expert behavior
-    * explore implementation as trait
-    * explore implementation as callback
-* Explore if it is useful to have the same service name for different messaging patterns
-    * separate them via internal suffix/prefix
-    * simple use case: pub/sub + event to notify subscriber to notify sample send
-    * would reduce error handling: connect to service with wrong messaging pattern
-* Event TriggerId as enum to cover user id and file descriptors
-* Introduce proc macro to generate types that can be sent via shm
-    * ensure that only these types are used for ipc transmission
 
 # continue
 
@@ -162,17 +134,6 @@
 * check all posix wrapper that creation/open happens in the builder to avoid invalid states
     in objects
 
-* ensure non-movability via separate handle + remove is_initialized and construct in builder
-    * condition variable
-        * remove ipc support for multi condition variable
-
-* refactor error handling
-    * error pyramid concept
-    * extend and test fail! macro
-
-* ZeroCopyConnection, add builder option to enable tracking of samples
-    from sender to receiver and back
-
 * add this to port factory publisher builder
     * TEST
         * remove all unwrap and test them
@@ -241,10 +202,6 @@
 * free list approach, what happens when publisher goes out of scope before subscriber does?
 * RelocatableContainer, make this trait somehow unmovable.
 * ServiceStaticConfig, pack individual communication pattern configs into MessagingPattern
-* Debug is more detailed than Display
-    * logger should use Debug and change/remove all Display impls to Debug
-    * remove ext_inspect_err and use fatal_panic!(from ..., when ...) instead
-    * remove error! log and use fail! instead
 * Performance and Safety Critical mode
     * Default clock is in performance mode Realtime
 * Revisit concept abstraction trait structure?

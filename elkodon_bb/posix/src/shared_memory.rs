@@ -59,7 +59,7 @@ use crate::signal::SignalHandler;
 use crate::system_configuration::Limit;
 use elkodon_bb_container::semantic_string::*;
 use elkodon_bb_elementary::enum_gen;
-use elkodon_bb_log::{error, fail, fatal_panic, trace, warn};
+use elkodon_bb_log::{error, fail, fatal_panic, trace};
 use elkodon_bb_system_types::file_name::*;
 use elkodon_bb_system_types::file_path::*;
 use elkodon_bb_system_types::path::*;
@@ -101,7 +101,6 @@ enum_gen! { SharedMemoryCreationError
 enum_gen! { SharedMemoryRemoveError
   entry:
     InsufficientPermissions,
-    DoesNotExist,
     UnknownError(i32)
 }
 
@@ -148,32 +147,18 @@ impl SharedMemoryBuilder {
         self
     }
 
-    /// Opens an already existing shared memory. In contrast to its counterpart
-    /// [`SharedMemoryBuilder::open_existing()`] it will not print an error message when the
-    /// shared memory does not exist.
-    pub fn try_open_existing(
-        mut self,
-        access_mode: AccessMode,
-    ) -> Result<SharedMemory, SharedMemoryCreationError> {
-        self.access_mode = access_mode;
-        Self::open(self, true)
-    }
-
     /// Opens an already existing shared memory.
     pub fn open_existing(
         mut self,
         access_mode: AccessMode,
     ) -> Result<SharedMemory, SharedMemoryCreationError> {
         self.access_mode = access_mode;
-        Self::open(self, false)
+        Self::open(self)
     }
 
-    fn open(
-        mut self,
-        quiet_when_shm_does_not_exist: bool,
-    ) -> Result<SharedMemory, SharedMemoryCreationError> {
+    fn open(mut self) -> Result<SharedMemory, SharedMemoryCreationError> {
         let msg = "Unable to open shared memory";
-        let fd = SharedMemory::shm_open(&self.name, &self, quiet_when_shm_does_not_exist)?;
+        let fd = SharedMemory::shm_open(&self.name, &self)?;
 
         let actual_shm_size = fail!(from self, when fd.metadata(),
                 "{} since a failure occurred while acquiring the file attributes.", msg)
@@ -263,12 +248,12 @@ impl SharedMemoryCreationBuilder {
             }
             CreationMode::PurgeAndCreate => {
                 shm_created = true;
-                fail!(from self.config, when SharedMemory::shm_unlink(&self.config.name, UnlinkMode::QuietWhenNotExisting),
+                fail!(from self.config, when SharedMemory::shm_unlink(&self.config.name),
                     "Failed to remove already existing shared memory.");
                 SharedMemory::shm_create(&self.config.name, &self.config)?
             }
             CreationMode::OpenOrCreate => {
-                match SharedMemory::shm_open(&self.config.name, &self.config, true) {
+                match SharedMemory::shm_open(&self.config.name, &self.config) {
                     Ok(fd) => {
                         shm_created = false;
                         self.config.has_ownership = false;
@@ -380,7 +365,7 @@ impl Drop for SharedMemory {
         }
 
         if self.has_ownership {
-            match Self::shm_unlink(&self.name, UnlinkMode::PrintErrorWhenNotExisting) {
+            match Self::shm_unlink(&self.name) {
                 Ok(_) => {
                     trace!(from self, "delete");
                 }
@@ -390,12 +375,6 @@ impl Drop for SharedMemory {
             }
         }
     }
-}
-
-#[derive(PartialEq, Eq)]
-enum UnlinkMode {
-    QuietWhenNotExisting,
-    PrintErrorWhenNotExisting,
 }
 
 impl SharedMemory {
@@ -439,12 +418,13 @@ impl SharedMemory {
     }
 
     /// Removes a shared memory file.
-    pub fn remove(name: &FileName) -> Result<(), SharedMemoryRemoveError> {
-        match Self::shm_unlink(name, UnlinkMode::PrintErrorWhenNotExisting) {
-            Ok(_) => {
+    pub fn remove(name: &FileName) -> Result<bool, SharedMemoryRemoveError> {
+        match Self::shm_unlink(name) {
+            Ok(true) => {
                 trace!(from "SharedMemory::remove", "\"{}\"", name);
-                Ok(())
+                Ok(true)
             }
+            Ok(false) => Ok(false),
             Err(v) => Err(v),
         }
     }
@@ -529,7 +509,6 @@ impl SharedMemory {
     fn shm_open(
         name: &FileName,
         config: &SharedMemoryBuilder,
-        quiet_when_shm_does_not_exist: bool,
     ) -> Result<FileDescriptor, SharedMemoryCreationError> {
         let file_path =
             FilePath::from_path_and_file(&Path::new(&[PATH_SEPARATOR; 1]).unwrap(), name).unwrap();
@@ -547,7 +526,7 @@ impl SharedMemory {
 
         let msg = "Unable to open shared memory";
         handle_errno!(SharedMemoryCreationError, from config,
-            quiet_when quiet_when_shm_does_not_exist, Errno::ENOENT => (DoesNotExist, "{} since the shared memory does not exist.", msg),
+            Errno::ENOENT => (DoesNotExist, "{} since the shared memory does not exist.", msg),
             Errno::EACCES => (InsufficientPermissions, "{} due to insufficient permissions.", msg),
             Errno::EINVAL => (InvalidName, "{} since the provided name \"{}\" is invalid.", msg, name),
             Errno::EMFILE => (PerProcessFileHandleLimitReached, "{} since the per-process file handle limit was reached.", msg),
@@ -585,36 +564,24 @@ impl SharedMemory {
         );
     }
 
-    fn shm_unlink(name: &FileName, mode: UnlinkMode) -> Result<(), SharedMemoryRemoveError> {
+    fn shm_unlink(name: &FileName) -> Result<bool, SharedMemoryRemoveError> {
         let file_path =
             FilePath::from_path_and_file(&Path::new(&[PATH_SEPARATOR; 1]).unwrap(), name).unwrap();
         if unsafe { posix::shm_unlink(file_path.as_c_str()) } == 0 {
-            return Ok(());
+            return Ok(true);
         }
 
         let msg = "Unable to remove shared memory device file";
+        let origin = "SharedMemory::unlink()";
         match posix::Errno::get() {
             posix::Errno::EACCES => {
-                error!("{} \"{}\" due to insufficient permissions.", msg, name);
-                Err(SharedMemoryRemoveError::InsufficientPermissions)
+                fail!(from origin, with SharedMemoryRemoveError::InsufficientPermissions,
+                    "{} \"{}\" due to insufficient permissions.", msg, name);
             }
-            posix::Errno::ENOENT => {
-                if mode == UnlinkMode::PrintErrorWhenNotExisting {
-                    warn!(
-                        "{} \"{}\" since the shared memory does not exist anymore.",
-                        msg, name
-                    );
-                    Err(SharedMemoryRemoveError::DoesNotExist)
-                } else {
-                    Ok(())
-                }
-            }
+            posix::Errno::ENOENT => Ok(false),
             v => {
-                error!(
-                    "{} \"{}\" since an unknown error occurred ({}).",
-                    msg, name, v
-                );
-                Err(SharedMemoryRemoveError::UnknownError(v as i32))
+                fail!(from origin, with SharedMemoryRemoveError::UnknownError(v as i32),
+                    "{} \"{}\" since an unknown error occurred ({}).", msg, name, v);
             }
         }
     }

@@ -95,10 +95,7 @@ impl<T: Copy + Debug> NamedConceptMgmt for Channel<T> {
         };
 
         match SharedMemory::remove(&full_name) {
-            Ok(()) => Ok(true),
-            Err(elkodon_bb_posix::shared_memory::SharedMemoryRemoveError::DoesNotExist) => {
-                Ok(false)
-            }
+            Ok(v) => Ok(v),
             Err(
                 elkodon_bb_posix::shared_memory::SharedMemoryRemoveError::InsufficientPermissions,
             ) => {
