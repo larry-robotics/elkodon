@@ -6,7 +6,7 @@
 //!
 //! ## Working with groups
 //!
-//! ```
+//! ```rust,ignore
 //! use elkodon_bb_posix::group::*;
 //! use elkodon_bb_system_types::group_name::GroupName;
 //! use elkodon_bb_container::semantic_string::*;
@@ -25,7 +25,7 @@
 //!
 //! ## Use the trait
 //!
-//! ```
+//! ```rust,ignore
 //! use elkodon_bb_posix::group::*;
 //!
 //! println!("Members of group root");

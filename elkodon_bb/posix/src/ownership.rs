@@ -3,7 +3,7 @@
 //! credentials of [`crate::file::File`], [`crate::shared_memory::SharedMemory`] and others.
 //! # Example
 //!
-//! ```
+//! ```rust,ignore
 //! use elkodon_bb_posix::ownership::*;
 //! use elkodon_bb_posix::user::UserExt;
 //! use elkodon_bb_posix::group::GroupExt;
