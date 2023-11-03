@@ -8,12 +8,22 @@ use elkodon_pal_posix::posix::POSIX_SUPPORT_USERS_AND_GROUPS;
 fn group_works() {
     test_requires!(POSIX_SUPPORT_USERS_AND_GROUPS);
 
-    let root = Group::from_name(&GroupName::new(b"root").unwrap()).unwrap();
-    let root_from_gid = Group::from_gid(0).unwrap();
+    let root = GroupName::new(b"root").unwrap();
+    let wheel = GroupName::new(b"wheel").unwrap();
 
-    assert_that!(root.gid(), eq root_from_gid.gid());
-    assert_that!(root.gid(), eq 0);
+    let (group_from_name, group_name) = if let Ok(group) = Group::from_name(&root) {
+        (group, root)
+    } else if let Ok(group) = Group::from_name(&wheel) {
+        (group, wheel)
+    } else {
+        unreachable!("Neither group 'root' not group 'wheel' is found!")
+    };
 
-    assert_that!(root.name(), eq root_from_gid.name());
-    assert_that!(root.name().as_bytes(), eq b"root");
+    let group_from_gid = Group::from_gid(0).unwrap();
+
+    assert_that!(group_from_name.gid(), eq group_from_gid.gid());
+    assert_that!(group_from_name.gid(), eq 0);
+
+    assert_that!(group_from_name.name(), eq group_from_gid.name());
+    assert_that!(*group_from_name.name(), eq group_name);
 }
