@@ -142,7 +142,6 @@ fn condition_variable_notify_all_unblocks_all() {
 }
 
 #[test]
-#[ignore = "TODO elk-#30: This test causes the CI to deadlock"]
 fn condition_variable_mutex_is_locked_when_wait_returns() {
     const NUMBER_OF_THREADS: u32 = 5;
     let barrier = Barrier::new(NUMBER_OF_THREADS + 1);
