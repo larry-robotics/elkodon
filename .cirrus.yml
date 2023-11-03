@@ -111,6 +111,7 @@ ubuntu_22_04_x64_stable_debug_task:
   set_toolchain_script: rustup default stable
   <<: *ELK_CARGO_FMT_AND_CLIPPY
   <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  linux_only_doc_test_script: cargo test --doc -- --ignored
 
 ubuntu_22_04_x64_beta_debug_task:
   depends_on: ubuntu_22_04_x64_stable_debug
