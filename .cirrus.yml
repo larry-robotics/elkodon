@@ -216,6 +216,7 @@ freebsd_x64_stable_debug_task:
     - pw useradd testuser2
     - pw groupadd testgroup1
     - pw groupadd testgroup2
+    - kldload mqueuefs
     - mkdir -p /mnt/mqueue/
     - mount -t mqueuefs null /mnt/mqueue/
     - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
