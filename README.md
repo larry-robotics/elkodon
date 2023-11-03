@@ -1,14 +1,16 @@
 # elkodon - Zero-Copy Lock-Free IPC Purely Written In Rust
 
+| [benchmarks](benchmarks/README.md) | [changelog](CHANGELOG.md) | [contributing](CONTRIBUTING.md) | [examples](examples/README.md) | [faq](FAQ.md) | [roadmap](ROADMAP.md) |
+
 - add social media links here, gitter, bi weekly iceoryx developer meetup maybe
 
  1. [Introduction](#introduction)
  2. [Performance](#performance)
- 3. [Links](#links)
- 4. [Getting Started](#getting-started)
+ 3. [Getting Started](#getting-started)
     1. [Publish Subscribe](#publish-subscribe)
     2. [Events](#events)
- 5. [Supported Platforms](#supported-platforms)
+ 4. [Supported Platforms](#supported-platforms)
+ 5. [Language Bindings](#language-bindings)
  6. [Thanks To All Contributors](#thanks-to-all-contributors)
 
 ## Introduction
@@ -64,15 +66,6 @@ gantt
 - **Compiler:**
   - rustc 1.72.1
   - gcc 13.2.1 20230801
-
-## Links
-
-- [benchmarks](benchmarks/README.md)
-- [changelog](CHANGELOG.md)
-- [contributing](CONTRIBUTING.md)
-- [examples](examples/README.md)
-- [faq](FAQ.md)
-- [roadmap](ROADMAP.md)
 
 ## Getting Started
 
@@ -160,14 +153,32 @@ cargo run --example publish_subscribe_subscriber
 
 ## Supported Platforms
 
-| Operating System | State | Support Level |
-|------------------|-------|---------------|
-| Linux (x86_64)   | implemented | target |
-| Linux (aarch64)  | implemented | target |
-| Linux (32-bit)   | in-progress | target |
-| FreeBSD          | implemented | target |
-| Windows          | implemented | developer |
-| Mac OS
+| Operating System | State       | Support Level |
+|------------------|:-----------:|--------------:|
+| Android          | planned     | open          |
+| FreeBSD          | implemented | target        |
+| FreeRTOS         | planned     | target        |
+| iOS              | planned     | open          |
+| Linux (x86_64)   | implemented | target        |
+| Linux (aarch64)  | implemented | target        |
+| Linux (32-bit)   | in-progress | target        |
+| Mac OS           | in-progress | development   |
+| QNX              | planned     | target        |
+| WatchOS          | planned     | open          |
+| Windows          | implemented | development   |
+
+- **development** - Works with a restricted security and safety feature set.
+- **target** - All safety and security features are working.
+- **open** - Support level is undecided.
+
+## Language Bindings
+
+| Language | State    |
+|----------|---------:|
+| C / C++  | planned  |
+| Lua      | planned  |
+| Python   | planned  |
+| Zig      | planned  |
 
 ## Thanks To All Contributors
 
