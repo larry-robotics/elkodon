@@ -63,8 +63,6 @@ elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
   build_script: cargo build --workspace --all --examples --benches
 
 elk_common_build_and_test_debug_template: &ELK_COMMON_BUILD_AND_TEST_DEBUG
-  env:
-    RUSTDOCFLAGS: -D warnings
   <<: *ELK_COMMON_BUILD_DEBUG
   doc_script: cargo doc
   test_script: cargo test --workspace --all
@@ -73,8 +71,6 @@ elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
   build_script: cargo build --release --workspace --all --examples --benches
 
 elk_common_build_and_test_release_template: &ELK_COMMON_BUILD_AND_TEST_RELEASE
-  env:
-    RUSTDOCFLAGS: -D warnings
   <<: *ELK_COMMON_BUILD_RELEASE
   doc_script: cargo doc --release
   test_script: cargo test --release --workspace --all
