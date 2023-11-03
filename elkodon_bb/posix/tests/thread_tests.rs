@@ -25,8 +25,10 @@ fn thread_set_name_works() {
         .unwrap();
 
     nanosleep(Duration::from_millis(10)).ok();
-    assert_that!(thread.get_name().unwrap(), eq b"oh-a-thread");
+    let name = *thread.get_name().unwrap();
     drop(thread);
+
+    assert_that!(name, eq b"oh-a-thread");
     assert_that!(COUNTER.load(Ordering::Relaxed), eq 1);
 }
 

@@ -447,8 +447,8 @@ mod shared_memory_directory {
 
             in_create.wait();
 
-            assert_that!(sut.does_file_exist(&file_name), eq false);
-            assert_that!(sut.remove_file(&file_name), eq false);
+            let does_exist_result = sut.does_file_exist(&file_name);
+            let remove_result = sut.remove_file(&file_name);
 
             let file_2 =
                 sut.new_file(Layout::new::<u8>())
@@ -459,10 +459,12 @@ mod shared_memory_directory {
                         finish_create.wait();
                     });
 
+            finish_create.wait();
+
             assert_that!(file_2, is_err);
             assert_that!(file_2.err().unwrap(), eq SharedMemoryDirectoryCreateFileError::BeingCreated);
-
-            finish_create.wait();
+            assert_that!(does_exist_result, eq false);
+            assert_that!(remove_result, eq false);
         });
     }
 }

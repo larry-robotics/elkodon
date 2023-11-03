@@ -245,9 +245,11 @@ mod event {
             barrier.wait();
             let sut_notifier = Sut::NotifierBuilder::new(&name).open().unwrap();
             std::thread::sleep(TIMEOUT);
-            assert_that!(counter.load(Ordering::SeqCst), eq 0);
+            let counter_old = counter.load(Ordering::SeqCst);
             sut_notifier.notify(8912).unwrap();
             t.join().unwrap();
+
+            assert_that!(counter_old, eq 0);
             assert_that!(counter.load(Ordering::SeqCst), eq 1);
         });
     }
@@ -273,9 +275,11 @@ mod event {
             barrier.wait();
             let sut_notifier = Sut::NotifierBuilder::new(&name).open().unwrap();
             std::thread::sleep(TIMEOUT);
-            assert_that!(counter.load(Ordering::SeqCst), eq 0);
+            let counter_old = counter.load(Ordering::SeqCst);
             sut_notifier.notify(8912).unwrap();
             t.join().unwrap();
+
+            assert_that!(counter_old, eq 0);
             assert_that!(counter.load(Ordering::SeqCst), eq 1);
         });
     }

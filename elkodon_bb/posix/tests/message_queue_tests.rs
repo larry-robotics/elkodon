@@ -1,4 +1,7 @@
-use std::{sync::atomic::AtomicU64, time::Duration};
+use std::{
+    sync::atomic::{AtomicU64, Ordering},
+    time::Duration,
+};
 
 use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_posix::{
@@ -258,11 +261,12 @@ fn message_queue_blocking_send_does_block() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(std::sync::atomic::Ordering::SeqCst), eq 0);
+        let counter_old = counter.load(Ordering::SeqCst);
         let mut sut_receiver = MessageQueueBuilder::new(&name)
             .capacity(1)
             .open_receiver::<usize>()
             .unwrap();
+        assert_that!(counter_old, eq 0);
         assert_that!(sut_receiver.try_receive().unwrap().unwrap().value, eq 12893);
     });
 }
@@ -289,10 +293,11 @@ fn message_queue_blocking_receive_does_block() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(std::sync::atomic::Ordering::SeqCst), eq 0);
+        let counter_old = counter.load(Ordering::SeqCst);
         let mut sut_sender = MessageQueueBuilder::new(&name)
             .open_duplex::<usize>()
             .unwrap();
+        assert_that!(counter_old, eq 0);
         assert_that!(sut_sender.try_send(&981293).unwrap(), eq true);
     });
 }
@@ -323,11 +328,12 @@ fn message_queue_blocking_timed_send_does_block() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(std::sync::atomic::Ordering::SeqCst), eq 0);
+        let counter_old = counter.load(Ordering::SeqCst);
         let mut sut_receiver = MessageQueueBuilder::new(&name)
             .capacity(1)
             .open_receiver::<usize>()
             .unwrap();
+        assert_that!(counter_old, eq 0);
         assert_that!(sut_receiver.try_receive().unwrap().unwrap().value, eq 12893);
     });
 }
@@ -354,10 +360,11 @@ fn message_queue_timed_receive_does_block() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(std::sync::atomic::Ordering::SeqCst), eq 0);
+        let counter_old = counter.load(Ordering::SeqCst);
         let mut sut_sender = MessageQueueBuilder::new(&name)
             .open_duplex::<usize>()
             .unwrap();
+        assert_that!(counter_old, eq 0);
         assert_that!(sut_sender.try_send(&981293).unwrap(), eq true);
     });
 }

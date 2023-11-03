@@ -388,6 +388,7 @@ mod zero_copy_connection {
 
             barrier.wait();
             let now = Instant::now();
+
             assert_that!(sut_sender.blocking_send(PointerOffset::new(7789)), is_ok);
             assert_that!(sut_sender.blocking_send(PointerOffset::new(227789)), is_ok);
             assert_that!(now.elapsed(), ge TIMEOUT);

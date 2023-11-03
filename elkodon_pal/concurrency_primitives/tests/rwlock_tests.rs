@@ -127,16 +127,21 @@ fn rwlock_reader_preference_read_lock_blocks_only_write_locks() {
             });
         }
 
-        assert_that!(read_counter.load(Ordering::Relaxed), eq 0);
-        assert_that!(write_counter.load(Ordering::Relaxed), eq 0);
+        let read_counter_old_1 = read_counter.load(Ordering::Relaxed);
+        let write_counter_old_1 = write_counter.load(Ordering::Relaxed);
         barrier.wait(|_, _| {}, |_| {});
 
         barrier_read.wait(|_, _| {}, |_| {});
-        assert_that!(read_counter.load(Ordering::Relaxed), eq READ_THREADS);
-        assert_that!(write_counter.load(Ordering::Relaxed), eq 0);
+        let read_counter_old_2 = read_counter.load(Ordering::Relaxed);
+        let write_counter_old_2 = write_counter.load(Ordering::Relaxed);
 
         sut.unlock(|_| {});
         barrier_write.wait(|_, _| {}, |_| {});
+
+        assert_that!(read_counter_old_1, eq 0);
+        assert_that!(write_counter_old_1, eq 0);
+        assert_that!(read_counter_old_2, eq READ_THREADS);
+        assert_that!(write_counter_old_2, eq 0);
         assert_that!(write_counter.load(Ordering::Relaxed), eq WRITE_THREADS);
     });
 }
@@ -181,17 +186,21 @@ fn rwlock_reader_preference_write_lock_blocks_everything() {
             });
         }
 
-        assert_that!(read_counter.load(Ordering::Relaxed), eq 0);
-        assert_that!(write_counter.load(Ordering::Relaxed), eq 0);
+        let read_counter_old_1 = read_counter.load(Ordering::Relaxed);
+        let write_counter_old_1 = write_counter.load(Ordering::Relaxed);
         barrier.wait(|_, _| {}, |_| {});
 
         std::thread::sleep(TIMEOUT);
-        assert_that!(read_counter.load(Ordering::Relaxed), eq 0);
-        assert_that!(write_counter.load(Ordering::Relaxed), eq 0);
+        let read_counter_old_2 = read_counter.load(Ordering::Relaxed);
+        let write_counter_old_2 = write_counter.load(Ordering::Relaxed);
 
         sut.unlock(|_| {});
 
         barrier_end.wait(|_, _| {}, |_| {});
+        assert_that!(read_counter_old_1, eq 0);
+        assert_that!(write_counter_old_1, eq 0);
+        assert_that!(read_counter_old_2, eq 0);
+        assert_that!(write_counter_old_2, eq 0);
         assert_that!(read_counter.load(Ordering::Relaxed), eq READ_THREADS);
         assert_that!(write_counter.load(Ordering::Relaxed), eq WRITE_THREADS);
     });
@@ -325,17 +334,22 @@ fn rwlock_writer_preference_write_lock_blocks_everything() {
             });
         }
 
-        assert_that!(read_counter.load(Ordering::Relaxed), eq 0);
-        assert_that!(write_counter.load(Ordering::Relaxed), eq 0);
+        let read_counter_old_1 = read_counter.load(Ordering::Relaxed);
+        let write_counter_old_1 = write_counter.load(Ordering::Relaxed);
         barrier.wait(|_, _| {}, |_| {});
 
         std::thread::sleep(TIMEOUT);
-        assert_that!(read_counter.load(Ordering::Relaxed), eq 0);
-        assert_that!(write_counter.load(Ordering::Relaxed), eq 0);
+        let read_counter_old_2 = read_counter.load(Ordering::Relaxed);
+        let write_counter_old_2 = write_counter.load(Ordering::Relaxed);
 
         sut.unlock(|_| {}, |_| {});
 
         barrier_end.wait(|_, _| {}, |_| {});
+
+        assert_that!(read_counter_old_1, eq 0);
+        assert_that!(write_counter_old_1, eq 0);
+        assert_that!(read_counter_old_2, eq 0);
+        assert_that!(write_counter_old_2, eq 0);
         assert_that!(read_counter.load(Ordering::Relaxed), eq READ_THREADS);
         assert_that!(write_counter.load(Ordering::Relaxed), eq WRITE_THREADS);
     });

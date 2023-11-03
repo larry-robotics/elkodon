@@ -177,9 +177,11 @@ fn signal_wait_for_signal_blocks() {
         });
 
         nanosleep(Duration::from_millis(10)).ok();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         Process::from_self().send_signal(Signal::UserDefined2).ok();
         nanosleep(Duration::from_millis(10)).ok();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
     });
 }
@@ -205,9 +207,11 @@ fn signal_wait_twice_for_same_signal_blocks() {
         });
 
         nanosleep(Duration::from_millis(10)).ok();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         Process::from_self().send_signal(Signal::UserDefined2).ok();
         nanosleep(Duration::from_millis(10)).ok();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
     });
 }
@@ -240,9 +244,11 @@ fn signal_timed_wait_blocks_until_signal() {
         });
 
         nanosleep(Duration::from_millis(10)).ok();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         Process::from_self().send_signal(Signal::UserDefined2).ok();
         nanosleep(Duration::from_millis(10)).ok();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
     });
 }

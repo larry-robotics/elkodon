@@ -178,11 +178,13 @@ fn condition_variable_trigger_all_signals_all_waiters() {
         });
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         sut.trigger_all();
 
         t1.join().unwrap();
         t2.join().unwrap();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }
@@ -213,14 +215,17 @@ fn condition_variable_trigger_one_signals_one_waiter() {
         });
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         sut.trigger_one();
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         sut.trigger_one();
 
         t1.join().unwrap();
         t2.join().unwrap();
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 1);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }
@@ -251,19 +256,22 @@ fn condition_variable_notify_all_signals_all_waiters() {
         });
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         let mut guard = sut.notify_all().unwrap();
         *guard = 750;
         drop(guard);
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         let mut guard = sut.notify_all().unwrap();
         *guard = 1500;
         drop(guard);
 
         t1.join().unwrap();
         t2.join().unwrap();
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }
@@ -294,19 +302,22 @@ fn condition_variable_notify_one_signals_one_waiter() {
         });
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         let mut guard = sut.notify_one().unwrap();
         *guard = 1750;
         drop(guard);
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         let mut guard = sut.notify_one().unwrap();
         *guard = 1500;
         drop(guard);
 
         t1.join().unwrap();
         t2.join().unwrap();
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 1);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }
@@ -337,10 +348,12 @@ fn condition_variable_modify_notify_all_signals_all_waiters() {
         });
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         sut.modify_notify_all(|value| *value = 2213).unwrap();
         t1.join().unwrap();
         t2.join().unwrap();
+
+        assert_that!(counter_old_1, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }
@@ -371,15 +384,18 @@ fn condition_variable_modify_notify_one_signals_one_waiter() {
         });
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         sut.modify_notify_one(|value| *value = 2213).unwrap();
 
         thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         sut.modify_notify_one(|value| *value = 2213).unwrap();
 
         t1.join().unwrap();
         t2.join().unwrap();
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 1);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }

@@ -72,9 +72,11 @@ fn read_write_mutex_write_lock_blocks_read_and_write_locks() {
         });
 
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         drop(_guard);
         nanosleep(TIMEOUT).unwrap();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }
@@ -98,10 +100,11 @@ fn read_write_mutex_read_lock_blocks_only_write_locks() {
         });
 
         nanosleep(TIMEOUT * 4).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 5);
+        let counter_old = counter.load(Ordering::Relaxed);
         drop(_guard);
         drop(_guard2);
         assert_that!(t1.join(), is_ok);
+        assert_that!(counter_old, eq 5);
         assert_that!(counter.load(Ordering::Relaxed), eq 6);
     });
 }

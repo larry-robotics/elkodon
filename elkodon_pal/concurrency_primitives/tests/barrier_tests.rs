@@ -33,10 +33,12 @@ fn barrier_with_multiple_waiter_works() {
         });
 
         sut.wait(|_, _| {}, |_| {});
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         sut2.wait(|_, _| {}, |_| {});
 
         sut3.wait(|_, _| {}, |_| {});
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 3);
     });
 }

@@ -23,9 +23,11 @@ fn mutex_lock_blocks() {
         });
 
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         sut.unlock(|_| {});
+
         assert_that!(t1.join(), is_ok);
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
     });
 }
@@ -55,9 +57,11 @@ fn mutex_lock_with_timeout_blocks() {
         });
 
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         sut.unlock(|_| {});
+
         assert_that!(t1.join(), is_ok);
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
     });
 }

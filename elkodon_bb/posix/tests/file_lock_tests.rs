@@ -275,9 +275,11 @@ fn file_lock_write_lock_blocks() {
         });
 
         thread::sleep(std::time::Duration::from_millis(10));
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         drop(guard);
         thread::sleep(std::time::Duration::from_millis(10));
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 2);
     });
 }
@@ -303,9 +305,11 @@ fn file_lock_read_lock_blocks_write_locks() {
         });
 
         thread::sleep(std::time::Duration::from_millis(10));
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old = counter.load(Ordering::Relaxed);
         drop(guard);
         thread::sleep(std::time::Duration::from_millis(10));
+
+        assert_that!(counter_old, eq 1);
         assert_that!(counter.load(Ordering::Relaxed), eq 3);
     });
 }
