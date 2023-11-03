@@ -69,7 +69,6 @@ elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
 
 elk_common_build_and_test_debug_template: &ELK_COMMON_BUILD_AND_TEST_DEBUG
   <<: *ELK_COMMON_BUILD_DEBUG
-  doc_script: cargo doc
   test_script: cargo test --workspace --all
 
 elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
@@ -77,7 +76,6 @@ elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
 
 elk_common_build_and_test_release_template: &ELK_COMMON_BUILD_AND_TEST_RELEASE
   <<: *ELK_COMMON_BUILD_RELEASE
-  doc_script: cargo doc --release
   test_script: cargo test --release --workspace --all
 
 #
@@ -89,7 +87,8 @@ preflight_check_task:
   set_toolchain_script: rustup default stable
   # TODO elk-#8: add more preflight-checks here
   <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_DEBUG # only build without tests to not slow down other tasks due to flaky tests
+  <<: *ELK_COMMON_BUILD_DEBUG # only build without tests to not slow down other tasks due to failures in flaky tests
+  doc_script: cargo doc
 
 #
 # Ubuntu x86
