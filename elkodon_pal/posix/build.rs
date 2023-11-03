@@ -10,7 +10,7 @@ fn main() {
     #[cfg(any(target_os = "linux", target_os = "freebsd"))]
     println!("cargo:rustc-link-lib=pthread");
 
-    println!("cargo:rerun-if-changed=src/posix.h");
+    println!("cargo:rerun-if-changed=src/c/posix.h");
 
     let bindings = bindgen::Builder::default()
         .header("src/c/posix.h")
