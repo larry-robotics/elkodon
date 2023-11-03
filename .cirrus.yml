@@ -85,6 +85,12 @@ elk_common_build_and_test_release_template: &ELK_COMMON_BUILD_AND_TEST_RELEASE
   test_script: cargo test --release --workspace --all
 
 #
+# Filter to run the CI only on the main branch or for pull request to the main branch
+#
+
+only_if: $CIRRUS_BRANCH == 'main' || ($CIRRUS_PR != '' && $CIRRUS_BASE_BRANCH == 'main')
+
+#
 # Preflight-Check with Ubuntu x86 stable debug
 #
 
