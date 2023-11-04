@@ -61,7 +61,9 @@ fn semaphore_wait_blocks() {
         });
 
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let old_counter = counter.load(Ordering::Relaxed);
         sut.post(|_| {});
+
+        assert_that!(old_counter, eq 0);
     });
 }

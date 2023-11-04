@@ -177,10 +177,12 @@ fn unix_datagram_socket_blocking_mode_blocks() {
             .unwrap();
 
         thread::sleep(TIMEOUT);
-        assert_that!(received_message.load(Ordering::Relaxed), eq false);
+        let received_message_old = received_message.load(Ordering::Relaxed);
         let send_data: Vec<u8> = vec![1u8, 3u8, 3u8, 7u8, 13u8, 37u8];
         sut_sender.blocking_send(send_data.as_slice()).unwrap();
         t.join().ok();
+
+        assert_that!(received_message_old, eq false);
         assert_that!(received_message.load(Ordering::Relaxed), eq true);
     });
 }

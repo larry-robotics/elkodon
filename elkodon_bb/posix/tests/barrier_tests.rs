@@ -28,9 +28,11 @@ fn barrier_blocks() -> Result<(), BarrierCreationError> {
         });
 
         sut.wait();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         sut2.wait();
         sut3.wait();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 20);
     });
 

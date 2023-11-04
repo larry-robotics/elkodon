@@ -78,14 +78,20 @@ fn condition_variable_notify_one_unblocks_one() {
 
         barrier.wait(|_, _| {}, |_| {});
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
 
-        for i in 0..NUMBER_OF_THREADS {
+        let mut old_counter_vec = vec![];
+        for _ in 0..NUMBER_OF_THREADS {
             sut.notify(|_| {
                 triggered_thread.fetch_add(1, Ordering::Relaxed);
             });
             std::thread::sleep(TIMEOUT);
-            assert_that!(counter.load(Ordering::Relaxed), eq i + 1);
+            old_counter_vec.push(counter.load(Ordering::Relaxed));
+        }
+
+        assert_that!(counter_old, eq 0);
+        for i in 0..NUMBER_OF_THREADS {
+            assert_that!(old_counter_vec[i as usize], eq i + 1);
         }
     });
 }
@@ -123,18 +129,19 @@ fn condition_variable_notify_all_unblocks_all() {
 
         barrier.wait(|_, _| {}, |_| {});
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
 
         sut.notify(|_| {
             triggered_thread.fetch_add(1, Ordering::Relaxed);
         });
         std::thread::sleep(TIMEOUT);
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq NUMBER_OF_THREADS);
     });
 }
 
 #[test]
-#[ignore = "TODO elk-#30: This test causes the CI to deadlock"]
 fn condition_variable_mutex_is_locked_when_wait_returns() {
     const NUMBER_OF_THREADS: u32 = 5;
     let barrier = Barrier::new(NUMBER_OF_THREADS + 1);
@@ -166,16 +173,22 @@ fn condition_variable_mutex_is_locked_when_wait_returns() {
 
         barrier.wait(|_, _| {}, |_| {});
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
 
-        for i in 0..NUMBER_OF_THREADS {
+        let mut old_counter_vec = vec![];
+        for _ in 0..NUMBER_OF_THREADS {
             sut.notify(|_| {
                 triggered_thread.fetch_add(1, Ordering::Relaxed);
             });
             std::thread::sleep(TIMEOUT);
-            assert_that!(counter.load(Ordering::Relaxed), eq i + 1);
+            old_counter_vec.push(counter.load(Ordering::Relaxed));
             // unlock in a different thread
             mtx.unlock(|_| {});
+        }
+
+        assert_that!(counter_old, eq 0);
+        for i in 0..NUMBER_OF_THREADS {
+            assert_that!(old_counter_vec[i as usize], eq i + 1);
         }
     });
 }

@@ -272,13 +272,14 @@ fn udp_socket_client_blocking_receive_does_block() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
-        assert_that!(
-            sut_server.send_to(&send_buffer, client_addr.source_ip, client_addr.source_port),
-            is_ok
-        );
+        let counter_old = counter.load(Ordering::Relaxed);
+        let send_result =
+            sut_server.send_to(&send_buffer, client_addr.source_ip, client_addr.source_port);
+
         assert_that!(t1.join(), is_ok);
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        assert_that!(send_result, is_ok);
     });
 }
 
@@ -309,11 +310,14 @@ fn udp_socket_server_blocking_receive_from_does_block() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         let send_buffer = [12u8, 24u8, 36u8];
-        assert_that!(sut_client.send(&send_buffer), is_ok);
+        let send_result = sut_client.send(&send_buffer);
+
         assert_that!(t1.join(), is_ok);
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        assert_that!(send_result, is_ok);
     });
 }
 
@@ -353,13 +357,14 @@ fn udp_socket_client_timed_receive_does_blocks() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
-        assert_that!(
-            sut_server.send_to(&send_buffer, client_addr.source_ip, client_addr.source_port),
-            is_ok
-        );
+        let counter_old = counter.load(Ordering::Relaxed);
+        let send_result =
+            sut_server.send_to(&send_buffer, client_addr.source_ip, client_addr.source_port);
+
         assert_that!(t1.join(), is_ok);
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        assert_that!(send_result, is_ok);
     });
 }
 
@@ -391,10 +396,13 @@ fn udp_socket_server_timed_receive_from_does_block() {
 
         barrier.wait();
         std::thread::sleep(TIMEOUT);
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         let send_buffer = [12u8, 24u8, 36u8];
-        assert_that!(sut_client.send(&send_buffer), is_ok);
+        let send_result = sut_client.send(&send_buffer);
+
         assert_that!(t1.join(), is_ok);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        assert_that!(counter_old, eq 0);
+        assert_that!(send_result, is_ok);
     });
 }

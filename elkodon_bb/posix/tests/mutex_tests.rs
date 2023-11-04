@@ -53,11 +53,12 @@ fn mutex_try_lock_leads_to_blocked_mutex() {
         });
 
         thread::sleep(std::time::Duration::from_millis(10));
-        assert_that!(*value, eq 111);
+        let value_old = *value;
         *value = 444;
         drop(value);
 
         t1.join().unwrap();
+        assert_that!(value_old, eq 111);
         assert_that!(*sut.lock().unwrap(), eq 555);
     });
 }
@@ -80,11 +81,12 @@ fn mutex_timed_lock_leads_to_blocked_mutex_realtime() {
         });
 
         thread::sleep(std::time::Duration::from_millis(10));
-        assert_that!(*value, eq 111);
+        let value_old = *value;
         *value = 444;
         drop(value);
 
         t1.join().unwrap();
+        assert_that!(value_old, eq 111);
         assert_that!(*sut.lock().unwrap(), eq 555);
     });
 }
@@ -109,11 +111,12 @@ fn mutex_timed_lock_leads_to_blocked_mutex_monotonic() {
         });
 
         thread::sleep(std::time::Duration::from_millis(10));
-        assert_that!(*value, eq 111);
+        let value_old = *value;
         *value = 444;
         drop(value);
 
         t1.join().unwrap();
+        assert_that!(value_old, eq 111);
         assert_that!(*sut.lock().unwrap(), eq 555);
     });
 }
@@ -335,11 +338,12 @@ fn mutex_recursive_mutex_blocks() {
         });
 
         thread::sleep(std::time::Duration::from_millis(10));
-        assert_that!(*value, eq 111);
+        let old_value = *value;
         *value = 444;
         drop(value);
 
         t1.join().unwrap();
+        assert_that!(old_value, eq 111);
         assert_that!(*sut.lock().unwrap(), eq 555);
     });
 }
@@ -361,11 +365,12 @@ fn mutex_with_deadlock_detection_blocks() {
         });
 
         thread::sleep(std::time::Duration::from_millis(10));
-        assert_that!(*value, eq 111);
+        let old_value = *value;
         *value = 444;
         drop(value);
 
         t1.join().unwrap();
+        assert_that!(old_value, eq 111);
         assert_that!(*sut.lock().unwrap(), eq 555);
     });
 }

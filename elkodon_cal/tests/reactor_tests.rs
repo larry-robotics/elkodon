@@ -495,13 +495,15 @@ mod reactor {
 
             barrier.wait();
             std::thread::sleep(TIMEOUT);
-            assert_that!(counter.load(Ordering::Relaxed), eq 0);
+            let counter_old = counter.load(Ordering::Relaxed);
 
             let notifier = unix_datagram_socket::NotifierBuilder::<u64>::new(&name)
                 .open()
                 .unwrap();
             notifier.notify(123).unwrap();
             t.join().unwrap();
+
+            assert_that!(counter_old, eq 0);
         });
     }
 
@@ -532,13 +534,15 @@ mod reactor {
 
             barrier.wait();
             std::thread::sleep(TIMEOUT);
-            assert_that!(counter.load(Ordering::Relaxed), eq 0);
+            let counter_old = counter.load(Ordering::Relaxed);
 
             let notifier = unix_datagram_socket::NotifierBuilder::<u64>::new(&name)
                 .open()
                 .unwrap();
             notifier.notify(123).unwrap();
             t.join().unwrap();
+
+            assert_that!(counter_old, eq 0);
         });
     }
 

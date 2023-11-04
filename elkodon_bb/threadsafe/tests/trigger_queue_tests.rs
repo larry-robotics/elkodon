@@ -159,9 +159,11 @@ fn trigger_queue_blocking_push_blocks_until_there_is_space_again() {
         });
 
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         sut.blocking_pop();
         nanosleep(TIMEOUT).unwrap();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
     });
 }
@@ -183,9 +185,11 @@ fn trigger_queue_blocking_pop_blocks_until_there_is_something_pushed() {
         });
 
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old = counter.load(Ordering::Relaxed);
         sut.blocking_push(0);
         nanosleep(TIMEOUT).unwrap();
+
+        assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq 1);
     });
 }
@@ -215,11 +219,14 @@ fn trigger_queue_one_pop_notifies_exactly_one_blocking_push() {
         });
 
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         sut.blocking_pop();
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         sut.blocking_pop();
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 1);
     });
 }
 
@@ -247,11 +254,14 @@ fn trigger_queue_one_pop_notifies_exactly_one_timed_push() {
         });
 
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         sut.blocking_pop();
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         sut.blocking_pop();
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 1);
     });
 }
 
@@ -275,11 +285,14 @@ fn trigger_queue_one_push_notifies_exactly_one_blocking_pop() {
         });
 
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         sut.blocking_push(0);
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         sut.blocking_push(0);
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 1);
     });
 }
 
@@ -303,10 +316,13 @@ fn trigger_queue_one_push_notifies_exactly_one_timed_pop() {
         });
 
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 0);
+        let counter_old_1 = counter.load(Ordering::Relaxed);
         sut.blocking_push(0);
         nanosleep(TIMEOUT).unwrap();
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        let counter_old_2 = counter.load(Ordering::Relaxed);
         sut.blocking_push(0);
+
+        assert_that!(counter_old_1, eq 0);
+        assert_that!(counter_old_2, eq 1);
     });
 }
