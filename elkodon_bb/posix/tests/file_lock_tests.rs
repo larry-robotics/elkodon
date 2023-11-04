@@ -328,7 +328,7 @@ fn file_lock_read_timed_lock_waits_at_least_timeout() {
         s.spawn(|| {
             let start = Instant::now();
             test.sut.read_timed_lock(TIMEOUT).expect("");
-            assert_that!(start.elapsed(), ge TIMEOUT);
+            assert_that!(start.elapsed(), time_at_least TIMEOUT);
         });
 
         thread::sleep(4 * TIMEOUT);
@@ -349,7 +349,7 @@ fn file_lock_write_timed_lock_waits_at_least_timeout() {
         s.spawn(|| {
             let start = Instant::now();
             test.sut.write_timed_lock(TIMEOUT).expect("");
-            assert_that!(start.elapsed(), ge TIMEOUT);
+            assert_that!(start.elapsed(), time_at_least TIMEOUT);
         });
 
         thread::sleep(4 * TIMEOUT);

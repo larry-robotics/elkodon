@@ -4,9 +4,8 @@ use std::time::Duration;
 
 use elkodon_bb_posix::clock::{nanosleep, Time};
 use elkodon_bb_posix::mutex::MutexHandle;
-use elkodon_bb_testing::{assert_that, test_requires};
+use elkodon_bb_testing::assert_that;
 use elkodon_bb_threadsafe::trigger_queue::*;
-use elkodon_pal_posix::posix::POSIX_SUPPORT_AT_LEAST_TIMEOUTS;
 
 const TIMEOUT: Duration = Duration::from_millis(25);
 const SUT_CAPACITY: usize = 128;
@@ -109,7 +108,6 @@ fn trigger_queue_blocking_push_pop_works() {
 
 #[test]
 fn trigger_queue_timed_push_blocks_at_least_until_timeout_has_passed() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let mtx_handle = MutexHandle::new();
     let free_handle = UnnamedSemaphoreHandle::new();
     let used_handle = UnnamedSemaphoreHandle::new();
@@ -122,12 +120,11 @@ fn trigger_queue_timed_push_blocks_at_least_until_timeout_has_passed() {
 
     let start = Time::now().unwrap();
     assert_that!(sut.timed_push(0, TIMEOUT), eq false);
-    assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+    assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
 }
 
 #[test]
 fn trigger_queue_timed_pop_blocks_at_least_until_timeout_has_passed() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let mtx_handle = MutexHandle::new();
     let free_handle = UnnamedSemaphoreHandle::new();
     let used_handle = UnnamedSemaphoreHandle::new();
@@ -136,7 +133,7 @@ fn trigger_queue_timed_pop_blocks_at_least_until_timeout_has_passed() {
 
     let start = Time::now().unwrap();
     assert_that!(sut.timed_pop(TIMEOUT), is_none);
-    assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+    assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
 }
 
 #[test]

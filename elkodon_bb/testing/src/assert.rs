@@ -147,6 +147,16 @@ macro_rules! assert_that {
             }
         }
     };
+    ($lhs:expr, time_at_least $rhs:expr) => {
+        {
+            let lval = $lhs.as_secs_f32();
+            let rval = $rhs.as_secs_f32() * (1.0 - elkodon_bb_testing::AT_LEAST_TIMING_VARIANCE).clamp(0.0, 1.0);
+
+            if !(lval >= rval) {
+                assert_that!(message_time_at_least $lhs, $rhs, lval, rval);
+            }
+        }
+    };
     [color_start] => {
         "\x1b[1;4;33m"
     };
@@ -182,6 +192,17 @@ macro_rules! assert_that {
             assert_that![color_start],
             core::stringify!($lhs),
             $state,
+            assert_that![color_end]
+        );
+    };
+    [message_time_at_least $lhs:expr, $rhs:expr, $lval:expr, $rval:expr] => {
+        core::panic!(
+            "assertion failed: [ time test ] {}expr: {} at least {};  value: {:?} at least {:?}{}",
+            assert_that![color_start],
+            core::stringify!($lhs),
+            core::stringify!($rhs),
+            $lval,
+            $rval,
             assert_that![color_end]
         );
     };

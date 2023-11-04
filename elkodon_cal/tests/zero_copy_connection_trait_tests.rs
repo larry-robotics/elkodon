@@ -391,7 +391,7 @@ mod zero_copy_connection {
 
             assert_that!(sut_sender.blocking_send(PointerOffset::new(7789)), is_ok);
             assert_that!(sut_sender.blocking_send(PointerOffset::new(227789)), is_ok);
-            assert_that!(now.elapsed(), ge TIMEOUT);
+            assert_that!(now.elapsed(), time_at_least TIMEOUT);
         });
     }
 

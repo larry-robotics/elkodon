@@ -218,7 +218,7 @@ fn unix_datagram_socket_timeout_blocks_at_least() {
 
         t.join().ok();
 
-        assert_that!(start.elapsed(), ge TIMEOUT);
+        assert_that!(start.elapsed(), time_at_least TIMEOUT);
     });
 }
 

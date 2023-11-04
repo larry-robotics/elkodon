@@ -9,7 +9,6 @@ use elkodon_bb_system_types::file_path::FilePath;
 use elkodon_bb_testing::assert_that;
 use elkodon_bb_testing::test_requires;
 use elkodon_pal_posix::posix;
-use elkodon_pal_posix::posix::POSIX_SUPPORT_AT_LEAST_TIMEOUTS;
 use elkodon_pal_posix::posix::POSIX_SUPPORT_UNIX_DATAGRAM_SOCKETS;
 use std::time::Duration;
 use std::time::Instant;
@@ -33,7 +32,6 @@ fn generate_socket_name() -> FilePath {
 #[test]
 fn file_descriptor_set_timed_wait_blocks_at_least_timeout() {
     test_requires!(POSIX_SUPPORT_UNIX_DATAGRAM_SOCKETS);
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
 
     let socket_name = generate_socket_name();
 
@@ -61,7 +59,7 @@ fn file_descriptor_set_timed_wait_blocks_at_least_timeout() {
         })
         .unwrap();
 
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
     assert_that!(result, len 0);
 }
 

@@ -225,7 +225,7 @@ fn signal_timed_wait_blocks_at_least_for_timeout() {
 
     let start = Time::now_with_clock(ClockType::Monotonic).unwrap();
     SignalHandler::timed_wait_for_signal(FetchableSignal::UserDefined2, TIMEOUT).unwrap();
-    assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+    assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
 }
 
 #[test]

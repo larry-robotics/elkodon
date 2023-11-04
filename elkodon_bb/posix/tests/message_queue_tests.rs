@@ -408,7 +408,7 @@ fn message_queue_timed_send_waits_at_least_for_timeout() {
     sut.try_send(&123).unwrap();
     let start = Time::now().unwrap();
     assert_that!(sut.timed_send(&123, TIMEOUT).unwrap(), eq false);
-    assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+    assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
 }
 
 #[test]
@@ -423,5 +423,5 @@ fn message_queue_timed_receive_waits_at_least_for_timeout() {
 
     let start = Time::now().unwrap();
     assert_that!(sut.timed_receive(TIMEOUT).unwrap(), is_none);
-    assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+    assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
 }

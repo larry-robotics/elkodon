@@ -8,3 +8,5 @@ macro_rules! test_requires {
         if !$condition { return; }
     }
 }
+
+pub const AT_LEAST_TIMING_VARIANCE: f32 = elkodon_pal_settings::settings::AT_LEAST_TIMING_VARIANCE;

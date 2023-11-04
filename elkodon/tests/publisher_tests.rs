@@ -161,7 +161,7 @@ mod publisher {
             let now = Instant::now();
             sut.send_copy(8192).unwrap();
             sut.send_copy(2).unwrap();
-            assert_that!(now.elapsed(), ge TIMEOUT);
+            assert_that!(now.elapsed(), time_at_least TIMEOUT);
         });
     }
 

@@ -1,6 +1,5 @@
 use elkodon_bb_posix::condition_variable::*;
-use elkodon_bb_testing::{assert_that, test_requires};
-use elkodon_pal_posix::posix::POSIX_SUPPORT_AT_LEAST_TIMEOUTS;
+use elkodon_bb_testing::assert_that;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Arc;
 use std::thread;
@@ -110,7 +109,6 @@ fn multi_condition_variable_trigger_all_signals_all() {
 
 #[test]
 fn multi_condition_variable_timed_wait_waits_at_least_given_amount_of_time() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let handle = MutexHandle::<i32>::new();
     let sut = ConditionVariableBuilder::new()
         .create_multi_condition_variable(1111, &handle)
@@ -118,12 +116,11 @@ fn multi_condition_variable_timed_wait_waits_at_least_given_amount_of_time() {
 
     let start = Instant::now();
     sut.timed_wait(TIMEOUT).unwrap();
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
 }
 
 #[test]
 fn multi_condition_variable_timed_wait_while_waits_at_least_given_amount_of_time() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let handle = MutexHandle::<i32>::new();
     let sut = ConditionVariableBuilder::new()
         .create_multi_condition_variable(0, &handle)
@@ -133,7 +130,7 @@ fn multi_condition_variable_timed_wait_while_waits_at_least_given_amount_of_time
         let t1 = s.spawn(|| {
             let start = Instant::now();
             sut.timed_wait_while(2 * TIMEOUT, |t| *t > 0).unwrap();
-            assert_that!(start.elapsed(), ge 2 * TIMEOUT);
+            assert_that!(start.elapsed(), time_at_least 2 * TIMEOUT);
         });
 
         thread::sleep(TIMEOUT);
@@ -402,7 +399,6 @@ fn condition_variable_modify_notify_one_signals_one_waiter() {
 
 #[test]
 fn condition_variable_timed_wait_waits_at_least_given_amount_of_time() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let handle = MutexHandle::<ConditionVariableData<i32>>::new();
     let sut = Arc::new(
         ConditionVariableBuilder::new()
@@ -412,12 +408,11 @@ fn condition_variable_timed_wait_waits_at_least_given_amount_of_time() {
 
     let start = Instant::now();
     sut.timed_wait(TIMEOUT).unwrap();
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
 }
 
 #[test]
 fn condition_variable_timed_wait_while_waits_at_least_given_amount_of_time() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let handle = MutexHandle::<ConditionVariableData<i32>>::new();
     let sut = Arc::new(
         ConditionVariableBuilder::new()
@@ -427,7 +422,7 @@ fn condition_variable_timed_wait_while_waits_at_least_given_amount_of_time() {
 
     let start = Instant::now();
     sut.timed_wait_while(TIMEOUT).unwrap();
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
 }
 
 #[test]

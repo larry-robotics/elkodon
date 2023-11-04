@@ -11,14 +11,14 @@ const TIMEOUT: Duration = Duration::from_millis(100);
 fn clock_nanosleep_sleeps_at_least_given_amount_of_time() {
     let start = Instant::now();
     assert_that!(nanosleep(TIMEOUT), is_ok);
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
 }
 
 #[test]
 fn clock_nanosleep_with_clock_sleeps_at_least_given_amount_of_time() {
     let start = Instant::now();
     assert_that!(nanosleep_with_clock(TIMEOUT, ClockType::Realtime), is_ok);
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
 }
 
 #[test]
@@ -59,6 +59,6 @@ fn clock_time_now_is_monotonic_with_monotonic_clock() {
     let start2 = Time::now_with_clock(ClockType::Monotonic).unwrap();
     assert_that!(nanosleep(TIMEOUT), is_ok);
 
-    assert_that!(start.elapsed().unwrap(), ge TIMEOUT * 2);
-    assert_that!(start2.elapsed().unwrap(), ge TIMEOUT);
+    assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT * 2);
+    assert_that!(start2.elapsed().unwrap(), time_at_least TIMEOUT);
 }

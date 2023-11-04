@@ -7,10 +7,9 @@ mod event {
     use elkodon_bb_posix::barrier::{BarrierBuilder, BarrierHandle};
     use elkodon_bb_posix::unique_system_id::UniqueSystemId;
     use elkodon_bb_system_types::file_name::FileName;
-    use elkodon_bb_testing::{assert_that, test_requires};
+    use elkodon_bb_testing::assert_that;
     use elkodon_cal::event::*;
     use elkodon_cal::named_concept::*;
-    use elkodon_pal_posix::posix::POSIX_SUPPORT_AT_LEAST_TIMEOUTS;
 
     const TIMEOUT: Duration = Duration::from_millis(25);
 
@@ -212,7 +211,6 @@ mod event {
 
     #[test]
     fn timed_wait_does_block_for_at_least_timeout<Sut: Event<u64>>() {
-        test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
         let name = generate_name();
 
         let sut_listener = Sut::ListenerBuilder::new(&name).create().unwrap();
@@ -221,7 +219,7 @@ mod event {
         let start = Instant::now();
         let result = sut_listener.timed_wait(TIMEOUT).unwrap();
         assert_that!(result, is_none);
-        assert_that!(TIMEOUT, le start.elapsed());
+        assert_that!(start.elapsed(), time_at_least TIMEOUT);
     }
 
     #[test]

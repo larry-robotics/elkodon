@@ -4,11 +4,10 @@ mod reactor {
     use elkodon_bb_posix::file_descriptor::FileDescriptorBased;
     use elkodon_bb_posix::unique_system_id::UniqueSystemId;
     use elkodon_bb_system_types::file_name::FileName;
-    use elkodon_bb_testing::{assert_that, test_requires};
+    use elkodon_bb_testing::assert_that;
     use elkodon_cal::event::unix_datagram_socket::*;
     use elkodon_cal::event::{Listener, ListenerBuilder, Notifier, NotifierBuilder};
     use elkodon_cal::reactor::{Reactor, *};
-    use elkodon_pal_posix::posix::POSIX_SUPPORT_AT_LEAST_TIMEOUTS;
     use std::sync::atomic::{AtomicU64, Ordering};
     use std::sync::Barrier;
     use std::time::{Duration, Instant};
@@ -322,7 +321,6 @@ mod reactor {
 
     #[test]
     fn timed_wait_blocks_for_at_least_timeout<Sut: Reactor>() {
-        test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
         let sut = <<Sut as Reactor>::Builder>::new().create().unwrap();
 
         let attachment = NotifierListenerPair::new();
@@ -338,7 +336,7 @@ mod reactor {
             ),
             is_ok
         );
-        assert_that!(start.elapsed(), ge TIMEOUT);
+        assert_that!(start.elapsed(), time_at_least TIMEOUT);
 
         assert_that!(triggered_fds, len 0);
     }

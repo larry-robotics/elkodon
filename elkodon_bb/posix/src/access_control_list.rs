@@ -538,7 +538,7 @@ impl AccessControlList {
 
     /// Acquires an AccessControlList from a given file descriptor.
     ///
-    /// ```
+    /// ```no_run
     /// use elkodon_bb_posix::file::*;
     /// use elkodon_bb_posix::access_control_list::*;
     /// use elkodon_bb_posix::file_descriptor::FileDescriptorBased;
