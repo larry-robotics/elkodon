@@ -83,7 +83,7 @@ impl<'global_config, Service: service::Details<'global_config>>
 pub struct Notifier<'a, 'global_config: 'a, Service: service::Details<'global_config>> {
     listener_connections: ListenerConnections<'global_config, Service>,
     listener_list_state: UnsafeCell<ContainerState<'a, UniqueListenerId>>,
-    default_trigger_id: EventId,
+    default_event_id: EventId,
     _dynamic_config_guard: Option<UniqueIndex<'a>>,
     _phantom_a: PhantomData<&'a Service>,
     _phantom_b: PhantomData<&'global_config ()>,
@@ -94,7 +94,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
 {
     pub(crate) fn new(
         service: &'a Service,
-        default_trigger_id: EventId,
+        default_event_id: EventId,
     ) -> Result<Self, NotifierCreateError> {
         let msg = "Unable to create Notifier port";
         let origin = "Notifier::new()";
@@ -104,7 +104,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
 
         let mut new_self = Self {
             listener_connections: ListenerConnections::new(listener_list.capacity()),
-            default_trigger_id,
+            default_event_id,
             listener_list_state: unsafe { UnsafeCell::new(listener_list.get_state()) },
             _dynamic_config_guard: None,
             _phantom_a: PhantomData,
@@ -174,10 +174,10 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
     }
 
     pub fn notify(&self) -> Result<usize, NotifierConnectionUpdateFailure> {
-        self.notify_with_custom_trigger_id(self.default_trigger_id)
+        self.notify_with_custom_event_id(self.default_event_id)
     }
 
-    pub fn notify_with_custom_trigger_id(
+    pub fn notify_with_custom_event_id(
         &self,
         value: EventId,
     ) -> Result<usize, NotifierConnectionUpdateFailure> {

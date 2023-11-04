@@ -18,7 +18,7 @@ fn main() {
     while !SignalHandler::was_ctrl_c_pressed() {
         counter += 1;
         notifier
-            .notify_with_custom_trigger_id(EventId::new(counter))
+            .notify_with_custom_event_id(EventId::new(counter))
             .expect("failed to trigger event");
 
         println!("Trigger event with id {} ...", counter);

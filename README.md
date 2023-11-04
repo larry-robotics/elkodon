@@ -2,8 +2,6 @@
 
 | [benchmarks](benchmarks/README.md) | [changelog](CHANGELOG.md) | [contributing](CONTRIBUTING.md) | [examples](examples/README.md) | [faq](FAQ.md) | [roadmap](ROADMAP.md) |
 
-- add social media links here, gitter, bi weekly iceoryx developer meetup maybe
-
  1. [Introduction](#introduction)
  2. [Performance](#performance)
  3. [Getting Started](#getting-started)
@@ -29,7 +27,7 @@ In the near future, Elkodon is poised to support at least the same feature set a
 
 ```mermaid
 gantt
-    title Latency (in nanoseconds) - 64b payload
+    title Latency (in ns) - 64b payload
     dateFormat X
     axisFormat %s
 
@@ -45,7 +43,7 @@ gantt
 
 ```mermaid
 gantt
-    title Latency (in nanoseconds) - 64kb payload
+    title Latency (in ns) - 64kb payload
     dateFormat X
     axisFormat %s
 
@@ -150,6 +148,86 @@ cargo run --example publish_subscribe_subscriber
 ```
 
 ### Events
+
+This minimal example showcases an event notification between two processes.
+
+**notifier.rs**
+
+```rust
+use elkodon::prelude::*;
+use elkodon_bb_posix::signal::SignalHandler;
+
+fn main() {
+    let event_name = ServiceName::new(b"MyEventName").unwrap();
+
+    let event = zero_copy::Service::new(&event_name)
+        .event()
+        .open_or_create()
+        .expect("failed to create/open event");
+
+    let notifier = event
+        .notifier()
+        .create()
+        .expect("failed to create notifier");
+
+    let mut counter: u64 = 0;
+    while !SignalHandler::was_ctrl_c_pressed() {
+        counter += 1;
+        notifier
+            .notify_with_custom_trigger_id(EventId::new(counter))
+            .expect("failed to trigger event");
+
+        println!("Trigger event with id {} ...", counter);
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
+}
+```
+
+**listener.rs**
+
+```rust
+use elkodon::prelude::*;
+use elkodon_bb_posix::signal::SignalHandler;
+
+fn main() {
+    let event_name = ServiceName::new(b"MyEventName").unwrap();
+
+    let event = zero_copy::Service::new(&event_name)
+        .event()
+        .open_or_create()
+        .expect("failed to create/open event");
+
+    let mut listener = event
+        .listener()
+        .create()
+        .expect("failed to create listener");
+
+    while !SignalHandler::was_ctrl_c_pressed() {
+        for event_id in listener
+            .timed_wait(std::time::Duration::from_secs(1))
+            .expect("failed to wait on listener")
+        {
+            println!("event was triggered with id: {:?}", event_id);
+        }
+    }
+}
+```
+
+This example is a simplified version of the
+[event example](examples/examples/event/). You can
+execute it by opening two terminals and calling:
+
+**Terminal 1:**
+
+```sh
+cargo run --example event_notifier
+```
+
+**Terminal 2:**
+
+```sh
+cargo run --example event_listener
+```
 
 ## Supported Platforms
 
