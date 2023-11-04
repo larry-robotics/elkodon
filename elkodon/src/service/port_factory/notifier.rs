@@ -14,7 +14,7 @@ use super::event::PortFactory;
 pub struct PortFactoryNotifier<'factory, 'global_config, Service: service::Details<'global_config>>
 {
     pub(crate) factory: &'factory PortFactory<'global_config, Service>,
-    default_trigger_id: EventId,
+    default_event_id: EventId,
 }
 
 impl<'factory, 'global_config, Service: service::Details<'global_config>>
@@ -23,12 +23,12 @@ impl<'factory, 'global_config, Service: service::Details<'global_config>>
     pub(crate) fn new(factory: &'factory PortFactory<'global_config, Service>) -> Self {
         Self {
             factory,
-            default_trigger_id: EventId::default(),
+            default_event_id: EventId::default(),
         }
     }
 
-    pub fn default_trigger_id(mut self, value: EventId) -> Self {
-        self.default_trigger_id = value;
+    pub fn default_event_id(mut self, value: EventId) -> Self {
+        self.default_event_id = value;
         self
     }
 
@@ -36,7 +36,7 @@ impl<'factory, 'global_config, Service: service::Details<'global_config>>
         &self,
     ) -> Result<Notifier<'factory, 'global_config, Service>, NotifierCreateError> {
         Ok(
-            fail!(from self, when Notifier::new(&self.factory.service, self.default_trigger_id),
+            fail!(from self, when Notifier::new(&self.factory.service, self.default_event_id),
                     "Failed to create new Notifier port."),
         )
     }

@@ -13,15 +13,30 @@
 
 ## Introduction
 
-Welcome to Elkodon, your gateway to fast, efficient, and ultra-low latency inter-process communication. This library is the embodiment of Rust's power and elegance, designed to meet your communication needs with zero-copy and lock-free mechanisms.
+Welcome to Elkodon, your gateway to fast, efficient, and ultra-low latency
+inter-process communication. This library is the embodiment of Rust's power and
+elegance, designed to meet your communication needs with zero-copy and lock-free
+mechanisms.
 
-Elkodon is all about providing a seamless experience for inter-process communication, featuring versatile messaging patterns. Whether you're diving into publish-subscribe, events, or the promise of upcoming features like request-response, pipelines, and blackboard, Elkodon has you covered.
+Elkodon is all about providing a seamless experience for inter-process
+communication, featuring versatile messaging patterns. Whether you're diving
+into publish-subscribe, events, or the promise of upcoming features like
+request-response, pipelines, and blackboard, Elkodon has you covered.
 
-One of the standout features of Elkodon is its remarkable consistency. Regardless of payload size, transmission latency remains constant, ensuring a predictable and reliable communication experience.
+One of the standout features of Elkodon is its remarkable consistency.
+Regardless of payload size, transmission latency remains constant, ensuring a
+predictable and reliable communication experience.
 
-Elkodon's origins can be traced back to Iceoryx, but it's not just an evolution – it's a revolution. By overcoming past technical debts and refining the architecture, Elkodon enables the modularity we've always desired.
+Elkodon's origins can be traced back to Iceoryx, but it's not just an
+evolution – it's a revolution. By overcoming past technical debts and refining
+the architecture, Elkodon enables the modularity we've always desired.
 
-In the near future, Elkodon is poised to support at least the same feature set and platforms as Iceoryx, ensuring a seamless transition and offering enhanced capabilities for your inter-process communication needs. So, if you're looking for lightning-fast, cross-platform communication that doesn't compromise on performance or modularity, Elkodon is your answer. Welcome to a new era of inter-process communication.
+In the near future, Elkodon is poised to support at least the same feature set
+and platforms as Iceoryx, ensuring a seamless transition and offering enhanced
+capabilities for your inter-process communication needs. So, if you're looking
+for lightning-fast, cross-platform communication that doesn't compromise on
+performance or modularity, Elkodon is your answer. Welcome to a new era of
+inter-process communication.
 
 ## Performance
 
@@ -132,7 +147,7 @@ fn main() {
 ```
 
 This example is a simplified version of the
-[publish subscribe example](examples/examples/publish_subscribe/). You can
+[publish-subscribe example](examples/examples/publish_subscribe/). You can
 execute it by opening two terminals and calling:
 
 **Terminal 1:**
