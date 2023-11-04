@@ -1,6 +1,6 @@
 # elkodon - Zero-Copy Lock-Free IPC Purely Written In Rust
 
-| [benchmarks](benchmarks/README.md) | [changelog](CHANGELOG.md) | [contributing](CONTRIBUTING.md) | [examples](examples/README.md) | [faq](FAQ.md) | [roadmap](ROADMAP.md) |
+| [benchmarks](benchmarks/README.md) | [best practices](BEST_PRACTICES.md) | [changelog](CHANGELOG.md) | [contributing](CONTRIBUTING.md) | [examples](examples/README.md) | [faq](FAQ.md) | [roadmap](ROADMAP.md) |
 
  1. [Introduction](#introduction)
  2. [Performance](#performance)
