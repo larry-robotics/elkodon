@@ -33,13 +33,14 @@ use elkodon_bb_log::{fail, fatal_panic};
 ///  * The string must be '\0' (null) terminated.
 ///
 pub unsafe fn strlen(ptr: *mut std::ffi::c_char) -> usize {
+    const NULL_TERMINATION: std::ffi::c_char = 0;
     for i in 0..isize::MAX {
-        if *ptr.offset(i) as u8 == b'\0' {
+        if *ptr.offset(i) == NULL_TERMINATION {
             return i as usize;
         }
     }
 
-    0
+    unreachable!()
 }
 
 /// Error which can occur when a [`FixedSizeByteString`] is modified.

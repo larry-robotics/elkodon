@@ -1,3 +1,4 @@
+use elkodon_bb_container::byte_string::FixedSizeByteString;
 use elkodon_bb_container::semantic_string::*;
 use elkodon_bb_system_types::path::*;
 use elkodon_bb_testing::assert_that;
@@ -39,23 +40,23 @@ mod windows {
     #[test]
     fn path_add_works() {
         let mut sut = Path::new(b"C:\\some").unwrap();
-        sut.add_path_entry(&FileName::new(b"file").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"file").unwrap())
             .unwrap();
-        sut.add_path_entry(&FileName::new(b"path").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"path").unwrap())
             .unwrap();
         assert_that!(sut, eq b"C:\\some\\file\\path");
 
         let mut sut = Path::new(b"").unwrap();
-        sut.add_path_entry(&FileName::new(b"another").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"another").unwrap())
             .unwrap();
-        sut.add_path_entry(&FileName::new(b"testy").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"testy").unwrap())
             .unwrap();
         assert_that!(sut, eq b"another\\testy");
 
         let mut sut = Path::new(b"fuu\\").unwrap();
-        sut.add_path_entry(&FileName::new(b"blaaaha").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"blaaaha").unwrap())
             .unwrap();
-        sut.add_path_entry(&FileName::new(b"blub.ma").unwrap())
+        sut.add_path_entry(&FixedSizeByteString::from_bytes(b"blub.ma").unwrap())
             .unwrap();
         assert_that!(sut, eq b"fuu\\blaaaha\\blub.ma");
     }
@@ -63,8 +64,6 @@ mod windows {
 
 #[cfg(not(target_os = "windows"))]
 mod unix {
-    use elkodon_bb_container::byte_string::FixedSizeByteString;
-
     use super::*;
 
     #[test]

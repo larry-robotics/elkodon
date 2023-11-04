@@ -57,6 +57,12 @@ elk_container_freebsd_x64_template: &ELK_CONTAINER_FREEBSD_X64
     image_family: freebsd-13-2
     <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
+elk_container_macos_aarch64_template: &ELK_CONTAINER_MACOS_AARCH64
+  <<: *ELK_TASK_TIMEOUT
+  macos_instance:
+    image: ghcr.io/cirruslabs/macos-ventura-base:latest
+    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+
 # Build and Test
 
 elk_cargo_fmt_and_clippy_template: &ELK_CARGO_FMT_AND_CLIPPY
@@ -77,6 +83,12 @@ elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
 elk_common_build_and_test_release_template: &ELK_COMMON_BUILD_AND_TEST_RELEASE
   <<: *ELK_COMMON_BUILD_RELEASE
   test_script: cargo test --release --workspace --all
+
+#
+# Filter to run the CI only on the main branch or for pull request to the main branch
+#
+
+only_if: $CIRRUS_BRANCH == 'main' || ($CIRRUS_PR != '' && $CIRRUS_BASE_BRANCH == 'main')
 
 #
 # Preflight-Check with Ubuntu x86 stable debug
@@ -221,6 +233,7 @@ freebsd_x64_stable_debug_task:
     PATH: /root/.cargo/bin:$PATH
     HOME: /root  # must be set manually to '/root' or 'rustup' will throw an error
   setup_script:
+    - uname -a
     - pkg install -y git llvm
     - pw useradd testuser1
     - pw useradd testuser2
@@ -234,3 +247,33 @@ freebsd_x64_stable_debug_task:
   set_toolchain_script: rustup default stable
   <<: *ELK_CARGO_FMT_AND_CLIPPY
   <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+
+#
+# macOS
+#
+
+# Pipeline 10
+
+macos_aarch64_stable_debug_task:
+  depends_on: preflight_check
+  <<: *ELK_CONTAINER_MACOS_AARCH64
+  env:
+    PATH: /Users/admin/.cargo/bin:$PATH
+  setup_script:
+    - uname -a
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
+    - rustup component add clippy rustfmt
+  set_toolchain_script: rustup default stable
+  <<: *ELK_CARGO_FMT_AND_CLIPPY
+  <<: *ELK_COMMON_BUILD_DEBUG
+  test_script:
+    - cargo test -p elkodon_pal_concurrency_primitives
+                 -p elkodon_pal_posix
+                 -p elkodon_bb_container
+                 -p elkodon_bb_elementary
+                 -p elkodon_bb_lock_free
+                 -p elkodon_bb_log
+                 -p elkodon_bb_memory
+                 -p elkodon_bb_system_types
+                 -p elkodon_bb_testing
+                 --lib --bins --tests
