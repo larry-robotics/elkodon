@@ -381,15 +381,16 @@ impl Directory {
                 };
                 let raw_name_length = unsafe { strlen(raw_name) };
 
+                const DOT: posix::char = b'.' as _;
                 // dot is skipped
-                if raw_name_length == 1 && unsafe { *raw_name as u8 == b'.' } {
+                if raw_name_length == 1 && unsafe { *raw_name == DOT } {
                     continue;
                 }
 
                 // dot dot is skipped
                 if raw_name_length == 2
-                    && unsafe { *raw_name as u8 == b'.' }
-                    && unsafe { *raw_name.offset(1) as u8 == b'.' }
+                    && unsafe { *raw_name == DOT }
+                    && unsafe { *raw_name.offset(1) == DOT }
                 {
                     continue;
                 }

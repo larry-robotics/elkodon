@@ -32,8 +32,8 @@ use elkodon_bb_log::{fail, fatal_panic};
 ///
 ///  * The string must be '\0' (null) terminated.
 ///
-pub unsafe fn strlen(ptr: *mut std::ffi::c_char) -> usize {
-    const NULL_TERMINATION: std::ffi::c_char = 0;
+pub unsafe fn strlen(ptr: *mut core::ffi::c_char) -> usize {
+    const NULL_TERMINATION: core::ffi::c_char = 0;
     for i in 0..isize::MAX {
         if *ptr.offset(i) == NULL_TERMINATION {
             return i as usize;
@@ -233,7 +233,7 @@ impl<const CAPACITY: usize> FixedSizeByteString<CAPACITY> {
     ///  * `ptr` must be '\0' (null) terminated
     ///
     pub unsafe fn from_c_str(
-        ptr: *mut std::ffi::c_char,
+        ptr: *mut core::ffi::c_char,
     ) -> Result<Self, FixedSizeByteStringModificationError> {
         let string_length = strlen(ptr);
         if CAPACITY < string_length {
@@ -243,7 +243,7 @@ impl<const CAPACITY: usize> FixedSizeByteString<CAPACITY> {
         let mut new_self = Self::new();
         std::ptr::copy_nonoverlapping(
             ptr,
-            new_self.as_mut_bytes().as_mut_ptr() as *mut std::ffi::c_char,
+            new_self.as_mut_bytes().as_mut_ptr() as *mut core::ffi::c_char,
             string_length,
         );
         new_self.len = string_length;
@@ -262,8 +262,8 @@ impl<const CAPACITY: usize> FixedSizeByteString<CAPACITY> {
     }
 
     /// Returns a zero terminated slice of the underlying bytes
-    pub const fn as_c_str(&self) -> *const std::ffi::c_char {
-        self.data[0].as_ptr() as *const std::ffi::c_char
+    pub const fn as_c_str(&self) -> *const core::ffi::c_char {
+        self.data[0].as_ptr() as *const core::ffi::c_char
     }
 
     /// Returns a mutable slice to the underlying bytes
