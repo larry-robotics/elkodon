@@ -276,4 +276,4 @@ macos_aarch64_stable_debug_task:
                  -p elkodon_bb_memory
                  -p elkodon_bb_system_types
                  -p elkodon_bb_testing
-                 --workspace --all
+                 --lib --bins --tests
