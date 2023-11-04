@@ -4,7 +4,7 @@ use std::{
     time::Duration,
 };
 
-use elkodon_bb_testing::assert_that;
+use elkodon_bb_testing::{assert_that, watch_dog::Watchdog};
 use elkodon_pal_concurrency_primitives::{barrier::Barrier, condition_variable::*};
 
 const TIMEOUT: Duration = Duration::from_millis(25);
@@ -12,6 +12,7 @@ const TIMEOUT: Duration = Duration::from_millis(25);
 #[test]
 fn condition_variable_notify_one_unblocks_one() {
     const NUMBER_OF_THREADS: u32 = 3;
+    let _watchdog = Watchdog::new(Duration::from_secs(10));
     let barrier = Barrier::new(NUMBER_OF_THREADS + 1);
     let sut = ConditionVariable::new();
     let mtx = Mutex::new();
@@ -84,6 +85,8 @@ fn condition_variable_notify_one_unblocks_one() {
             sut.notify(|_| {
                 triggered_thread.fetch_add(1, Ordering::Relaxed);
             });
+
+            // this can cause a deadlock but the watchdog takes care of it
             while counter.load(Ordering::Relaxed) <= i {}
         }
 
