@@ -5,15 +5,17 @@ use elkodon_bb_testing::assert_that;
 use elkodon_bb_testing::test_requires;
 use elkodon_pal_posix::posix::POSIX_SUPPORT_ADVANCED_SIGNAL_HANDLING;
 use elkodon_pal_posix::*;
+use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::Mutex;
 use std::sync::MutexGuard;
 use std::thread;
 use std::time::Duration;
 
-static mut COUNTER: usize = 0;
-static mut SIGNAL: usize = posix::MAX_SIGNAL_VALUE;
+static COUNTER: AtomicUsize = AtomicUsize::new(0);
+static SIGNAL: AtomicUsize = AtomicUsize::new(posix::MAX_SIGNAL_VALUE);
 static LOCK: Mutex<i32> = Mutex::new(0);
+const TIMEOUT: Duration = Duration::from_millis(100);
 
 struct TestFixture {
     _guard: MutexGuard<'static, i32>,
@@ -25,23 +27,25 @@ impl TestFixture {
             _guard: LOCK.lock().unwrap(),
         };
 
-        unsafe {
-            COUNTER = 0;
-            SIGNAL = posix::MAX_SIGNAL_VALUE;
-        }
+        COUNTER.store(0, Ordering::SeqCst);
+        SIGNAL.store(posix::MAX_SIGNAL_VALUE, Ordering::SeqCst);
 
         new_self
     }
 
     pub fn signal_callback(signal: FetchableSignal) {
-        unsafe { COUNTER += 1 };
-        unsafe { SIGNAL = signal as usize };
+        SIGNAL.store(signal as usize, Ordering::SeqCst);
+        COUNTER.fetch_add(1, Ordering::SeqCst);
     }
 
     pub fn verify(&self, signal: FetchableSignal, counter: usize) {
+        assert_that!(
+            || { COUNTER.load(Ordering::SeqCst) == counter },
+            block_until_true
+        );
+
         assert_that!(SignalHandler::last_signal(), eq Some(signal));
-        assert_that!(unsafe { COUNTER }, eq counter);
-        assert_that!(unsafe { SIGNAL }, eq signal as usize);
+        assert_that!(SIGNAL.load(Ordering::SeqCst), eq signal as usize);
     }
 }
 
@@ -54,7 +58,6 @@ fn signal_register_single_handler_works() {
         SignalHandler::register(FetchableSignal::UserDefined1, &TestFixture::signal_callback);
 
     Process::from_self().send_signal(Signal::UserDefined1).ok();
-    nanosleep(Duration::from_millis(1)).ok();
     test.verify(FetchableSignal::UserDefined1, 1)
 }
 
@@ -70,11 +73,9 @@ fn signal_register_multiple_handler_works() {
         SignalHandler::register(FetchableSignal::UserDefined2, &TestFixture::signal_callback);
 
     Process::from_self().send_signal(Signal::UserDefined1).ok();
-    nanosleep(Duration::from_millis(1)).ok();
     test.verify(FetchableSignal::UserDefined1, 1);
 
     Process::from_self().send_signal(Signal::UserDefined2).ok();
-    nanosleep(Duration::from_millis(1)).ok();
     test.verify(FetchableSignal::UserDefined2, 2);
 }
 
@@ -87,11 +88,9 @@ fn signal_register_handler_with_multiple_signals_works() {
     let _guard1 = SignalHandler::register_multiple_signals(&s, &TestFixture::signal_callback);
 
     Process::from_self().send_signal(Signal::UserDefined1).ok();
-    nanosleep(Duration::from_millis(1)).ok();
     test.verify(FetchableSignal::UserDefined1, 1);
 
     Process::from_self().send_signal(Signal::UserDefined2).ok();
-    nanosleep(Duration::from_millis(1)).ok();
     test.verify(FetchableSignal::UserDefined2, 2);
 }
 
@@ -105,13 +104,12 @@ fn signal_guard_unregisters_on_drop() {
 
     drop(guard1);
 
-    let _guard1 = SignalHandler::register(FetchableSignal::UserDefined1, &|signal| unsafe {
-        COUNTER += 10;
-        SIGNAL = signal as usize;
+    let _guard1 = SignalHandler::register(FetchableSignal::UserDefined1, &|signal| {
+        SIGNAL.store(signal as usize, Ordering::SeqCst);
+        COUNTER.fetch_add(10, Ordering::SeqCst);
     });
 
     Process::from_self().send_signal(Signal::UserDefined1).ok();
-    nanosleep(Duration::from_millis(1)).ok();
     test.verify(FetchableSignal::UserDefined1, 10);
 }
 
@@ -137,7 +135,7 @@ fn signal_call_and_fetch_works() {
 
     let result = SignalHandler::call_and_fetch(|| {
         Process::from_self().send_signal(Signal::Interrupt).ok();
-        nanosleep(Duration::from_millis(1)).ok();
+        nanosleep(TIMEOUT).ok();
     });
 
     assert_that!(result, eq Some(FetchableSignal::Interrupt));
@@ -154,9 +152,8 @@ fn signal_call_and_fetch_with_registered_handler_works() {
 
     let result = SignalHandler::call_and_fetch(|| {
         Process::from_self().send_signal(Signal::UserDefined1).ok();
-        nanosleep(Duration::from_millis(1)).ok();
+        nanosleep(TIMEOUT).ok();
     });
-    nanosleep(Duration::from_millis(1)).ok();
 
     assert_that!(result, eq Some(FetchableSignal::UserDefined1));
     test.verify(FetchableSignal::UserDefined1, 1);
@@ -176,13 +173,15 @@ fn signal_wait_for_signal_blocks() {
             counter.store(1, Ordering::Relaxed);
         });
 
-        nanosleep(Duration::from_millis(10)).ok();
+        nanosleep(TIMEOUT).ok();
         let counter_old = counter.load(Ordering::Relaxed);
         Process::from_self().send_signal(Signal::UserDefined2).ok();
-        nanosleep(Duration::from_millis(10)).ok();
 
         assert_that!(counter_old, eq 0);
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        assert_that!(
+            || { counter.load(Ordering::Relaxed) == 1 },
+            block_until_true
+        );
     });
 }
 
@@ -198,7 +197,7 @@ fn signal_wait_twice_for_same_signal_blocks() {
             SignalHandler::wait_for_signal(FetchableSignal::UserDefined2).unwrap();
         });
 
-        nanosleep(Duration::from_millis(10)).ok();
+        nanosleep(TIMEOUT).ok();
         Process::from_self().send_signal(Signal::UserDefined2).ok();
 
         s.spawn(|| {
@@ -206,13 +205,15 @@ fn signal_wait_twice_for_same_signal_blocks() {
             counter.store(1, Ordering::Relaxed);
         });
 
-        nanosleep(Duration::from_millis(10)).ok();
+        nanosleep(TIMEOUT).ok();
         let counter_old = counter.load(Ordering::Relaxed);
         Process::from_self().send_signal(Signal::UserDefined2).ok();
-        nanosleep(Duration::from_millis(10)).ok();
 
         assert_that!(counter_old, eq 0);
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        assert_that!(
+            || { counter.load(Ordering::Relaxed) == 1 },
+            block_until_true
+        );
     });
 }
 
@@ -221,7 +222,6 @@ fn signal_timed_wait_blocks_at_least_for_timeout() {
     test_requires!(POSIX_SUPPORT_ADVANCED_SIGNAL_HANDLING);
 
     let _test = TestFixture::new();
-    const TIMEOUT: Duration = Duration::from_millis(100);
 
     let start = Time::now_with_clock(ClockType::Monotonic).unwrap();
     SignalHandler::timed_wait_for_signal(FetchableSignal::UserDefined2, TIMEOUT).unwrap();
@@ -233,7 +233,6 @@ fn signal_timed_wait_blocks_until_signal() {
     test_requires!(POSIX_SUPPORT_ADVANCED_SIGNAL_HANDLING);
 
     let _test = TestFixture::new();
-    const TIMEOUT: Duration = Duration::from_millis(100);
 
     let signals = vec![FetchableSignal::UserDefined2, FetchableSignal::UserDefined1];
     let counter = AtomicI32::new(0);
@@ -243,13 +242,15 @@ fn signal_timed_wait_blocks_until_signal() {
             counter.store(1, Ordering::Relaxed);
         });
 
-        nanosleep(Duration::from_millis(10)).ok();
+        nanosleep(TIMEOUT).ok();
         let counter_old = counter.load(Ordering::Relaxed);
         Process::from_self().send_signal(Signal::UserDefined2).ok();
-        nanosleep(Duration::from_millis(10)).ok();
 
         assert_that!(counter_old, eq 0);
-        assert_that!(counter.load(Ordering::Relaxed), eq 1);
+        assert_that!(
+            || { counter.load(Ordering::Relaxed) == 1 },
+            block_until_true
+        );
     });
 }
 
@@ -261,7 +262,6 @@ fn signal_termination_requested_with_terminate_works() {
 
     assert_that!(!SignalHandler::termination_requested(), eq true);
     assert_that!(Process::from_self().send_signal(Signal::Terminate), is_ok);
-    std::thread::sleep(std::time::Duration::from_millis(10));
 
     assert_that!(SignalHandler::termination_requested(), eq true);
     assert_that!(SignalHandler::termination_requested(), eq false);
@@ -275,7 +275,6 @@ fn signal_termination_requested_with_interrupt_works() {
 
     assert_that!(SignalHandler::termination_requested(), eq false);
     assert_that!(Process::from_self().send_signal(Signal::Interrupt), is_ok);
-    std::thread::sleep(std::time::Duration::from_millis(10));
 
     assert_that!(SignalHandler::termination_requested(), eq true);
     assert_that!(SignalHandler::termination_requested(), eq false);

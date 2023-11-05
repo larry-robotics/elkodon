@@ -157,6 +157,17 @@ macro_rules! assert_that {
             }
         }
     };
+    ($call:expr, block_until_true) => {
+        {
+            let watchdog = elkodon_bb_testing::watch_dog::Watchdog::new(core::time::Duration::from_secs(10));
+
+            while $call() == false {
+                std::thread::yield_now();
+                std::thread::sleep(core::time::Duration::from_millis(10));
+                std::thread::yield_now();
+            }
+        }
+    };
     [color_start] => {
         "\x1b[1;4;33m"
     };
