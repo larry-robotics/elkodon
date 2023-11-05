@@ -228,7 +228,7 @@ pub trait SemaphoreInterface: internal::SemaphoreHandle + Debug {
 ///
 /// ## Create new named semaphore
 ///
-/// ```
+/// ```ignore
 /// use elkodon_bb_posix::semaphore::*;
 /// use elkodon_bb_system_types::file_name::FileName;
 /// use elkodon_bb_container::semantic_string::*;

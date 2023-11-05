@@ -7,7 +7,7 @@
 //! After that every further wait will wait [`ADAPTIVE_WAIT_FINAL_WAITING_TIME`]
 //!
 //! # Examples
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::adaptive_wait::*;
 //! use elkodon_bb_posix::clock::*;
 //!

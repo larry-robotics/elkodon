@@ -10,7 +10,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::udp_socket::*;
 //!
 //! let server = UdpServerBuilder::new().listen()

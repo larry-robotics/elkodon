@@ -75,14 +75,14 @@ elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
 
 elk_common_build_and_test_debug_template: &ELK_COMMON_BUILD_AND_TEST_DEBUG
   <<: *ELK_COMMON_BUILD_DEBUG
-  test_script: cargo test --workspace --all
+  test_script: cargo test --workspace --all --no-fail-fast
 
 elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
   build_script: cargo build --release --workspace --all --examples --benches
 
 elk_common_build_and_test_release_template: &ELK_COMMON_BUILD_AND_TEST_RELEASE
   <<: *ELK_COMMON_BUILD_RELEASE
-  test_script: cargo test --release --workspace --all
+  test_script: cargo test --release --workspace --all --no-fail-fast
 
 #
 # Filter to run the CI only on the main branch or for pull request to the main branch
@@ -285,4 +285,4 @@ macos_aarch64_stable_debug_task:
                  -p elkodon_bb_memory
                  -p elkodon_bb_system_types
                  -p elkodon_bb_testing
-                 --lib --bins --tests
+                 --lib --bins --tests --no-fail-fast

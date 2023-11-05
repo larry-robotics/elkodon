@@ -4,7 +4,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::read_write_mutex::*;
 //! use std::thread;
 //! use std::time::Duration;

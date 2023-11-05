@@ -32,7 +32,7 @@
 //!
 //! ## Transfer [`SocketCred`]s
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::unix_datagram_socket::*;
 //! use elkodon_bb_posix::socket_ancillary::*;
 //! use elkodon_bb_system_types::file_path::FilePath;

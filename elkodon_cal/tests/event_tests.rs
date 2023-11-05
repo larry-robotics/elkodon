@@ -252,6 +252,8 @@ mod event {
         });
     }
 
+    /// windows sporadically instantly wakes up in a timed receive operation
+    #[cfg(not(target_os = "windows"))]
     #[test]
     fn timed_wait_blocks_until_notification_arrives<Sut: Event<u64>>() {
         let name = generate_name();

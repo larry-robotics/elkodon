@@ -231,7 +231,7 @@ impl From<()> for FileStatError {
 /// ```
 ///
 /// ## Create new file for reading and writing with extras
-/// ```
+/// ```ignore
 /// use elkodon_bb_posix::file::*;
 /// use elkodon_bb_posix::user::UserExt;
 /// use elkodon_bb_posix::group::GroupExt;

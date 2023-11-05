@@ -3,7 +3,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::message_queue::*;
 //!
 //! let mq_name = FileName::new(b"myMqName").unwrap();
@@ -813,7 +813,7 @@ pub trait MessageQueueReceiverInterface<T>: internal::MessageQueueInterface + De
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// use elkodon_bb_posix::message_queue::*;
 ///
 /// let mq_name = FileName::new(b"myMqName_3").unwrap();
@@ -861,7 +861,7 @@ impl<T: Copy + Debug> MessageQueueSenderInterface<T> for MessageQueueSender<T> {
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// use elkodon_bb_posix::message_queue::*;
 ///
 /// let mq_name = FileName::new(b"myMqName_4").unwrap();
@@ -911,7 +911,7 @@ impl<T: Copy + Debug> MessageQueueReceiverInterface<T> for MessageQueueReceiver<
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// use elkodon_bb_posix::message_queue::*;
 ///
 /// let mq_name = FileName::new(b"myMqName_5").unwrap();

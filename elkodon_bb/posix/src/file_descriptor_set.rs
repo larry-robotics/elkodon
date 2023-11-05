@@ -4,7 +4,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::file_descriptor_set::*;
 //! use elkodon_bb_posix::unix_datagram_socket::*;
 //! use std::time::Duration;

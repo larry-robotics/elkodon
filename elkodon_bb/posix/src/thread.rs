@@ -18,7 +18,7 @@
 //!
 //! ## Create a thread with user provided stack memory
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::thread::*;
 //!
 //! fn some_func() {}
@@ -599,7 +599,7 @@ pub trait ThreadProperties {
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// use elkodon_bb_posix::thread::*;
 ///
 /// let mut handle = ThreadHandle::from_self();

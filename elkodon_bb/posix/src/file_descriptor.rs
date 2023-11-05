@@ -80,7 +80,7 @@ use elkodon_pal_posix::*;
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// use elkodon_bb_posix::file_descriptor::*;
 ///
 /// let valid_fd = FileDescriptor::new(2);

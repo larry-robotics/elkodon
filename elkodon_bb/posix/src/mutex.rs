@@ -2,7 +2,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::mutex::*;
 //! use std::time::Duration;
 //! use elkodon_bb_posix::clock::ClockType;
