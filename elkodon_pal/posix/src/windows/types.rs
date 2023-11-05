@@ -227,6 +227,7 @@ pub struct sigaction_t {
     pub sa_flags: int,
     pub sa_restorer: Option<extern "C" fn()>,
 }
+
 impl Struct for sigaction_t {
     fn new() -> Self {
         Self {

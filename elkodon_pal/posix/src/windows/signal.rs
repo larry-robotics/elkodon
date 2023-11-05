@@ -69,7 +69,7 @@ unsafe extern "system" fn ctrl_handler(value: u32) -> i32 {
     let sigval = win32_event_to_signal(value);
 
     action(sigval);
-    0
+    TRUE
 }
 
 fn signal_to_win32_event(sig: int) -> Option<u32> {
@@ -93,12 +93,13 @@ fn win32_event_to_signal(event: u32) -> int {
 pub unsafe fn sigaction(sig: int, act: *const sigaction_t, oact: *mut sigaction_t) -> int {
     (*oact) = SIG_ACTION.set(*act);
 
-    if (*act).sa_handler == 0 {
-        SetConsoleCtrlHandler(Some(ctrl_handler), TRUE);
-    } else {
-        SetConsoleCtrlHandler(None, FALSE);
+    if sig == SIGTERM {
+        if (*act).sa_handler == 0 {
+            SetConsoleCtrlHandler(None, FALSE);
+        } else {
+            SetConsoleCtrlHandler(Some(ctrl_handler), TRUE);
+        }
     }
-
     0
 }
 
