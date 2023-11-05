@@ -129,8 +129,29 @@ pub struct Storage {
 impl Drop for Storage {
     fn drop(&mut self) {
         if self.has_ownership {
-            if let Err(v) = unsafe { Self::remove_cfg(&self.name, &self.config) } {
-                warn!(from self, "Unable to remove owned static storage due to ({:?}). This may cause a leak!", v);
+            match unsafe { Self::remove_cfg(&self.name, &self.config) } {
+                Ok(true) => (),
+                Ok(false) => {
+                    warn!(from self, "The static storage was already removed. This could be caused by a corrupted system.");
+                }
+                Err(NamedConceptRemoveError::InsufficientPermissions) => {
+                    if let Err(v) = self.file.set_permission(Permission::OWNER_ALL) {
+                        warn!(from self, "Unable to remove static storage since the necessary permissions could not be acquired ({:?}).", v);
+                    }
+
+                    match unsafe { Self::remove_cfg(&self.name, &self.config) } {
+                        Ok(true) => (),
+                        Ok(false) => {
+                            warn!(from self, "The static storage was already removed. This could be caused by a corrupted system.");
+                        }
+                        Err(v) => {
+                            warn!(from self, "Unable to remove owned static storage due to {:?}. This may cause a leak and subsequent failures.", v);
+                        }
+                    }
+                }
+                Err(v) => {
+                    warn!(from self, "Unable to remove owned static storage due to {:?}. This may cause a leak and subsequent failures.", v);
+                }
             }
         }
     }
