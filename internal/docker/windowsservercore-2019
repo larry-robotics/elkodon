@@ -22,4 +22,5 @@ RUN choco install -y rustup.install; \
     rustup component add rustfmt clippy; \
     Remove-Item C:\ProgramData\chocolatey\logs\* -Force -Recurse ; \
     Remove-Item $Env:localappdata\Nuget\Cache\*nupkg ; \
-    Remove-Item $Env:temp\* -Force -Recurse
+    Remove-Item $Env:temp\* -Force -Recurse ; \
+    icacls "C:\Windows\Temp" /grant Users:F
