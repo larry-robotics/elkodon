@@ -193,7 +193,9 @@ fn unix_datagram_socket_timeout_blocks_at_least() {
 
     let socket_name = generate_socket_name();
     let handle = BarrierHandle::new();
+    let handle_2 = BarrierHandle::new();
     let barrier = BarrierBuilder::new(2).create(&handle).unwrap();
+    let barrier_2 = BarrierBuilder::new(2).create(&handle_2).unwrap();
 
     thread::scope(|s| {
         let t = s.spawn(|| {
@@ -203,6 +205,7 @@ fn unix_datagram_socket_timeout_blocks_at_least() {
                 .create()
                 .unwrap();
             barrier.wait();
+            barrier_2.wait();
 
             let mut receive_data: Vec<u8> = vec![0, 0, 0, 0, 0, 0];
             sut_receiver
@@ -211,11 +214,8 @@ fn unix_datagram_socket_timeout_blocks_at_least() {
         });
 
         barrier.wait();
-        std::thread::sleep(TIMEOUT);
         let start = Instant::now();
-        let _sut_sender = UnixDatagramSenderBuilder::new(&socket_name)
-            .create()
-            .unwrap();
+        barrier_2.wait();
 
         t.join().ok();
 
