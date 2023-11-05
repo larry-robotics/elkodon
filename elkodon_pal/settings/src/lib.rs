@@ -16,9 +16,9 @@ pub use settings::*;
 
 #[cfg(target_os = "windows")]
 pub mod settings {
-    pub const TEMP_DIRECTORY: &[u8] = b"C:\\Windows\\Temp\\";
-    pub const TEST_DIRECTORY: &[u8] = b"C:\\Windows\\Temp\\elkodon\\tests\\";
-    pub const SHARED_MEMORY_DIRECTORY: &[u8] = b"C:\\Windows\\Temp\\Shm\\";
+    pub const TEMP_DIRECTORY: &[u8] = b"C:\\Temp\\";
+    pub const TEST_DIRECTORY: &[u8] = b"C:\\Temp\\elkodon\\tests\\";
+    pub const SHARED_MEMORY_DIRECTORY: &[u8] = b"C:\\Temp\\elkodon\\shm\\";
     pub const PATH_SEPARATOR: u8 = b'\\';
     pub const ROOT: &[u8] = b"C:\\";
     pub const FILENAME_LENGTH: usize = 255;

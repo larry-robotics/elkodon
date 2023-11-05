@@ -23,4 +23,7 @@ rustup component add rustfmt clippy; \
 Remove-Item C:\ProgramData\chocolatey\logs\* -Force -Recurse ; \
 Remove-Item $Env:localappdata\Nuget\Cache\*nupkg ; \
 Remove-Item $Env:temp\* -Force -Recurse ; \
-icacls "C:\Windows\Temp" /t /c /grant Users:F 
+mkdir "C:\Temp\elkodon\services" ; \
+mkdir "C:\Temp\elkodon\tests" ; \
+mkdir "C:\Temp\elkodon\shm" ; \
+icacls "C:\Temp" /t /c /grant Everyone:F
