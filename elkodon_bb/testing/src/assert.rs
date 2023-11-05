@@ -150,10 +150,11 @@ macro_rules! assert_that {
     ($lhs:expr, time_at_least $rhs:expr) => {
         {
             let lval = $lhs.as_secs_f32();
-            let rval = $rhs.as_secs_f32() * (1.0 - elkodon_bb_testing::AT_LEAST_TIMING_VARIANCE).clamp(0.0, 1.0);
+            let rval = $rhs.as_secs_f32();
+            let rval_adjusted = rval * (1.0 - elkodon_bb_testing::AT_LEAST_TIMING_VARIANCE).clamp(0.0, 1.0);
 
-            if !(lval >= rval) {
-                assert_that!(message_time_at_least $lhs, $rhs, lval, rval);
+            if !(lval >= rval_adjusted) {
+                assert_that!(message_time_at_least $lhs, $rhs, lval, rval, rval_adjusted);
             }
         }
     };
@@ -206,14 +207,15 @@ macro_rules! assert_that {
             assert_that![color_end]
         );
     };
-    [message_time_at_least $lhs:expr, $rhs:expr, $lval:expr, $rval:expr] => {
+    [message_time_at_least $lhs:expr, $rhs:expr, $lval:expr, $rval:expr, $rval_adjusted:expr] => {
         core::panic!(
-            "assertion failed: [ time test ] {}expr: {} at least {};  value: {:?} at least {:?}{}",
+            "assertion failed: [ time test ] {}expr: {} at least {};  value: {:?} at least {:?} (jitter adjusted: {:?}){}",
             assert_that![color_start],
             core::stringify!($lhs),
             core::stringify!($rhs),
             $lval,
             $rval,
+            $rval_adjusted,
             assert_that![color_end]
         );
     };

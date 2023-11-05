@@ -211,6 +211,7 @@ fn unix_datagram_socket_timeout_blocks_at_least() {
         });
 
         barrier.wait();
+        std::thread::sleep(TIMEOUT);
         let start = Instant::now();
         let _sut_sender = UnixDatagramSenderBuilder::new(&socket_name)
             .create()

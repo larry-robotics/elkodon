@@ -9,7 +9,7 @@ pub mod settings {
     pub const ROOT: &[u8] = b"/";
     pub const FILENAME_LENGTH: usize = 255;
     pub const PATH_LENGTH: usize = 4096;
-    pub const AT_LEAST_TIMING_VARIANCE: f32 = 0.1;
+    pub const AT_LEAST_TIMING_VARIANCE: f32 = 0.25;
 }
 #[cfg(not(target_os = "windows"))]
 pub use settings::*;
