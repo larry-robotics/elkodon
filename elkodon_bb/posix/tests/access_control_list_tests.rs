@@ -19,7 +19,8 @@ fn access_control_list_string_conversion_works() {
     sut.add_user(0, AclPermission::Execute).unwrap();
     sut.add_group(0, AclPermission::WriteExecute).unwrap();
 
-    let new_sut = AccessControlList::from_string(&sut.as_string().unwrap()).unwrap();
+    let sut_string = sut.as_string().unwrap();
+    let new_sut = AccessControlList::from_string(&sut_string).unwrap();
 
     assert_that!(sut.as_string().unwrap(), eq new_sut.as_string().unwrap());
 
