@@ -170,10 +170,24 @@ macro_rules! assert_that {
         }
     };
     [color_start] => {
-        "\x1b[1;4;33m"
-    };
+        {
+            use std::io::IsTerminal;
+            if std::io::stdout().is_terminal() {
+                "\x1b[1;4;33m"
+            } else {
+                ""
+            }
+        }
+   };
     [color_end] => {
-        "\x1b[0m"
+        {
+            use std::io::IsTerminal;
+            if std::io::stdout().is_terminal() {
+                "\x1b[0m"
+            } else {
+                ""
+            }
+        }
     };
     [message_contains $lhs:expr, $rhs:expr] => {
         core::panic!(

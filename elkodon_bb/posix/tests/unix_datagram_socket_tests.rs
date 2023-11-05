@@ -156,6 +156,7 @@ fn unix_datagram_socket_blocking_mode_blocks() {
     let received_message = AtomicBool::new(false);
     let handle = BarrierHandle::new();
     let barrier = BarrierBuilder::new(2).create(&handle).unwrap();
+    let send_data: Vec<u8> = vec![1u8, 3u8, 3u8, 7u8, 13u8, 37u8];
 
     thread::scope(|s| {
         let t = s.spawn(|| {
@@ -167,7 +168,9 @@ fn unix_datagram_socket_blocking_mode_blocks() {
             barrier.wait();
 
             let mut receive_data: Vec<u8> = vec![0, 0, 0, 0, 0, 0];
-            let _result = sut_receiver.blocking_receive(receive_data.as_mut_slice());
+            let result = sut_receiver.blocking_receive(receive_data.as_mut_slice());
+            assert_that!(result, is_ok);
+            assert_that!(result.unwrap(), eq send_data.len() as _);
             received_message.store(true, Ordering::Relaxed);
         });
 
@@ -178,7 +181,6 @@ fn unix_datagram_socket_blocking_mode_blocks() {
 
         thread::sleep(TIMEOUT);
         let received_message_old = received_message.load(Ordering::Relaxed);
-        let send_data: Vec<u8> = vec![1u8, 3u8, 3u8, 7u8, 13u8, 37u8];
         sut_sender.blocking_send(send_data.as_slice()).unwrap();
         t.join().ok();
 
