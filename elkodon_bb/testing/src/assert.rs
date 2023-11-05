@@ -176,7 +176,7 @@ macro_rules! assert_that {
     };
     [message_contains $lhs:expr, $rhs:expr] => {
         core::panic!(
-            "assertion failed: {}expr: {} contains {} ({});  contents: {:?}{}",
+            "assertion failed: {}expr: {} contains {} ({:?});  contents: {:?}{}",
             assert_that![color_start],
             core::stringify!($lhs),
             core::stringify!($rhs),

@@ -16,7 +16,7 @@
 //! use elkodon_bb_lock_free::mpmc::container::*;
 //!
 //! const CAPACITY: usize = 139;
-//! let container = FixedSizeContainer::<u128, CAPACITY>::new();
+//! let container = FixedSizeContainer::<u32, CAPACITY>::new();
 //! let mut stored_indices = vec![];
 //!
 //! match container.add(1234567) {
@@ -25,12 +25,12 @@
 //! };
 //!
 //! let mut state = container.get_state();
-//! state.for_each(|index: u32, value: &u128| println!("index: {}, value: {}", index, value));
+//! state.for_each(|index: u32, value: &u32| println!("index: {}, value: {}", index, value));
 //!
 //! stored_indices.clear();
 //!
 //! unsafe { state.update() };
-//! state.for_each(|index: u32, value: &u128| println!("index: {}, value: {}", index, value));
+//! state.for_each(|index: u32, value: &u32| println!("index: {}, value: {}", index, value));
 //! ```
 
 use elkodon_bb_elementary::allocator::AllocationError;
