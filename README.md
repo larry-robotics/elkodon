@@ -13,30 +13,30 @@
 
 ## Introduction
 
-Welcome to Elkodon, your gateway to fast, efficient, and ultra-low latency
-inter-process communication. This library is the embodiment of Rust's power and
-elegance, designed to meet your communication needs with zero-copy and lock-free
-mechanisms.
+Welcome to Elkodon, the efficient, and ultra-low latency inter-process communication
+middleware. This library is designed to provide you with fast and reliable
+zero-copy and lock-free inter-process communication mechanisms.
 
 Elkodon is all about providing a seamless experience for inter-process
 communication, featuring versatile messaging patterns. Whether you're diving
 into publish-subscribe, events, or the promise of upcoming features like
 request-response, pipelines, and blackboard, Elkodon has you covered.
 
-One of the standout features of Elkodon is its remarkable consistency.
-Regardless of payload size, transmission latency remains constant, ensuring a
-predictable and reliable communication experience.
+One of the features of Elkodon is its consistency. Regardless of payload size,
+transmission latency remains constant, ensuring a predictable and reliable
+communication experience.
 
-Elkodon's origins can be traced back to Iceoryx, but it's not just an
-evolution – it's a revolution. By overcoming past technical debts and refining
-the architecture, Elkodon enables the modularity we've always desired.
+Elkodon's origins can be traced back to
+[iceoryx](https://github.com/eclipse-iceoryx/iceoryx). By overcoming past
+technical debts and refining the architecture, Elkodon enables the modularity
+we've always desired.
 
 In the near future, Elkodon is poised to support at least the same feature set
-and platforms as Iceoryx, ensuring a seamless transition and offering enhanced
+and platforms as [iceoryx](https://github.com/eclipse-iceoryx/iceoryx),
+ensuring a seamless transition and offering enhanced
 capabilities for your inter-process communication needs. So, if you're looking
 for lightning-fast, cross-platform communication that doesn't compromise on
-performance or modularity, Elkodon is your answer. Welcome to a new era of
-inter-process communication.
+performance or modularity, Elkodon is your answer.
 
 ## Performance
 
@@ -246,23 +246,25 @@ cargo run --example event_listener
 
 ## Supported Platforms
 
-| Operating System | State       | Support Level |
-|------------------|:-----------:|--------------:|
-| Android          | planned     | open          |
-| FreeBSD          | implemented | target        |
-| FreeRTOS         | planned     | target        |
-| iOS              | planned     | open          |
-| Linux (x86_64)   | implemented | target        |
-| Linux (aarch64)  | implemented | target        |
-| Linux (32-bit)   | in-progress | target        |
-| Mac OS           | in-progress | development   |
-| QNX              | planned     | target        |
-| WatchOS          | planned     | open          |
-| Windows          | implemented | development   |
+The support levels can be adjusted when required.
 
-- **development** - Works with a restricted security and safety feature set.
-- **target** - All safety and security features are working.
-- **open** - Support level is undecided.
+| Operating System | Current Support Level | Target Support Level |
+|------------------|:---------------------:|---------------------:|
+| Android          | tier 3                | tier 1               |
+| FreeBSD          | tier 1                | tier 1               |
+| FreeRTOS         | tier 3                | tier 2               |
+| iOS              | tier 3                | tier 2               |
+| Linux (x86_64)   | tier 1                | tier 1               |
+| Linux (aarch64)  | tier 1                | tier 1               |
+| Linux (32-bit)   | tier 3                | tier 1               |
+| Mac OS           | tier 3                | tier 2               |
+| QNX              | tier 3                | tier 1               |
+| WatchOS          | tier 3                | tier 2               |
+| Windows          | tier 2                | tier 2               |
+
+- **tier 1** - All safety and security features are working.
+- **tier 2** - Works with a restricted security and safety feature set.
+- **tier 3** - Not yet working but planned.
 
 ## Language Bindings
 

@@ -18,16 +18,6 @@ fn main() {
     let mut counter: u64 = 0;
 
     while !SignalHandler::was_ctrl_c_pressed() {
-        // send by copy
-        publisher
-            .send_copy(TransmissionData {
-                x: counter as i32,
-                y: counter as i32 * 10,
-                funky: 789.123 * counter as f64,
-            })
-            .expect("failed to send sample");
-
-        // zero copy send
         let mut sample = publisher.loan().expect("Failed to acquire sample");
         unsafe {
             sample.as_mut_ptr().write(TransmissionData {

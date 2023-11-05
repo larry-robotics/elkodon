@@ -3,7 +3,8 @@
 ## Milestones
 
 * [ ] d-bus replacement
-* [ ] `#![no_std]` for all crates on the unix platform
+* [ ] `#![no_std]` on `nightly` on the unix platform
+* [ ] `#![no_std]` on `stable` on the unix platform
 
 ## Language Bindings
 
@@ -15,7 +16,7 @@
 ## Building Blocks
 
 * [ ] WaitSet - event multiplexer based on reactor pattern
-* [ ] Introduce proc macro to generate types that can be sent via shared memory
+* [ ] Introduce trait and proc macro to generate types that can be sent via shared memory
   * ensure that only these types are used for inter-process communication
 
 ## Gateways
@@ -58,7 +59,7 @@
   * handle the restriction of a max amount of posix shared memory objects of an OS
   * add `elkodon_cal` implementations that are using the `SharedMemoryGroup`
 
-## Platform support
+## Platform Support
 
 * [ ] Android
 * [x] Linux
@@ -69,6 +70,14 @@
 * [x] FreeBSD
 * [ ] FreeRTOS
 * [ ] QNX
+
+## Hardware Support
+
+* [x] x86_64
+* [x] aarch64
+* [ ] armv7
+* [ ] x32
+* [ ] risc-v
 
 ## Framework Integration
 

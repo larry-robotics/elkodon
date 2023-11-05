@@ -1,16 +1,21 @@
 # Best Practices
 
+### Everything Can Be Questioned
+
+ * If you find a rule/best practice that does not make sense or seems not rust
+   idiomatic then please pack your suggestion in a pull request and we discuss and merge it.
+
 ### When To Use What Log Level
 
  * **information dedicated to the developer of the application**
    * `TRACE` - interesting application events, e.g. whenever a resource
-         is created/destroyed
+     is created/destroyed
    * `DEBUG` - only when the function returns a result that contains an error
  * **information dedicated to the user of the application**
    * `INFO` - some interesting stuff for the user
    * `WARN` - warnings dedicated to the user of the application, the
-      functionality is not restricted but some kind of internal recoverable
-      misbehavior occurred
+     functionality is not restricted but some kind of internal recoverable
+     misbehavior occurred
    * `ERROR` - some severe failure occurred that is still handled with a result
      containing an error but the application can continue if the user can
      recover from it
@@ -20,17 +25,25 @@
 
  * Never return `Err(...)`, always use `fail!` macro.
    * Elkodon shall always log a message to `DEBUG` whenever an `Err(...)` is.
+   * When providing for instance `self` as origin, the current state of the object that caused the
+     problem is logged.
 
    ```rust
    // bad
-   fn do_stuff() -> Result<u64, u64> {
-     Err(123)
+   impl MyStruct {
+     fn do_stuff(&self) -> Result<u64, u64> {
+       Err(123)
+     }
    }
 
    // good
    use elkodon_bb_log::fail;
-   fn do_stuff() -> Result<u64, u64> {
-     fail!(from "do_stuff", with 123, "Failed to do stuff!");
+
+   impl MyStruct {
+     fn do_stuff(&self) -> Result<u64, u64> {
+       // uses Debug to print self
+       fail!(from self, with 123, "Failed to do stuff!");
+     }
    }
    ```
 
@@ -38,13 +51,24 @@
 
  * Never call `panic!(...)` directly, always use the `fatal_panic!` macro.
    * Elkodon shall always log a message to `FATAL` whenever a panic occurs.
+   * When providing for instance `self` as origin, the current state of the object that caused the
+     problem is logged.
 
    ```rust
    // bad
-   panic!("whatever");
+   impl MyStruct {
+     fn whatever(&self) {
+       panic!("whatever");
+     }
+   }
 
    // good
-   fatal_panic!(from "some origin", "whatever");
+   impl MyStruct {
+     fn whatever(&self) {
+       // uses Debug to print self
+       fatal_panic!(from self, "whatever");
+     }
+   }
    ```
 
 ### Re-Exports And Preludes
@@ -53,12 +77,11 @@
     using:
 
   ```rust
-  use my::construct::*;
+  use my::construct::prelude::*;
   ```
 
   * Use `pub use ...` to re-export requirements.
-  * For more complex constructs use preludes,
-        <https://doc.rust-lang.org/beta/reference/names/preludes.html>
+  * Use preludes, see <https://doc.rust-lang.org/beta/reference/names/preludes.html>
 
 ### Documentation And Examples
 
@@ -79,7 +102,7 @@
  * Never test a maximum runtime in a unit or integration test.
  * Test at least runtimes with `assert_that!(start.elapsed(), time_at_least TIMEOUT)`
  * Do not wait for events (indefinitely), use `assert_that!(|| { some_condition }, block_until_true)`
-    * It starts a `elkodon_bb_testing::watch_dog::Watchdog` in the background that terminates the
+    * It starts a `elkodon_bb_testing::watchdog::Watchdog` in the background that terminates the
         test when it deadlocks.
- * If the test can deadlock, instantiate a `elkodon_bb_testing::watch_dog::Watchdog` in the
+ * If the test can deadlock, instantiate a `elkodon_bb_testing::watchdog::Watchdog` in the
     beginning of the test.
