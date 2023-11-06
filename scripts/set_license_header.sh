@@ -57,5 +57,8 @@ echo Setting license to: $LICENSE
 
 set_rust
 set_shell
-set_toml
+
+# no toml check for now
+# it is usually only some configuration files which can be used without copyright notice
+# set_toml
 
