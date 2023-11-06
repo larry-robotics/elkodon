@@ -80,9 +80,8 @@ pub mod posix {
     }
 
     pub(crate) unsafe fn c_string_length(value: *const crate::posix::char) -> usize {
-        const NULL_TERMINATION: crate::posix::char = 0;
         for i in 0..isize::MAX {
-            if *value.offset(i) == NULL_TERMINATION {
+            if *value.offset(i) == crate::posix::NULL_TERMINATOR {
                 return i as usize;
             }
         }

@@ -160,7 +160,7 @@ fn mutex_timed_lock_blocks_at_least_for_timeout_realtime_clock() {
         let value = sut.timed_lock(TIMEOUT).unwrap();
 
         assert_that!(value, is_none);
-        assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+        assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
     });
 }
 
@@ -185,7 +185,7 @@ fn mutex_timed_lock_blocks_at_least_for_timeout_monotonic_clock() {
         let value = sut.timed_lock(TIMEOUT).unwrap();
 
         assert_that!(value, is_none);
-        assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+        assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
     });
 }
 

@@ -7,6 +7,7 @@ pub const CPU_SETSIZE: usize = 16;
 pub const MAX_NUMBER_OF_THREADS: usize = 1024;
 pub const FD_SETSIZE: usize = crate::internal::FD_SETSIZE as _;
 pub const THREAD_NAME_LENGTH: usize = 16;
+pub const NULL_TERMINATOR: char = 0;
 
 pub const ACL_READ: acl_perm_t = 1;
 pub const ACL_WRITE: acl_perm_t = 2;

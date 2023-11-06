@@ -57,7 +57,7 @@ fn adaptive_wait_timed_wait_while_wait_at_least_for_timeout() {
         .timed_wait_while(|| -> Result<bool, ()> { Ok(true) }, TIMEOUT)
         .unwrap();
 
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
     assert_that!(result, eq false);
 }
 

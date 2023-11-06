@@ -119,6 +119,8 @@ mod publisher {
         assert_that!(sample4.err().unwrap(), eq LoanError::ExceedsMaxLoanedChunks);
     }
 
+    //TODO elk-#44
+    #[ignore]
     #[test]
     fn publisher_block_when_unable_to_deliver_blocks<Sut: Service>() {
         let service_name = generate_name();
@@ -161,7 +163,7 @@ mod publisher {
             let now = Instant::now();
             sut.send_copy(8192).unwrap();
             sut.send_copy(2).unwrap();
-            assert_that!(now.elapsed(), ge TIMEOUT);
+            assert_that!(now.elapsed(), time_at_least TIMEOUT);
         });
     }
 

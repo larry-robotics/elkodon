@@ -1,6 +1,9 @@
 //! The default [`Logger`] implementation.
 
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::{
+    io::IsTerminal,
+    sync::atomic::{AtomicU64, Ordering},
+};
 
 use termsize::Size;
 
@@ -25,39 +28,62 @@ impl Logger {
     }
 
     fn log_level_string(log_level: crate::LogLevel) -> &'static str {
-        match log_level {
-            LogLevel::Trace => "\x1b[0;90m[T]",
-            LogLevel::Debug => "\x1b[0;90m[D]",
-            LogLevel::Info => "\x1b[0;92m[I]",
-            LogLevel::Warn => "\x1b[0;33m[W]",
-            LogLevel::Error => "\x1b[0;31m[E]",
-            LogLevel::Fatal => "\x1b[1;4;91m[F]",
+        if std::io::stdout().is_terminal() {
+            match log_level {
+                LogLevel::Trace => "\x1b[0;90m[T]",
+                LogLevel::Debug => "\x1b[0;90m[D]",
+                LogLevel::Info => "\x1b[0;92m[I]",
+                LogLevel::Warn => "\x1b[0;33m[W]",
+                LogLevel::Error => "\x1b[0;31m[E]",
+                LogLevel::Fatal => "\x1b[1;4;91m[F]",
+            }
+        } else {
+            match log_level {
+                LogLevel::Trace => "[T]",
+                LogLevel::Debug => "[D]",
+                LogLevel::Info => "[I]",
+                LogLevel::Warn => "[W]",
+                LogLevel::Error => "[E]",
+                LogLevel::Fatal => "[F]",
+            }
         }
     }
 
     fn message_color(log_level: crate::LogLevel) -> &'static str {
-        match log_level {
-            LogLevel::Trace => "\x1b[1;90m",
-            LogLevel::Debug => "\x1b[1;90m",
-            LogLevel::Info => "\x1b[1;37m",
-            LogLevel::Warn => "\x1b[1;93m",
-            LogLevel::Error => "\x1b[1;91m",
-            LogLevel::Fatal => "\x1b[1;4;91m",
+        if std::io::stdout().is_terminal() {
+            match log_level {
+                LogLevel::Trace => "\x1b[1;90m",
+                LogLevel::Debug => "\x1b[1;90m",
+                LogLevel::Info => "\x1b[1;37m",
+                LogLevel::Warn => "\x1b[1;93m",
+                LogLevel::Error => "\x1b[1;91m",
+                LogLevel::Fatal => "\x1b[1;4;91m",
+            }
+        } else {
+            ""
         }
     }
 
     fn counter_color(_log_level: crate::LogLevel) -> &'static str {
-        "\x1b[0;90m"
+        if std::io::stdout().is_terminal() {
+            "\x1b[0;90m"
+        } else {
+            ""
+        }
     }
 
     fn origin_color(log_level: crate::LogLevel) -> &'static str {
-        match log_level {
-            LogLevel::Trace => "\x1b[0;90m",
-            LogLevel::Debug => "\x1b[0;90m",
-            LogLevel::Info => "\x1b[0;37m",
-            LogLevel::Warn => "\x1b[0;37m",
-            LogLevel::Error => "\x1b[0;37m",
-            LogLevel::Fatal => "\x1b[0;4;91m",
+        if std::io::stdout().is_terminal() {
+            match log_level {
+                LogLevel::Trace => "\x1b[0;90m",
+                LogLevel::Debug => "\x1b[0;90m",
+                LogLevel::Info => "\x1b[0;37m",
+                LogLevel::Warn => "\x1b[0;37m",
+                LogLevel::Error => "\x1b[0;37m",
+                LogLevel::Fatal => "\x1b[0;4;91m",
+            }
+        } else {
+            ""
         }
     }
 
@@ -87,11 +113,15 @@ impl Logger {
                 msg_pos += term_len;
                 msg_len -= term_len;
             }
-            std::println!("\x1b[0m");
+            if std::io::stdout().is_terminal() {
+                std::println!("\x1b[0m");
+            }
             Self::add_spacing(spacing);
         }
 
-        println!("\x1b[0m");
+        if std::io::stdout().is_terminal() {
+            println!("\x1b[0m");
+        }
     }
 
     fn print_message(spacing: usize, log_level: crate::LogLevel, formatted_message: &str) {

@@ -22,13 +22,13 @@ pub struct DIR {}
 
 pub type blkcnt_t = u64;
 pub type blksize_t = u64;
-pub type char = std::ffi::c_char;
+pub type char = core::ffi::c_char;
 pub type clockid_t = i32;
 pub type dev_t = u64;
 pub type gid_t = u32;
 pub type ino_t = u64;
-pub type int = std::ffi::c_int;
-pub type long = std::ffi::c_long;
+pub type int = core::ffi::c_int;
+pub type long = core::ffi::c_long;
 pub type mode_t = u64;
 pub type mqd_t = u64;
 pub type nlink_t = u64;
@@ -37,19 +37,19 @@ pub type pid_t = u32;
 pub type rlim_t = i64;
 pub type __rlim_t = u64;
 pub type sa_family_t = u64;
-pub type short = std::ffi::c_short;
+pub type short = core::ffi::c_short;
 pub type sighandler_t = size_t;
 pub type size_t = usize;
 pub type socklen_t = u32;
 pub type ssize_t = isize;
 pub type suseconds_t = u64;
 pub type time_t = crate::internal::time_t;
-pub type uchar = std::ffi::c_uchar;
+pub type uchar = core::ffi::c_uchar;
 pub type uid_t = u32;
 pub type uint = u32;
 pub type ushort = u16;
 pub type ulong = u64;
-pub type void = std::ffi::c_void;
+pub type void = core::ffi::c_void;
 
 pub type acl_t = u64;
 pub type acl_permset_t = u64;
@@ -227,6 +227,7 @@ pub struct sigaction_t {
     pub sa_flags: int,
     pub sa_restorer: Option<extern "C" fn()>,
 }
+
 impl Struct for sigaction_t {
     fn new() -> Self {
         Self {

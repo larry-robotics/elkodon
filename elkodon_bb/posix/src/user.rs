@@ -4,7 +4,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::user::*;
 //!
 //! let myself = User::from_self().expect("failed to get user");

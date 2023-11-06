@@ -368,7 +368,7 @@ mod static_storage {
         drop(storage_guard);
 
         assert_that!(Sut::does_exist(&storage_name), eq Ok(true));
-        unsafe { Sut::remove(&storage_name).unwrap() };
+        assert_that!(unsafe { Sut::remove(&storage_name) }, eq Ok(true));
         assert_that!(Sut::does_exist(&storage_name), eq Ok(false));
     }
 

@@ -11,4 +11,3 @@ pub const POSIX_SUPPORT_MESSAGE_QUEUE: bool = true;
 pub const POSIX_SUPPORT_ADVANCED_SIGNAL_HANDLING: bool = true;
 pub const POSIX_SUPPORT_CONSOLE_SIGNAL_HANDLING: bool = true;
 pub const POSIX_SUPPORT_SCHEDULER: bool = true;
-pub const POSIX_SUPPORT_AT_LEAST_TIMEOUTS: bool = true;

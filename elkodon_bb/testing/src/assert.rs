@@ -147,15 +147,51 @@ macro_rules! assert_that {
             }
         }
     };
-    [color_start] => {
-        "\x1b[1;4;33m"
+    ($lhs:expr, time_at_least $rhs:expr) => {
+        {
+            let lval = $lhs.as_secs_f32();
+            let rval = $rhs.as_secs_f32();
+            let rval_adjusted = rval * (1.0 - elkodon_bb_testing::AT_LEAST_TIMING_VARIANCE).clamp(0.0, 1.0);
+
+            if !(lval >= rval_adjusted) {
+                assert_that!(message_time_at_least $lhs, $rhs, lval, rval, rval_adjusted);
+            }
+        }
     };
+    ($call:expr, block_until_true) => {
+        {
+            let watchdog = elkodon_bb_testing::watchdog::Watchdog::new(core::time::Duration::from_secs(10));
+
+            while $call() == false {
+                std::thread::yield_now();
+                std::thread::sleep(core::time::Duration::from_millis(10));
+                std::thread::yield_now();
+            }
+        }
+    };
+    [color_start] => {
+        {
+            use std::io::IsTerminal;
+            if std::io::stdout().is_terminal() {
+                "\x1b[1;4;33m"
+            } else {
+                ""
+            }
+        }
+   };
     [color_end] => {
-        "\x1b[0m"
+        {
+            use std::io::IsTerminal;
+            if std::io::stdout().is_terminal() {
+                "\x1b[0m"
+            } else {
+                ""
+            }
+        }
     };
     [message_contains $lhs:expr, $rhs:expr] => {
         core::panic!(
-            "assertion failed: {}expr: {} contains {} ({});  contents: {:?}{}",
+            "assertion failed: {}expr: {} contains {} ({:?});  contents: {:?}{}",
             assert_that![color_start],
             core::stringify!($lhs),
             core::stringify!($rhs),
@@ -182,6 +218,18 @@ macro_rules! assert_that {
             assert_that![color_start],
             core::stringify!($lhs),
             $state,
+            assert_that![color_end]
+        );
+    };
+    [message_time_at_least $lhs:expr, $rhs:expr, $lval:expr, $rval:expr, $rval_adjusted:expr] => {
+        core::panic!(
+            "assertion failed: [ time test ] {}expr: {} at least {};  value: {:?} at least {:?} (jitter adjusted: {:?}){}",
+            assert_that![color_start],
+            core::stringify!($lhs),
+            core::stringify!($rhs),
+            $lval,
+            $rval,
+            $rval_adjusted,
             assert_that![color_end]
         );
     };

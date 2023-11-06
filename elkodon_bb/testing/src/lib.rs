@@ -1,7 +1,6 @@
-#![no_std]
-
 #[macro_use]
 pub mod assert;
+pub mod watchdog;
 
 #[macro_export(local_inner_macros)]
 macro_rules! test_requires {
@@ -9,3 +8,5 @@ macro_rules! test_requires {
         if !$condition { return; }
     }
 }
+
+pub const AT_LEAST_TIMING_VARIANCE: f32 = elkodon_pal_settings::settings::AT_LEAST_TIMING_VARIANCE;

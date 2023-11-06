@@ -11,8 +11,7 @@ use elkodon_bb_system_types::{
     ipv4_address::{self, Ipv4Address},
     port::Port,
 };
-use elkodon_bb_testing::{assert_that, test_requires};
-use elkodon_pal_posix::posix::POSIX_SUPPORT_AT_LEAST_TIMEOUTS;
+use elkodon_bb_testing::assert_that;
 
 const TIMEOUT: Duration = Duration::from_millis(25);
 
@@ -199,7 +198,6 @@ fn udp_socket_server_try_receive_from_does_not_block() {
 
 #[test]
 fn udp_socket_client_timed_receive_does_block_for_at_least_timeout() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let _sut_server = UdpServerBuilder::new()
         .address(ipv4_address::LOCALHOST)
         .port(Port::new(55222))
@@ -213,12 +211,11 @@ fn udp_socket_client_timed_receive_does_block_for_at_least_timeout() {
     let mut recv_buffer = [0u8; 8];
     let start = Instant::now();
     assert_that!(sut_client.timed_receive(&mut recv_buffer, TIMEOUT).unwrap(), eq 0);
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
 }
 
 #[test]
 fn udp_socket_server_timed_receive_from_does_block_for_at_least_timeout() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
     let sut_server = UdpServerBuilder::new()
         .address(ipv4_address::LOCALHOST)
         .port(Port::new(55222))
@@ -233,7 +230,7 @@ fn udp_socket_server_timed_receive_from_does_block_for_at_least_timeout() {
             .unwrap(),
         is_none
     );
-    assert_that!(start.elapsed(), ge TIMEOUT);
+    assert_that!(start.elapsed(), time_at_least TIMEOUT);
 }
 
 #[test]

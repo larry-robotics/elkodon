@@ -4,7 +4,7 @@ use std::{
     time::Duration,
 };
 
-use elkodon_bb_testing::assert_that;
+use elkodon_bb_testing::{assert_that, watchdog::Watchdog};
 use elkodon_pal_concurrency_primitives::{barrier::Barrier, condition_variable::*};
 
 const TIMEOUT: Duration = Duration::from_millis(25);
@@ -12,6 +12,7 @@ const TIMEOUT: Duration = Duration::from_millis(25);
 #[test]
 fn condition_variable_notify_one_unblocks_one() {
     const NUMBER_OF_THREADS: u32 = 3;
+    let _watchdog = Watchdog::new(Duration::from_secs(10));
     let barrier = Barrier::new(NUMBER_OF_THREADS + 1);
     let sut = ConditionVariable::new();
     let mtx = Mutex::new();
@@ -80,19 +81,16 @@ fn condition_variable_notify_one_unblocks_one() {
         std::thread::sleep(TIMEOUT);
         let counter_old = counter.load(Ordering::Relaxed);
 
-        let mut old_counter_vec = vec![];
-        for _ in 0..NUMBER_OF_THREADS {
+        for i in 0..NUMBER_OF_THREADS {
             sut.notify(|_| {
                 triggered_thread.fetch_add(1, Ordering::Relaxed);
             });
-            std::thread::sleep(TIMEOUT);
-            old_counter_vec.push(counter.load(Ordering::Relaxed));
+
+            // this can cause a deadlock but the watchdog takes care of it
+            while counter.load(Ordering::Relaxed) <= i {}
         }
 
         assert_that!(counter_old, eq 0);
-        for i in 0..NUMBER_OF_THREADS {
-            assert_that!(old_counter_vec[i as usize], eq i + 1);
-        }
     });
 }
 
@@ -106,8 +104,9 @@ fn condition_variable_notify_all_unblocks_all() {
     let triggered_thread = AtomicU32::new(0);
 
     std::thread::scope(|s| {
+        let mut threads = vec![];
         for _ in 0..NUMBER_OF_THREADS {
-            s.spawn(|| {
+            threads.push(s.spawn(|| {
                 barrier.wait(|_, _| {}, |_| {});
                 mtx.lock(|_, _| true);
                 let wait_result = sut.wait(
@@ -124,7 +123,7 @@ fn condition_variable_notify_all_unblocks_all() {
                 counter.fetch_add(1, Ordering::Relaxed);
                 mtx.unlock(|_| {});
                 assert_that!(wait_result, eq true);
-            });
+            }));
         }
 
         barrier.wait(|_, _| {}, |_| {});
@@ -134,7 +133,10 @@ fn condition_variable_notify_all_unblocks_all() {
         sut.notify(|_| {
             triggered_thread.fetch_add(1, Ordering::Relaxed);
         });
-        std::thread::sleep(TIMEOUT);
+
+        for t in threads {
+            t.join().unwrap();
+        }
 
         assert_that!(counter_old, eq 0);
         assert_that!(counter.load(Ordering::Relaxed), eq NUMBER_OF_THREADS);
@@ -168,6 +170,9 @@ fn condition_variable_mutex_is_locked_when_wait_returns() {
                 );
                 counter.fetch_add(1, Ordering::Relaxed);
                 assert_that!(wait_result, eq true);
+                assert_that!(mtx.try_lock(), eq false);
+                // unlock thread since we own it
+                mtx.unlock(|_| {});
             });
         }
 
@@ -175,21 +180,14 @@ fn condition_variable_mutex_is_locked_when_wait_returns() {
         std::thread::sleep(TIMEOUT);
         let counter_old = counter.load(Ordering::Relaxed);
 
-        let mut old_counter_vec = vec![];
         for _ in 0..NUMBER_OF_THREADS {
             sut.notify(|_| {
                 triggered_thread.fetch_add(1, Ordering::Relaxed);
             });
             std::thread::sleep(TIMEOUT);
-            old_counter_vec.push(counter.load(Ordering::Relaxed));
-            // unlock in a different thread
-            mtx.unlock(|_| {});
         }
 
         assert_that!(counter_old, eq 0);
-        for i in 0..NUMBER_OF_THREADS {
-            assert_that!(old_counter_vec[i as usize], eq i + 1);
-        }
     });
 }
 

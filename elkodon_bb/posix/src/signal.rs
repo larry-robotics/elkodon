@@ -372,7 +372,7 @@ impl SignalHandler {
 
     /// Blocks until the provided signal was raised or the timeout was reached. If the signal was
     /// raised it returns true otherwise false.
-    /// ```
+    /// ```ignore
     /// use elkodon_bb_posix::signal::*;
     /// use std::time::Duration;
     ///

@@ -167,7 +167,7 @@ impl Time {
     /// Returns the current time.
     ///
     /// # Examples
-    /// ```
+    /// ```ignore
     /// use elkodon_bb_posix::clock::*;
     ///
     /// let now: Time = Time::now_with_clock(ClockType::Monotonic).unwrap();

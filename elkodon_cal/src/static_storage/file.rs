@@ -129,8 +129,14 @@ pub struct Storage {
 impl Drop for Storage {
     fn drop(&mut self) {
         if self.has_ownership {
-            if let Err(v) = unsafe { Self::remove_cfg(&self.name, &self.config) } {
-                warn!(from self, "Unable to remove owned static storage due to ({:?}). This may cause a leak!", v);
+            match unsafe { Self::remove_cfg(&self.name, &self.config) } {
+                Ok(true) => (),
+                Ok(false) => {
+                    warn!(from self, "The static storage was already removed. This could be caused by a corrupted system.");
+                }
+                Err(v) => {
+                    warn!(from self, "Unable to remove owned static storage due to {:?}. This may cause a leak and subsequent failures.", v);
+                }
             }
         }
     }
@@ -153,6 +159,20 @@ impl crate::named_concept::NamedConceptMgmt for Storage {
         let origin = "static_storage::file::Storage::remove_cfg()";
 
         let file_path = config.path_for(storage_name);
+
+        let mut file = match FileBuilder::new(&file_path).open_existing(AccessMode::Read) {
+            Ok(f) => f,
+            Err(FileOpenError::FileDoesNotExist) => return Ok(false),
+            Err(v) => {
+                fail!(from origin, with NamedConceptRemoveError::InternalError,
+                    "{} since the file could not be opened for permission adjustment ({:?}).", msg, v);
+            }
+        };
+
+        fail!(from origin, when file.set_permission(Permission::OWNER_ALL),
+                with NamedConceptRemoveError::InternalError,
+                "{} since the permissions could not be adjusted.", msg);
+
         match File::remove(&file_path) {
             Ok(v) => Ok(v),
             Err(FileRemoveError::InsufficientPermissions)

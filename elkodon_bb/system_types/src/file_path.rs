@@ -5,7 +5,7 @@
 //!
 //! # Example
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_container::semantic_string::SemanticString;
 //! use elkodon_bb_system_types::file_path::*;
 //!

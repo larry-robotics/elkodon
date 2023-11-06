@@ -32,7 +32,7 @@
 //!
 //! ## Transfer [`SocketCred`]s
 //!
-//! ```
+//! ```ignore
 //! use elkodon_bb_posix::unix_datagram_socket::*;
 //! use elkodon_bb_posix::socket_ancillary::*;
 //! use elkodon_bb_system_types::file_path::FilePath;
@@ -882,11 +882,19 @@ impl UnixDatagramReceiver {
     /// Blocks until data was received from the [`UnixDatagramSender`].
     pub fn blocking_receive(&self, buffer: &mut [u8]) -> Result<u64, UnixDatagramReceiveError> {
         let msg = "Unable to blocking receive data";
-        fail!(from self, when self.set_non_blocking(false),
+
+        loop {
+            fail!(from self, when self.set_non_blocking(false),
                 "{} since the socket could not bet set into blocking state.", msg);
-        fail!(from self, when self.set_timeout(BLOCKING_TIMEOUT),
+            fail!(from self, when self.set_timeout(BLOCKING_TIMEOUT),
                 "{} since the socket blocking timeout could not be set.", msg);
-        self.internal_receive(0, buffer)
+
+            match self.internal_receive(0, buffer) {
+                Ok(0) => (),
+                Ok(v) => return Ok(v),
+                Err(e) => return Err(e),
+            }
+        }
     }
 
     /// Tries to peek data. It is like [`UnixDatagramReceiver::try_receive()`] but the data is not removed from

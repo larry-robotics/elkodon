@@ -381,31 +381,36 @@ impl Directory {
                 };
                 let raw_name_length = unsafe { strlen(raw_name) };
 
+                const DOT: posix::char = b'.' as _;
                 // dot is skipped
-                if raw_name_length == 1 && unsafe { *raw_name as u8 == b'.' } {
+                if raw_name_length == 1 && unsafe { *raw_name == DOT } {
                     continue;
                 }
 
                 // dot dot is skipped
                 if raw_name_length == 2
-                    && unsafe { *raw_name as u8 == b'.' }
-                    && unsafe { *raw_name.offset(1) as u8 == b'.' }
+                    && unsafe { *raw_name == DOT }
+                    && unsafe { *raw_name.offset(1) == DOT }
                 {
                     continue;
                 }
 
-                let name = unsafe { FileName::from_c_str(raw_name).unwrap() };
-                let metadata = Self::acquire_metadata(
-                    self,
-                    &name,
-                    &format!(
-                        "Failed to acquire stats \"{}\" while reading directory content",
-                        name
-                    ),
-                )?;
-
-                contents.push(DirectoryEntry { name, metadata });
-
+                match unsafe { FileName::from_c_str(raw_name) } {
+                    Ok(name) => {
+                        let metadata = Self::acquire_metadata(
+                            self,
+                            &name,
+                            &format!(
+                                "Failed to acquire stats \"{}\" while reading directory content",
+                                name
+                            ),
+                        )?;
+                        contents.push(DirectoryEntry { name, metadata });
+                    }
+                    Err(v) => {
+                        error!(from self, "Directory contains entries that are not representable with FileName struct ({:?}).", v);
+                    }
+                }
                 unsafe { posix::free(*(namelist.offset(i as isize)) as *mut posix::void) };
             }
             unsafe { posix::free(namelist as *mut posix::void) };

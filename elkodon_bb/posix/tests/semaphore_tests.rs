@@ -7,7 +7,6 @@ use elkodon_bb_posix::unmovable_ipc_handle::AcquireIpcHandleError;
 use elkodon_bb_system_types::file_name::FileName;
 use elkodon_bb_testing::assert_that;
 use elkodon_bb_testing::test_requires;
-use elkodon_pal_posix::posix::POSIX_SUPPORT_AT_LEAST_TIMEOUTS;
 use elkodon_pal_posix::posix::POSIX_SUPPORT_NAMED_SEMAPHORE;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
@@ -360,13 +359,12 @@ fn semaphore_unnamed_semaphore_timed_wait_blocks() {
 fn timed_wait_waits_at_least_timeout<T: SemaphoreInterface>(sut: &T) {
     let now = Time::now_with_clock(sut.get_clock_type()).unwrap();
     sut.timed_wait(TIMEOUT).unwrap();
-    assert_that!(now.elapsed().unwrap(), ge TIMEOUT);
+    assert_that!(now.elapsed().unwrap(), time_at_least TIMEOUT);
 }
 
 #[test]
 fn semaphore_named_semaphore_timed_wait_waits_at_least_timeout() {
     test_requires!(POSIX_SUPPORT_NAMED_SEMAPHORE);
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
 
     let test = NamedSemaphoreTest::new();
 
@@ -379,8 +377,6 @@ fn semaphore_named_semaphore_timed_wait_waits_at_least_timeout() {
 
 #[test]
 fn semaphore_unnamed_semaphore_timed_wait_waits_at_least_timeout() {
-    test_requires!(POSIX_SUPPORT_AT_LEAST_TIMEOUTS);
-
     let handle1 = UnnamedSemaphoreHandle::new();
     let handle2 = UnnamedSemaphoreHandle::new();
 

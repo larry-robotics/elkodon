@@ -5,6 +5,7 @@ use crate::posix::types::*;
 
 pub const CPU_SETSIZE: usize = crate::internal::__CPU_SETSIZE as _;
 pub const FD_SETSIZE: usize = crate::internal::FD_SETSIZE as _;
+pub const NULL_TERMINATOR: char = 0;
 
 pub const ACL_READ: acl_perm_t = crate::internal::ACL_READ;
 pub const ACL_WRITE: acl_perm_t = crate::internal::ACL_WRITE;

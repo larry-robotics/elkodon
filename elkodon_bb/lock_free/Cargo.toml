@@ -17,3 +17,4 @@ elkodon_bb_posix = { workspace = true }
 elkodon_bb_memory = { workspace = true }
 elkodon_bb_testing = { workspace = true }
 pin-init = { workspace = true }
+generic-tests = { workspace = true }

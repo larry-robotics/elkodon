@@ -6,6 +6,7 @@ use crate::posix::types::*;
 pub const CPU_SETSIZE: usize = core::mem::size_of::<usize>() * 8;
 pub const MAX_NUMBER_OF_THREADS: usize = 1024;
 pub const FD_SETSIZE: usize = windows_sys::Win32::Networking::WinSock::FD_SETSIZE as _;
+pub const NULL_TERMINATOR: char = 0;
 
 pub const ACL_READ: acl_perm_t = 1;
 pub const ACL_WRITE: acl_perm_t = 2;

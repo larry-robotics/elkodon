@@ -142,7 +142,7 @@ fn read_write_mutex_read_timed_lock_blocks_at_least_for_timeout_impl(
         nanosleep_with_clock(TIMEOUT, clock_type).unwrap();
         let start = Time::now_with_clock(clock_type).unwrap();
         sut.read_timed_lock(TIMEOUT).unwrap();
-        assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+        assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
     });
 }
 
@@ -192,7 +192,7 @@ fn read_write_mutex_write_timed_lock_blocks_at_least_for_timeout_impl(
         nanosleep_with_clock(TIMEOUT, clock_type).unwrap();
         let start = Time::now_with_clock(clock_type).unwrap();
         sut.write_timed_lock(TIMEOUT).unwrap();
-        assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+        assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
     });
 }
 
@@ -246,7 +246,7 @@ fn read_write_mutex_multiple_ipc_mutex_are_working() {
         nanosleep(TIMEOUT).unwrap();
         let start = Time::now().unwrap();
         sut1.write_timed_lock(TIMEOUT).unwrap();
-        assert_that!(start.elapsed().unwrap(), ge TIMEOUT);
+        assert_that!(start.elapsed().unwrap(), time_at_least TIMEOUT);
     });
 
     assert_that!(*sut2.read_lock().unwrap(), eq 99501);
