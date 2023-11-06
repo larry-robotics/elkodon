@@ -22,8 +22,8 @@ communication, featuring versatile messaging patterns. Whether you're diving
 into publish-subscribe, events, or the promise of upcoming features like
 request-response, pipelines, and blackboard, Elkodon has you covered.
 
-One of the features of Elkodon is its consistency. Regardless of payload size,
-transmission latency remains constant, ensuring a predictable and reliable
+One of the features of Elkodon is its consistently low transmission latency
+regardless of payload size, ensuring a predictable and reliable
 communication experience.
 
 Elkodon's origins can be traced back to
@@ -250,21 +250,21 @@ The support levels can be adjusted when required.
 
 | Operating System | State        | Current Support Level | Target Support Level |
 |------------------|:-------------|:---------------------:|---------------------:|
-| Android          | planned      | tier 3                | tier 1               |
-| FreeBSD          | done         | tier 1                | tier 1               |
-| FreeRTOS         | planned      | tier 3                | tier 2               |
-| iOS              | planned      | tier 3                | tier 2               |
-| Linux (x86_64)   | done         | tier 1                | tier 1               |
-| Linux (aarch64)  | done         | tier 1                | tier 1               |
+| Android          | planned      | -                     | tier 1               |
+| FreeBSD          | done         | tier 2                | tier 1               |
+| FreeRTOS         | planned      | -                     | tier 2               |
+| iOS              | planned      | -                     | tier 2               |
+| Linux (x86_64)   | done         | tier 2                | tier 1               |
+| Linux (aarch64)  | done         | tier 2                | tier 1               |
 | Linux (32-bit)   | in-progress  | tier 3                | tier 1               |
 | Mac OS           | in-progress  | tier 3                | tier 2               |
-| QNX              | planned      | tier 3                | tier 1               |
-| WatchOS          | planned      | tier 3                | tier 2               |
-| Windows          | done         | tier 2                | tier 2               |
+| QNX              | planned      | -                     | tier 1               |
+| WatchOS          | planned      | -                     | tier 2               |
+| Windows          | in-progress  | tier 3                | tier 2               |
 
 - **tier 1** - All safety and security features are working.
 - **tier 2** - Works with a restricted security and safety feature set.
-- **tier 3** - Not yet working but planned.
+- **tier 3** - Work in progress. Might compile and run or not.
 
 ## Language Bindings
 
