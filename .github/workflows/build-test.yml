@@ -61,18 +61,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: >
-            -p elkodon_pal_concurrency_primitives 
-            -p elkodon_pal_posix
-            -p elkodon_bb_container
-            -p elkodon_bb_elementary
-            -p elkodon_bb_lock_free
-            -p elkodon_bb_log
-            -p elkodon_bb_memory
-            -p elkodon_bb_posix
-            -p elkodon_bb_system_types
-            -p elkodon_bb_testing
-            --lib --bins --tests --no-fail-fast
+          args: --workspace --all --no-fail-fast
 
 #   linux_x64:
 #     timeout-minutes: 10

@@ -395,18 +395,22 @@ impl Directory {
                     continue;
                 }
 
-                let name = unsafe { FileName::from_c_str(raw_name).unwrap() };
-                let metadata = Self::acquire_metadata(
-                    self,
-                    &name,
-                    &format!(
-                        "Failed to acquire stats \"{}\" while reading directory content",
-                        name
-                    ),
-                )?;
-
-                contents.push(DirectoryEntry { name, metadata });
-
+                match unsafe { FileName::from_c_str(raw_name) } {
+                    Ok(name) => {
+                        let metadata = Self::acquire_metadata(
+                            self,
+                            &name,
+                            &format!(
+                                "Failed to acquire stats \"{}\" while reading directory content",
+                                name
+                            ),
+                        )?;
+                        contents.push(DirectoryEntry { name, metadata });
+                    }
+                    Err(v) => {
+                        error!(from self, "Directory contains entries that are not representable with FileName struct ({:?}).", v);
+                    }
+                }
                 unsafe { posix::free(*(namelist.offset(i as isize)) as *mut posix::void) };
             }
             unsafe { posix::free(namelist as *mut posix::void) };
