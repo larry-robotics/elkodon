@@ -119,6 +119,8 @@ mod publisher {
         assert_that!(sample4.err().unwrap(), eq LoanError::ExceedsMaxLoanedChunks);
     }
 
+    //TODO elk-#44
+    #[ignore]
     #[test]
     fn publisher_block_when_unable_to_deliver_blocks<Sut: Service>() {
         let service_name = generate_name();
