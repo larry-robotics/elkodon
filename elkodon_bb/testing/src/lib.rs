@@ -1,6 +1,6 @@
 #[macro_use]
 pub mod assert;
-pub mod watch_dog;
+pub mod watchdog;
 
 #[macro_export(local_inner_macros)]
 macro_rules! test_requires {

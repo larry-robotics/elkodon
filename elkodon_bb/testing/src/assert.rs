@@ -160,7 +160,7 @@ macro_rules! assert_that {
     };
     ($call:expr, block_until_true) => {
         {
-            let watchdog = elkodon_bb_testing::watch_dog::Watchdog::new(core::time::Duration::from_secs(10));
+            let watchdog = elkodon_bb_testing::watchdog::Watchdog::new(core::time::Duration::from_secs(10));
 
             while $call() == false {
                 std::thread::yield_now();

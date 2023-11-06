@@ -4,7 +4,7 @@ use std::{
     time::Duration,
 };
 
-use elkodon_bb_testing::{assert_that, watch_dog::Watchdog};
+use elkodon_bb_testing::{assert_that, watchdog::Watchdog};
 use elkodon_pal_concurrency_primitives::{barrier::Barrier, condition_variable::*};
 
 const TIMEOUT: Duration = Duration::from_millis(25);
