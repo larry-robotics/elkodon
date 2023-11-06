@@ -263,7 +263,10 @@ fn signal_termination_requested_with_terminate_works() {
     assert_that!(!SignalHandler::termination_requested(), eq true);
     assert_that!(Process::from_self().send_signal(Signal::Terminate), is_ok);
 
-    assert_that!(SignalHandler::termination_requested(), eq true);
+    assert_that!(
+        || { SignalHandler::termination_requested() == true },
+        block_until_true
+    );
     assert_that!(SignalHandler::termination_requested(), eq false);
 }
 
@@ -276,6 +279,9 @@ fn signal_termination_requested_with_interrupt_works() {
     assert_that!(SignalHandler::termination_requested(), eq false);
     assert_that!(Process::from_self().send_signal(Signal::Interrupt), is_ok);
 
-    assert_that!(SignalHandler::termination_requested(), eq true);
+    assert_that!(
+        || { SignalHandler::termination_requested() == true },
+        block_until_true
+    );
     assert_that!(SignalHandler::termination_requested(), eq false);
 }
