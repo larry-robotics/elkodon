@@ -15,7 +15,7 @@ fn main() {
         .create()
         .expect("Failed to create subscriber");
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         while let Some(sample) = subscriber.receive().unwrap() {
             println!("received: {:?}", *sample);
         }

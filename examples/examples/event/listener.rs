@@ -14,7 +14,7 @@ fn main() {
         .create()
         .expect("failed to create listener");
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         for event_id in listener
             .timed_wait(std::time::Duration::from_secs(1))
             .expect("failed to wait on listener")

@@ -17,7 +17,7 @@ fn main() {
 
     let mut counter: u64 = 0;
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         let mut sample = publisher.loan().expect("Failed to acquire sample");
         unsafe {
             sample.as_mut_ptr().write(TransmissionData {

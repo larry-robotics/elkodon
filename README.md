@@ -106,7 +106,7 @@ fn main() {
         .create()
         .expect("failed to create publisher");
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         let mut sample = publisher.loan().expect("Failed to acquire sample");
         unsafe { sample.write(1234); }
         publisher.send(sample).expect("Failed to send sample");
@@ -136,7 +136,7 @@ fn main() {
         .create()
         .expect("Failed to create subscriber");
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         while let Some(sample) = subscriber.receive().unwrap() {
             println!("received: {:?}", *sample);
         }
@@ -186,7 +186,7 @@ fn main() {
         .expect("failed to create notifier");
 
     let mut counter: u64 = 0;
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         counter += 1;
         notifier
             .notify_with_custom_trigger_id(EventId::new(counter))
@@ -217,7 +217,7 @@ fn main() {
         .create()
         .expect("failed to create listener");
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         for event_id in listener
             .timed_wait(std::time::Duration::from_secs(1))
             .expect("failed to wait on listener")
@@ -248,19 +248,19 @@ cargo run --example event_listener
 
 The support levels can be adjusted when required.
 
-| Operating System | Current Support Level | Target Support Level |
-|------------------|:---------------------:|---------------------:|
-| Android          | tier 3                | tier 1               |
-| FreeBSD          | tier 1                | tier 1               |
-| FreeRTOS         | tier 3                | tier 2               |
-| iOS              | tier 3                | tier 2               |
-| Linux (x86_64)   | tier 1                | tier 1               |
-| Linux (aarch64)  | tier 1                | tier 1               |
-| Linux (32-bit)   | tier 3                | tier 1               |
-| Mac OS           | tier 3                | tier 2               |
-| QNX              | tier 3                | tier 1               |
-| WatchOS          | tier 3                | tier 2               |
-| Windows          | tier 2                | tier 2               |
+| Operating System | State        | Current Support Level | Target Support Level |
+|------------------|:-------------|:---------------------:|---------------------:|
+| Android          | planned      | tier 3                | tier 1               |
+| FreeBSD          | done         | tier 1                | tier 1               |
+| FreeRTOS         | planned      | tier 3                | tier 2               |
+| iOS              | planned      | tier 3                | tier 2               |
+| Linux (x86_64)   | done         | tier 1                | tier 1               |
+| Linux (aarch64)  | done         | tier 1                | tier 1               |
+| Linux (32-bit)   | in-progress  | tier 3                | tier 1               |
+| Mac OS           | in-progress  | tier 3                | tier 2               |
+| QNX              | planned      | tier 3                | tier 1               |
+| WatchOS          | planned      | tier 3                | tier 2               |
+| Windows          | done         | tier 2                | tier 2               |
 
 - **tier 1** - All safety and security features are working.
 - **tier 2** - Works with a restricted security and safety feature set.

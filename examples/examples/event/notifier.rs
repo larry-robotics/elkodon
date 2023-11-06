@@ -15,7 +15,7 @@ fn main() {
         .expect("failed to create notifier");
 
     let mut counter: u64 = 0;
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         counter += 1;
         notifier
             .notify_with_custom_event_id(EventId::new(counter))
