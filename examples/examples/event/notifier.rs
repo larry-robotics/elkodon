@@ -1,8 +1,4 @@
-use elkodon::{
-    port::event_id::EventId,
-    service::{service_name::ServiceName, zero_copy, Service},
-};
-use elkodon_bb_container::semantic_string::SemanticString;
+use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 
 fn main() {
@@ -19,10 +15,10 @@ fn main() {
         .expect("failed to create notifier");
 
     let mut counter: u64 = 0;
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         counter += 1;
         notifier
-            .notify_with_custom_trigger_id(EventId::new(counter))
+            .notify_with_custom_event_id(EventId::new(counter))
             .expect("failed to trigger event");
 
         println!("Trigger event with id {} ...", counter);

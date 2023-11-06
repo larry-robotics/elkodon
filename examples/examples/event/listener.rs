@@ -1,5 +1,4 @@
-use elkodon::service::{service_name::ServiceName, zero_copy, Service};
-use elkodon_bb_container::semantic_string::SemanticString;
+use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 
 fn main() {
@@ -15,7 +14,7 @@ fn main() {
         .create()
         .expect("failed to create listener");
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         for event_id in listener
             .timed_wait(std::time::Duration::from_secs(1))
             .expect("failed to wait on listener")

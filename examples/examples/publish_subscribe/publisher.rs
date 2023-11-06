@@ -1,5 +1,4 @@
-use elkodon::service::{service_name::ServiceName, zero_copy, Service};
-use elkodon_bb_container::semantic_string::SemanticString;
+use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 use transmission_data::TransmissionData;
 
@@ -18,17 +17,7 @@ fn main() {
 
     let mut counter: u64 = 0;
 
-    while !SignalHandler::was_ctrl_c_pressed() {
-        // send by copy
-        publisher
-            .send_copy(TransmissionData {
-                x: counter as i32,
-                y: counter as i32 * 10,
-                funky: 789.123 * counter as f64,
-            })
-            .expect("failed to send sample");
-
-        // zero copy send
+    while !SignalHandler::termination_requested() {
         let mut sample = publisher.loan().expect("Failed to acquire sample");
         unsafe {
             sample.as_mut_ptr().write(TransmissionData {

@@ -1,5 +1,4 @@
-use elkodon::service::{service_name::ServiceName, zero_copy, Service};
-use elkodon_bb_container::semantic_string::*;
+use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 use transmission_data::TransmissionData;
 
@@ -16,7 +15,7 @@ fn main() {
         .create()
         .expect("Failed to create subscriber");
 
-    while !SignalHandler::was_ctrl_c_pressed() {
+    while !SignalHandler::termination_requested() {
         while let Some(sample) = subscriber.receive().unwrap() {
             println!("received: {:?}", *sample);
         }

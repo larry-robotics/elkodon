@@ -254,29 +254,29 @@ fn signal_timed_wait_blocks_until_signal() {
 }
 
 #[test]
-fn signal_was_ctrl_c_pressed_with_terminate_works() {
+fn signal_termination_requested_with_terminate_works() {
     test_requires!(POSIX_SUPPORT_ADVANCED_SIGNAL_HANDLING);
 
     let _test = TestFixture::new();
 
-    assert_that!(!SignalHandler::was_ctrl_c_pressed(), eq true);
+    assert_that!(!SignalHandler::termination_requested(), eq true);
     assert_that!(Process::from_self().send_signal(Signal::Terminate), is_ok);
     std::thread::sleep(std::time::Duration::from_millis(10));
 
-    assert_that!(SignalHandler::was_ctrl_c_pressed(), eq true);
-    assert_that!(SignalHandler::was_ctrl_c_pressed(), eq false);
+    assert_that!(SignalHandler::termination_requested(), eq true);
+    assert_that!(SignalHandler::termination_requested(), eq false);
 }
 
 #[test]
-fn signal_was_ctrl_c_pressed_with_interrupt_works() {
+fn signal_termination_requested_with_interrupt_works() {
     test_requires!(POSIX_SUPPORT_ADVANCED_SIGNAL_HANDLING);
 
     let _test = TestFixture::new();
 
-    assert_that!(SignalHandler::was_ctrl_c_pressed(), eq false);
+    assert_that!(SignalHandler::termination_requested(), eq false);
     assert_that!(Process::from_self().send_signal(Signal::Interrupt), is_ok);
     std::thread::sleep(std::time::Duration::from_millis(10));
 
-    assert_that!(SignalHandler::was_ctrl_c_pressed(), eq true);
-    assert_that!(SignalHandler::was_ctrl_c_pressed(), eq false);
+    assert_that!(SignalHandler::termination_requested(), eq true);
+    assert_that!(SignalHandler::termination_requested(), eq false);
 }

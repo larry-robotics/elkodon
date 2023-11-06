@@ -1,4 +1,4 @@
-use elkodon::service::{zero_copy, Details};
+use elkodon::prelude::*;
 
 fn main() {
     let services = zero_copy::Service::list().expect("failed to acquire list of current services");

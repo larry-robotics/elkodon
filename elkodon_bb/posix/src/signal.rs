@@ -331,8 +331,9 @@ impl SignalHandler {
         }
     }
 
-    /// Returns true if ctrl c was pressed otherwise false
-    pub fn was_ctrl_c_pressed() -> bool {
+    /// Returns true if ([`FetchableSignal::Interrupt`] or [`FetchableSignal::Terminate`]) was emitted
+    /// for instance by pressing CTRL+c, otherwise false
+    pub fn termination_requested() -> bool {
         let last_signal = Self::last_signal();
         last_signal == Some(FetchableSignal::Interrupt)
             || last_signal == Some(FetchableSignal::Terminate)

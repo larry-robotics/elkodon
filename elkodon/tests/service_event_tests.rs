@@ -164,11 +164,7 @@ mod service_event {
         let sut2 = Sut::new(&service_name).event().open().unwrap();
 
         let mut listener = sut.listener().create().unwrap();
-        let notifier = sut2
-            .notifier()
-            .default_trigger_id(event_id)
-            .create()
-            .unwrap();
+        let notifier = sut2.notifier().default_event_id(event_id).create().unwrap();
 
         assert_that!(notifier.notify(), is_ok);
 
@@ -189,11 +185,7 @@ mod service_event {
 
         let sut2 = Sut::new(&service_name).event().open().unwrap();
 
-        let notifier = sut2
-            .notifier()
-            .default_trigger_id(event_id)
-            .create()
-            .unwrap();
+        let notifier = sut2.notifier().default_event_id(event_id).create().unwrap();
         let mut listener = sut.listener().create().unwrap();
 
         assert_that!(notifier.notify(), is_ok);
@@ -230,7 +222,7 @@ mod service_event {
         for i in 0..MAX_NOTIFIERS {
             notifiers.push(
                 sut.notifier()
-                    .default_trigger_id(EventId::new((4 * i + 3) as u64))
+                    .default_event_id(EventId::new((4 * i + 3) as u64))
                     .create()
                     .unwrap(),
             );
@@ -276,7 +268,7 @@ mod service_event {
         for i in 0..MAX_NOTIFIERS {
             notifiers.push(
                 sut.notifier()
-                    .default_trigger_id(EventId::new((i) as u64))
+                    .default_event_id(EventId::new((i) as u64))
                     .create()
                     .unwrap(),
             );
