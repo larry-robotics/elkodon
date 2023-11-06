@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 use windows_sys::Win32::Foundation::{ERROR_SUCCESS, FALSE, HANDLE, INVALID_HANDLE_VALUE};
 use windows_sys::Win32::Security::Authorization::{
     ConvertSecurityDescriptorToStringSecurityDescriptorA,
@@ -59,7 +62,7 @@ const ACE_INHERITANCE: &[u8] = b"OICI";
 
 const IDENT_OTHERS: &[u8] = b"WD";
 const IDENT_GROUP: &[u8] = b"SU";
-const IDENT_OWNER: &[u8] = b"OW";
+const IDENT_OWNER: &[u8] = b"BU";
 
 fn add_to_sd_string(data: &mut [u8], add: &[u8]) {
     let mut start_adding = false;
@@ -242,7 +245,8 @@ pub fn from_mode_to_security_attributes(handle: HANDLE, mode: mode_t) -> SECURIT
             add_to_ace_string!(&mut buffer, GENERIC_PERM_EXECUTE);
         }
     }
-    add_to_ace_string!(&mut buffer, b";;;", &get_owner_sid(handle), b")");
+    //add_to_ace_string!(&mut buffer, b";;;", &get_owner_sid(handle), b")");
+    add_to_ace_string!(&mut buffer, b";;;", &IDENT_OWNER, b")");
 
     if unsafe {
         win32call! { ConvertStringSecurityDescriptorToSecurityDescriptorA(

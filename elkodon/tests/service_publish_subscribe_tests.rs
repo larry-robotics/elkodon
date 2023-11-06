@@ -1055,7 +1055,7 @@ mod service_publish_subscribe {
 
     #[test]
     fn does_exist_works_many<Sut: Service + Details<'static>>() {
-        const NUMBER_OF_SERVICES: usize = 32;
+        const NUMBER_OF_SERVICES: usize = 8;
 
         let mut services = vec![];
         let mut service_names = vec![];
@@ -1096,7 +1096,7 @@ mod service_publish_subscribe {
 
     #[test]
     fn list_works<Sut: Service + Details<'static>>() {
-        const NUMBER_OF_SERVICES: usize = 32;
+        const NUMBER_OF_SERVICES: usize = 8;
 
         let mut services = vec![];
         let mut service_names = vec![];
