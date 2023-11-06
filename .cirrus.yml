@@ -71,18 +71,18 @@ elk_cargo_fmt_and_clippy_template: &ELK_CARGO_FMT_AND_CLIPPY
     - cargo clippy -- -D warnings
 
 elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
-  build_script: cargo build --workspace --all --examples --benches
+  build_script: cargo build --all-targets
 
 elk_common_build_and_test_debug_template: &ELK_COMMON_BUILD_AND_TEST_DEBUG
   <<: *ELK_COMMON_BUILD_DEBUG
-  test_script: cargo test --workspace --all --no-fail-fast
+  test_script: cargo test --workspace --no-fail-fast
 
 elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
-  build_script: cargo build --release --workspace --all --examples --benches
+  build_script: cargo build --release --all-targets
 
-elk_common_build_and_test_release_template: &ELK_COMMON_BUILD_AND_TEST_RELEASE
+elk_common_build_and_test_no_doc_tests_release_template: &ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
   <<: *ELK_COMMON_BUILD_RELEASE
-  test_script: cargo test --release --workspace --all --no-fail-fast
+  test_script: cargo test --release --tests --workspace --no-fail-fast
 
 #
 # Filter to run the CI only on the main branch or for pull request to the main branch
@@ -144,7 +144,7 @@ ubuntu_22_04_x64_stable_release_task:
   depends_on: preflight_check
   <<: *ELK_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # Ubuntu aarch64
@@ -172,7 +172,7 @@ ubuntu_22_04_aarch64_stable_release_task:
   depends_on: preflight_check
   <<: *ELK_CONTAINER_UBUNTU_22_04_AARCH64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # Arch Linux x86
@@ -199,7 +199,7 @@ arch_linux_x64_stable_release_task:
   depends_on: preflight_check
   <<: *ELK_CONTAINER_ARCH_LINUX_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # Windows Server 2019 x86
@@ -222,7 +222,7 @@ windows_server_2019_x64_stable_release_task:
   depends_on: windows_server_2019_x64_stable_debug
   <<: *ELK_CONTAINER_WINDOWS_SERVER_2019_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_RELEASE
+  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # FreeBSD
