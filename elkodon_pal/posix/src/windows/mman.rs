@@ -283,6 +283,8 @@ pub unsafe fn shm_unlink(name: *const char) -> int {
     ignore ERROR_FILE_NOT_FOUND, ERROR_ACCESS_DENIED}
         == 0
     {
+        // TODO: [#41]
+        Errno::set(Errno::ENOENT);
         return -1;
     }
     0

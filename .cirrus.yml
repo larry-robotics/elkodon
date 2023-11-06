@@ -118,7 +118,6 @@ preflight_check_task:
 # Pipeline 2
 
 ubuntu_22_04_x64_stable_debug_task:
-  only_if: false
   depends_on: preflight_check
   <<: *ELK_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default stable
@@ -127,14 +126,12 @@ ubuntu_22_04_x64_stable_debug_task:
   linux_only_doc_test_script: cargo test --doc -- --ignored
 
 ubuntu_22_04_x64_beta_debug_task:
-  only_if: false
   depends_on: ubuntu_22_04_x64_stable_debug
   <<: *ELK_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default beta
   <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
 
 ubuntu_22_04_x64_nightly_debug_task:
-  only_if: false
   depends_on: ubuntu_22_04_x64_beta_debug
   allow_failures: true
   <<: *ELK_CONTAINER_UBUNTU_22_04_X64
@@ -144,7 +141,6 @@ ubuntu_22_04_x64_nightly_debug_task:
 # Pipeline 3
 
 ubuntu_22_04_x64_stable_release_task:
-  only_if: false
   depends_on: preflight_check
   <<: *ELK_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default stable
@@ -185,7 +181,6 @@ ubuntu_22_04_aarch64_stable_release_task:
 # Pipeline 6
 
 arch_linux_x64_stable_debug_task:
-  only_if: false
   depends_on: preflight_check
   <<: *ELK_CONTAINER_ARCH_LINUX_X64
   set_toolchain_script: rustup default stable
@@ -193,7 +188,6 @@ arch_linux_x64_stable_debug_task:
   <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
 
 arch_linux_x64_beta_debug_task:
-  only_if: false
   depends_on: arch_linux_x64_stable_debug
   <<: *ELK_CONTAINER_ARCH_LINUX_X64
   set_toolchain_script: rustup default beta
@@ -202,7 +196,6 @@ arch_linux_x64_beta_debug_task:
 # Pipeline 7
 
 arch_linux_x64_stable_release_task:
-  only_if: false
   depends_on: preflight_check
   <<: *ELK_CONTAINER_ARCH_LINUX_X64
   set_toolchain_script: rustup default stable
@@ -234,7 +227,6 @@ windows_server_2019_x64_stable_release_task:
 # Pipeline 9
 
 freebsd_x64_stable_debug_task:
-  only_if: false
   depends_on: preflight_check
   <<: *ELK_CONTAINER_FREEBSD_X64
   env:
@@ -263,7 +255,6 @@ freebsd_x64_stable_debug_task:
 # Pipeline 10
 
 macos_aarch64_stable_debug_task:
-  only_if: false
   depends_on: preflight_check
   <<: *ELK_CONTAINER_MACOS_AARCH64
   env:

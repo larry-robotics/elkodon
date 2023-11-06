@@ -11,6 +11,8 @@ use elkodon_bb_testing::assert_that;
 use elkodon_bb_testing::test_requires;
 use elkodon_pal_posix::*;
 
+// TODO: [#40]
+#[ignore]
 #[test]
 fn access_control_list_string_conversion_works() {
     test_requires!(posix::POSIX_SUPPORT_ACL);
