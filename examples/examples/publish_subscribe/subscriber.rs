@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let subscriber = service.subscriber().create()?;
 
     while !SignalHandler::termination_requested() {
-        while let Some(sample) = subscriber.receive().unwrap() {
+        while let Some(sample) = subscriber.receive()? {
             println!("received: {:?}", *sample);
         }
 

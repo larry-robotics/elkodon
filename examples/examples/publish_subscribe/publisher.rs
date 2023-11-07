@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut counter: u64 = 0;
 
     while !SignalHandler::termination_requested() {
-        let mut sample = publisher.loan().expect("Failed to acquire sample");
+        let mut sample = publisher.loan()?;
         unsafe {
             sample.as_mut_ptr().write(TransmissionData {
                 x: counter as i32,
@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 funky: counter as f64 * 812.12,
             });
         }
-        publisher.send(sample).expect("Failed to send sample");
+        publisher.send(sample)?;
 
         counter += 1;
         println!("Send sample {} ...", counter);
