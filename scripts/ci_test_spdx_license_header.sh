@@ -47,6 +47,9 @@ check_toml() {
 
 check_rust
 check_shell
-check_toml
+
+# no toml check for now
+# it is usually only some configuration files which can be used without copyright notice
+# check_toml
 
 exit $RET_VAL
