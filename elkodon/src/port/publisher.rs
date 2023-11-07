@@ -37,6 +37,14 @@ pub enum PublisherCreateError {
     UnableToCreateDataSegment,
 }
 
+impl std::fmt::Display for PublisherCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for PublisherCreateError {}
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum LoanError {
     OutOfMemory,
@@ -44,11 +52,27 @@ pub enum LoanError {
     InternalFailure,
 }
 
+impl std::fmt::Display for LoanError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for LoanError {}
+
 enum_gen! { SendCopyError
   mapping:
     LoanError to LoanError,
     ZeroCopyCreationError to ConnectionError
 }
+
+impl std::fmt::Display for SendCopyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for SendCopyError {}
 
 pub(crate) fn data_segment_name(publisher_id: UniquePublisherId) -> FileName {
     let msg = "The system does not support the required file name length for the publishers data segment.";

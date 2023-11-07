@@ -1,9 +1,11 @@
 use elkodon::prelude::*;
 
-fn main() {
-    let services = zero_copy::Service::list().expect("failed to acquire list of current services");
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let services = zero_copy::Service::list()?;
 
     for service in services {
         println!("\n{:#?}", &service);
     }
+
+    Ok(())
 }

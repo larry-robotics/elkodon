@@ -2,18 +2,14 @@ use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 use transmission_data::TransmissionData;
 
-fn main() {
-    let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
 
     let service = zero_copy::Service::new(&service_name)
         .publish_subscribe()
-        .open_or_create::<TransmissionData>()
-        .expect("failed to create/open service");
+        .open_or_create::<TransmissionData>()?;
 
-    let subscriber = service
-        .subscriber()
-        .create()
-        .expect("Failed to create subscriber");
+    let subscriber = service.subscriber().create()?;
 
     while !SignalHandler::termination_requested() {
         while let Some(sample) = subscriber.receive().unwrap() {
@@ -24,4 +20,6 @@ fn main() {
     }
 
     println!("exit ...");
+
+    Ok(())
 }

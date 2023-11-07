@@ -40,11 +40,27 @@ pub enum ServiceDoesExistError {
     InternalError,
 }
 
+impl std::fmt::Display for ServiceDoesExistError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ServiceDoesExistError {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceListError {
     InsufficientPermissions,
     InternalError,
 }
+
+impl std::fmt::Display for ServiceListError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ServiceListError {}
 
 pub(crate) fn event_concept_name(listener_id: &UniqueListenerId) -> FileName {
     let msg = "The system does not support the required file name length for the listeners event concept name.";

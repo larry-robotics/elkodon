@@ -20,6 +20,14 @@ pub enum DegrationAction {
     Fail,
 }
 
+impl std::fmt::Display for DegrationAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for DegrationAction {}
+
 tiny_fn! {
     pub struct DegrationCallback = Fn(service: service::static_config::StaticConfig, publisher_id: UniquePublisherId, subscriber_id: UniqueSubscriberId) -> DegrationAction;
 }

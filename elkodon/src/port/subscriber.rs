@@ -24,10 +24,26 @@ pub enum ReceiveError {
     ConnectionFailure(ConnectionFailure),
 }
 
+impl std::fmt::Display for ReceiveError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ReceiveError {}
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum SubscriberCreateError {
     ExceedsMaxSupportedSubscribers,
 }
+
+impl std::fmt::Display for SubscriberCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for SubscriberCreateError {}
 
 #[derive(Debug)]
 pub struct Subscriber<

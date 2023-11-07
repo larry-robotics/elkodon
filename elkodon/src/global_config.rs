@@ -26,6 +26,14 @@ pub enum ConfigCreationError {
     UnableToDeserializeContents,
 }
 
+impl std::fmt::Display for ConfigCreationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ConfigCreationError {}
+
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Service {
     pub directory: String,
