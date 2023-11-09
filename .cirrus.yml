@@ -71,14 +71,14 @@ elk_cargo_fmt_and_clippy_template: &ELK_CARGO_FMT_AND_CLIPPY
     - cargo clippy -- -D warnings
 
 elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
-  build_script: cargo build --all-targets
+  build_script: cargo build --workspace --all-targets
 
 elk_common_build_and_test_debug_template: &ELK_COMMON_BUILD_AND_TEST_DEBUG
   <<: *ELK_COMMON_BUILD_DEBUG
   test_script: cargo test --workspace --no-fail-fast
 
 elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
-  build_script: cargo build --release --all-targets
+  build_script: cargo build --release --workspace --all-targets
 
 elk_common_build_and_test_no_doc_tests_release_template: &ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
   <<: *ELK_COMMON_BUILD_RELEASE

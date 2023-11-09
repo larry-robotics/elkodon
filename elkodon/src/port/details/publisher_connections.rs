@@ -26,6 +26,14 @@ enum_gen! { ConnectionFailure
     SharedMemoryOpenError to UnableToMapPublishersDataSegment
 }
 
+impl std::fmt::Display for ConnectionFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ConnectionFailure {}
+
 #[derive(Debug)]
 pub(crate) struct Connection<'global_config, Service: service::Details<'global_config>> {
     pub(crate) receiver:

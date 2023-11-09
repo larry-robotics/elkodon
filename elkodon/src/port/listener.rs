@@ -16,6 +16,14 @@ pub enum ListenerCreateError {
     ResourceCreationFailed,
 }
 
+impl std::fmt::Display for ListenerCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ListenerCreateError {}
+
 #[derive(Debug)]
 pub struct Listener<'a, 'global_config: 'a, Service: service::Details<'global_config>> {
     _dynamic_config_guard: Option<UniqueIndex<'a>>,

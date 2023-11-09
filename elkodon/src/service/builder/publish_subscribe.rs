@@ -30,6 +30,14 @@ pub enum PublishSubscribeOpenError {
     UnableToOpenDynamicServiceInformation,
 }
 
+impl std::fmt::Display for PublishSubscribeOpenError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for PublishSubscribeOpenError {}
+
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum PublishSubscribeCreateError {
     Corrupted,
@@ -40,6 +48,14 @@ pub enum PublishSubscribeCreateError {
     IsBeingCreatedByAnotherInstance,
     UnableToCreateStaticServiceInformation,
 }
+
+impl std::fmt::Display for PublishSubscribeCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for PublishSubscribeCreateError {}
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 enum ServiceAvailabilityState {
@@ -53,6 +69,14 @@ enum_gen! {
     PublishSubscribeOpenError,
     PublishSubscribeCreateError
 }
+
+impl std::fmt::Display for PublishSubscribeOpenOrCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for PublishSubscribeOpenOrCreateError {}
 
 #[derive(Debug)]
 pub struct Builder<'global_config, ServiceType: service::Details<'global_config>> {

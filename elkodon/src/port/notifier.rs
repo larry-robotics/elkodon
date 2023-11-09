@@ -15,10 +15,26 @@ pub enum NotifierCreateError {
     ExceedsMaxSupportedNotifiers,
 }
 
+impl std::fmt::Display for NotifierCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for NotifierCreateError {}
+
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum NotifierConnectionUpdateFailure {
     OnlyPartialUpdate,
 }
+
+impl std::fmt::Display for NotifierConnectionUpdateFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for NotifierConnectionUpdateFailure {}
 
 #[derive(Debug, Default)]
 struct ListenerConnections<'global_config, Service: service::Details<'global_config>> {

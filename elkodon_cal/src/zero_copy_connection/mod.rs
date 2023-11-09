@@ -19,24 +19,64 @@ pub enum ZeroCopyCreationError {
     IncompatibleOverflowSetting,
 }
 
+impl std::fmt::Display for ZeroCopyCreationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ZeroCopyCreationError {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ZeroCopySendError {
     ReceiveBufferFull,
     ClearRetrieveChannelBeforeSend,
 }
 
+impl std::fmt::Display for ZeroCopySendError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ZeroCopySendError {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ZeroCopyReceiveError {
     ReceiveWouldExceedMaxBorrowValue,
 }
 
+impl std::fmt::Display for ZeroCopyReceiveError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ZeroCopyReceiveError {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ZeroCopyReclaimError {}
+
+impl std::fmt::Display for ZeroCopyReclaimError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ZeroCopyReclaimError {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ZeroCopyReleaseError {
     RetrieveBufferFull,
 }
+
+impl std::fmt::Display for ZeroCopyReleaseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ZeroCopyReleaseError {}
 
 pub const DEFAULT_BUFFER_SIZE: usize = 4;
 pub const DEFAULT_ENABLE_SAFE_OVERFLOW: bool = false;

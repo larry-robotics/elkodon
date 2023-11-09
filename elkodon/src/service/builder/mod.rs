@@ -43,12 +43,28 @@ enum_gen! {
     DynamicStorageOpenError
 }
 
+impl std::fmt::Display for OpenDynamicStorageFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for OpenDynamicStorageFailure {}
+
 enum_gen! {
     ReadStaticStorageFailure
   mapping:
     StaticStorageOpenError,
     StaticStorageReadError
 }
+
+impl std::fmt::Display for ReadStaticStorageFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ReadStaticStorageFailure {}
 
 #[derive(Debug)]
 pub struct Builder<S: Service> {

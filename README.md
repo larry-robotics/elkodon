@@ -93,28 +93,27 @@ while a subscriber efficiently receives and prints the data.
 use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 
-fn main() {
-    let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
 
     let service = zero_copy::Service::new(&service_name)
         .publish_subscribe()
-        .open_or_create::<usize>()
-        .expect("failed to create/open service");
+        .open_or_create::<usize>()?;
 
-    let publisher = service
-        .publisher()
-        .create()
-        .expect("failed to create publisher");
+    let publisher = service.publisher().create()?;
 
     while !SignalHandler::termination_requested() {
-        let mut sample = publisher.loan().expect("Failed to acquire sample");
-        unsafe { sample.write(1234); }
-        publisher.send(sample).expect("Failed to send sample");
+        let mut sample = publisher.loan()?;
+        unsafe {
+            sample.as_mut_ptr().write(1234);
+        }
+        publisher.send(sample)?;
 
         std::thread::sleep(std::time::Duration::from_secs(1));
     }
-}
 
+    Ok(())
+}
 ```
 
 **subscriber.rs**
@@ -123,26 +122,24 @@ fn main() {
 use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 
-fn main() {
-    let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
 
     let service = zero_copy::Service::new(&service_name)
         .publish_subscribe()
-        .open_or_create::<TransmissionData>()
-        .expect("failed to create/open service");
+        .open_or_create::<usize>()?;
 
-    let subscriber = service
-        .subscriber()
-        .create()
-        .expect("Failed to create subscriber");
+    let subscriber = service.subscriber().create()?;
 
     while !SignalHandler::termination_requested() {
-        while let Some(sample) = subscriber.receive().unwrap() {
+        while let Some(sample) = subscriber.receive()? {
             println!("received: {:?}", *sample);
         }
 
         std::thread::sleep(std::time::Duration::from_secs(1));
     }
+
+    Ok(())
 }
 ```
 
@@ -172,29 +169,25 @@ This minimal example showcases an event notification between two processes.
 use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 
-fn main() {
-    let event_name = ServiceName::new(b"MyEventName").unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let event_name = ServiceName::new(b"MyEventName")?;
 
     let event = zero_copy::Service::new(&event_name)
         .event()
-        .open_or_create()
-        .expect("failed to create/open event");
+        .open_or_create()?;
 
-    let notifier = event
-        .notifier()
-        .create()
-        .expect("failed to create notifier");
+    let notifier = event.notifier().create()?;
 
     let mut counter: u64 = 0;
     while !SignalHandler::termination_requested() {
         counter += 1;
-        notifier
-            .notify_with_custom_trigger_id(EventId::new(counter))
-            .expect("failed to trigger event");
+        notifier.notify_with_custom_event_id(EventId::new(counter))?;
 
         println!("Trigger event with id {} ...", counter);
         std::thread::sleep(std::time::Duration::from_secs(1));
     }
+
+    Ok(())
 }
 ```
 
@@ -204,27 +197,22 @@ fn main() {
 use elkodon::prelude::*;
 use elkodon_bb_posix::signal::SignalHandler;
 
-fn main() {
-    let event_name = ServiceName::new(b"MyEventName").unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let event_name = ServiceName::new(b"MyEventName")?;
 
     let event = zero_copy::Service::new(&event_name)
         .event()
-        .open_or_create()
-        .expect("failed to create/open event");
+        .open_or_create()?;
 
-    let mut listener = event
-        .listener()
-        .create()
-        .expect("failed to create listener");
+    let mut listener = event.listener().create()?;
 
     while !SignalHandler::termination_requested() {
-        for event_id in listener
-            .timed_wait(std::time::Duration::from_secs(1))
-            .expect("failed to wait on listener")
-        {
+        for event_id in listener.timed_wait(std::time::Duration::from_secs(1))? {
             println!("event was triggered with id: {:?}", event_id);
         }
     }
+
+    Ok(())
 }
 ```
 

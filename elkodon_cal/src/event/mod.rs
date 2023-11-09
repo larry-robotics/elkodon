@@ -14,6 +14,14 @@ pub enum NotifierNotifyError {
     InternalFailure,
 }
 
+impl std::fmt::Display for NotifierNotifyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for NotifierNotifyError {}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum NotifierCreateError {
     DoesNotExist,
@@ -21,11 +29,27 @@ pub enum NotifierCreateError {
     InternalFailure,
 }
 
+impl std::fmt::Display for NotifierCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for NotifierCreateError {}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ListenerWaitError {
     ContractViolation,
     InternalFailure,
 }
+
+impl std::fmt::Display for ListenerWaitError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ListenerWaitError {}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum ListenerCreateError {
@@ -33,6 +57,14 @@ pub enum ListenerCreateError {
     InsufficientPermissions,
     InternalFailure,
 }
+
+impl std::fmt::Display for ListenerCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for ListenerCreateError {}
 
 /// The default suffix of every event
 pub const DEFAULT_SUFFIX: FileName = unsafe { FileName::new_unchecked(b".event") };

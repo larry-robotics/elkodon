@@ -12,6 +12,14 @@ pub enum SemanticStringError {
     ExceedsMaximumLength,
 }
 
+impl std::fmt::Display for SemanticStringError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for SemanticStringError {}
+
 pub trait SemanticStringAccessor<const CAPACITY: usize> {
     /// Creates a new empty SemanticStringAccessor which may violates the content contract.
     ///

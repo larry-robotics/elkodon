@@ -21,6 +21,14 @@ pub enum EventOpenError {
     UnableToOpenDynamicServiceInformation,
 }
 
+impl std::fmt::Display for EventOpenError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for EventOpenError {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum EventCreateError {
     Corrupted,
@@ -31,12 +39,28 @@ pub enum EventCreateError {
     UnableToCreateStaticServiceInformation,
 }
 
+impl std::fmt::Display for EventCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for EventCreateError {}
+
 enum_gen! {
     EventOpenOrCreateError
   mapping:
     EventOpenError,
     EventCreateError
 }
+
+impl std::fmt::Display for EventOpenOrCreateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}::{:?}", std::stringify!(Self), self)
+    }
+}
+
+impl std::error::Error for EventOpenOrCreateError {}
 
 #[derive(Debug)]
 pub struct Builder<'global_config, ServiceType: service::Details<'global_config>> {
