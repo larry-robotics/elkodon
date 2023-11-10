@@ -11,7 +11,7 @@
 //! - Blackboard (planned)
 //!
 //! For a comprehensive list of all planned features, please refer to the
-//! [roadmap](https://github.com/elkodon/elkodon).
+//! [GitHub Roadmap](https://github.com/elkodon/elkodon/ROADMAP.md).
 //!
 //! Services are uniquely identified by name and messaging pattern. They can be instantiated with
 //! diverse quality-of-service settings and are envisioned to be deployable in a `no_std` and

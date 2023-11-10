@@ -2,6 +2,8 @@ use std::{fmt::Debug, ops::Deref, ptr::NonNull};
 
 use crate::{message::Message, port::subscriber::Subscriber, service};
 
+/// It stores the payload and is acquired by the [`Subscriber`] whenever it receives new data from a
+/// [`crate::port::publisher::Publisher`] via [`Subscriber::receive()`].
 #[derive(Debug)]
 pub struct Sample<
     'a,
@@ -25,7 +27,7 @@ impl<
 {
     type Target = MessageType;
     fn deref(&self) -> &Self::Target {
-        unsafe { &(*self.ptr.as_ptr()).data }
+        unsafe { &self.ptr.as_ref().data }
     }
 }
 
@@ -40,7 +42,7 @@ impl<
 {
     fn drop(&mut self) {
         self.subscriber
-            .release_sample(self.channel_id, self.as_ptr());
+            .release_sample(self.channel_id, self.payload());
     }
 }
 
@@ -53,10 +55,13 @@ impl<
         MessageType: Debug,
     > Sample<'a, 'subscriber, 'global_config, Service, Header, MessageType>
 {
-    pub fn as_ptr(&self) -> *const MessageType {
+    /// Returns a reference to the payload of the sample
+    pub fn payload(&self) -> &MessageType {
         &unsafe { self.ptr.as_ref() }.data
     }
 
+    /// Returns a reference to the header of the sample. In publish subscribe communication the
+    /// default header is [`crate::service::header::publish_subscribe::Header`].
     pub fn header(&self) -> &Header {
         &unsafe { self.ptr.as_ref() }.header
     }

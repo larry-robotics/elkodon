@@ -1,9 +1,12 @@
+use crate::{message::Message, port::publisher::Publisher, service};
 use elkodon_cal::shared_memory::*;
 use std::{fmt::Debug, mem::MaybeUninit, ptr::NonNull, sync::atomic::Ordering};
 
-use crate::{message::Message, port::publisher::Publisher, service};
-
-/// # Important
+/// Acquired by a [`Publisher`] via [`Publisher::loan()`]. It stores the payload that will be sent
+/// to all connected [`crate::port::subscriber::Subscriber`]s. If the [`SampleMut`] is not sent
+/// it will release the loaned memory when going out of scope.
+///
+/// ## Notes
 ///
 /// Does not implement [`Send`] since it releases unsent samples in the [`Publisher`] and the
 /// [`Publisher`] is not thread-safe!
@@ -60,14 +63,18 @@ impl<
         self.offset_to_chunk
     }
 
+    /// Returns a reference to the header of the sample. In publish subscribe communication the
+    /// default header is [`crate::service::header::publish_subscribe::Header`].
     pub fn header(&self) -> &Header {
         &unsafe { &*self.ptr.as_ref().as_ptr() }.header
     }
 
+    /// Returns a pointer to the underlying memory.
     pub fn as_ptr(&self) -> *const MessageType {
         &unsafe { &*self.ptr.as_ref().as_ptr() }.data
     }
 
+    /// Returns a mutable pointer to the underlying memory.
     pub fn as_mut_ptr(&mut self) -> *mut MessageType {
         &mut unsafe { &mut *self.ptr.as_mut().as_mut_ptr() }.data
     }

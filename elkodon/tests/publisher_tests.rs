@@ -53,10 +53,10 @@ mod publisher {
 
         let r = subscriber.receive().unwrap();
         assert_that!(r, is_some);
-        assert_that!(unsafe { *r.unwrap().as_ptr() }, eq 4);
+        assert_that!( *r.unwrap(), eq 4);
         let r = subscriber.receive().unwrap();
         assert_that!(r, is_some);
-        assert_that!(unsafe { *r.unwrap().as_ptr() }, eq 3);
+        assert_that!( *r.unwrap(), eq 3);
     }
 
     #[test]
