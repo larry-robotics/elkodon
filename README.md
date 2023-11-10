@@ -7,6 +7,7 @@
  3. [Getting Started](#getting-started)
     1. [Publish Subscribe](#publish-subscribe)
     2. [Events](#events)
+    3. [Custom Configuration](#custom-configuration)
  4. [Supported Platforms](#supported-platforms)
  5. [Language Bindings](#language-bindings)
  6. [Thanks To All Contributors](#thanks-to-all-contributors)
@@ -231,6 +232,11 @@ cargo run --example event_notifier
 ```sh
 cargo run --example event_listener
 ```
+
+### Custom Configuration
+
+It is possible to configure default quality of service settings, paths and file suffixes in a
+custom configuration file. For more details visit the [configuration directory](config/).
 
 ## Supported Platforms
 

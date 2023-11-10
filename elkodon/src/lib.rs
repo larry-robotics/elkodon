@@ -1,39 +1,44 @@
 //! # Elkodon
 //!
-//! TODO: link roadmap, examples, faq, github
+//! Elkodon is a cutting-edge service-oriented zero-copy lock-free inter-process communication
+//! middleware. Designed to support various messaging patterns, Elkodon empowers developers with
+//! the flexibility of:
 //!
-//! A service-oriented zero-copy lock-free inter-process communication middleware. It support
-//! various messaging patterns like:
+//! - Publish-Subscribe
+//! - Events
+//! - Request-Response (planned)
+//! - Pipeline (planned)
+//! - Blackboard (planned)
 //!
-//!  * Publish-Subscribe
-//!  * Events
-//!  * Request-Response (planned)
-//!  * Pipeline (planned)
-//!  * Blackboard (planned)
+//! For a comprehensive list of all planned features, please refer to the
+//! [roadmap](https://github.com/elkodon/elkodon).
 //!
-//! Services identify uniquely by name and messaging pattern. They can be created with various
-//! quality of service settings and shall be suitable in the future to be deployed in a `no_std`
-//! and safety-critical environment.
+//! Services are uniquely identified by name and messaging pattern. They can be instantiated with
+//! diverse quality-of-service settings and are envisioned to be deployable in a `no_std` and
+//! safety-critical environment in the future.
 //!
-//! Furthermore, elkodon can be configured so that multiple service-setups can run on the same
-//! machine or even in the same process without interferring with each other. This enables elkodon
-//! also to run with other frameworks at the same time.
+//! Moreover, Elkodon offers configuration options that enable multiple service setups to coexist
+//! on the same machine or even within the same process without interference. This versatility
+//! allows Elkodon to seamlessly integrate with other frameworks simultaneously.
 //!
-//! Elkodon has its roots in the [eclipse iceoryx](https://github.com/eclipse-iceoryx/iceoryx)
-//! project and overcame one of the major disadvantages, the central daemon. Elkodon has a complete
-//! decentralized architecture and does not require a central daemon at all.
+//! Elkodon traces its lineage back to the
+//! [eclipse iceoryx](https://github.com/eclipse-iceoryx/iceoryx) project, addressing a major
+//! drawback – the central daemon. Elkodon embraces a fully decentralized architecture,
+//! eliminating the need for a central daemon entirely.
 //!
 //! # Examples
 //!
-//! Every service is identified uniquely by a [`crate::service::service_name::ServiceName`]. When
-//! starting communicating one is required to create a service first that acts as a port factory.
-//! With this factory, one can create then the endpoints of the service and can start to
-//! communicate.
+//! Each service is uniquely identified by a [`crate::service::service_name::ServiceName`].
+//! Initiating communication requires the creation of a service, which serves as a port factory.
+//! With this factory, endpoints for the service can be created, enabling seamless communication.
+//!
+//! For more detailed examples, explore the
+//! [GitHub example folder](https://github.com/elkodon/elkodon/tree/main/examples).
 //!
 //! ## Publish-Subscribe
 //!
-//! A simple publish-subscribe setup where the subscriber receives from the publisher until the
-//! user terminates the processes by pressing `CTRL+c`.
+//! Explore a simple publish-subscribe setup where the subscriber continuously receives data from
+//! the publisher until the processes are gracefully terminated by the user with `CTRL+C`.
 //!
 //! **Subscriber (Process 1)**
 //!
@@ -92,20 +97,172 @@
 //!
 //! ## Events
 //!
-//! **Listener**
+//! Explore a straightforward event setup, where the listener patiently awaits events from the
+//! notifier. This continuous event listening continues until the user gracefully terminates
+//! the processes by pressing `CTRL+C`.
+//!
+//! **Listener (Process 1)**
+//!
+//! ```no_run
+//! use elkodon::prelude::*;
+//! use elkodon_bb_posix::signal::SignalHandler;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//!
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     .open_or_create()?;
+//!
+//! let mut listener = event.listener().create()?;
+//!
+//! while !SignalHandler::termination_requested() {
+//!     for event_id in listener.timed_wait(std::time::Duration::from_secs(1))? {
+//!         println!("event was triggered with id: {:?}", event_id);
+//!     }
+//! }
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! **Notifier (Process 2)**
+//!
+//! ```no_run
+//! use elkodon::prelude::*;
+//! use elkodon_bb_posix::signal::SignalHandler;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//!
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     .open_or_create()?;
+//!
+//! let notifier = event.notifier().create()?;
+//!
+//! let mut counter: u64 = 0;
+//! while !SignalHandler::termination_requested() {
+//!     counter += 1;
+//!     notifier.notify_with_custom_event_id(EventId::new(counter))?;
+//!
+//!     println!("Trigger event with id {} ...", counter);
+//!     std::thread::sleep(std::time::Duration::from_secs(1));
+//! }
+//!
+//! # Ok(())
+//! # }
+//! ```
 //!
 //! # Quality Of Services
-//!  * required to calculate shm mem size
+//!
+//! Quality of service settings, or service settings, play a crucial role in determining memory
+//! allocation in a worst-case scenario. These settings can be configured during the creation of
+//! a service, immediately after defining the messaging pattern. In cases where the service
+//! already exists, these settings are interpreted as minimum requirements, ensuring a flexible
+//! and dynamic approach to memory management.
+//!
+//! ## Publish-Subscribe
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"PubSubQos")?;
+//!
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .enable_safe_overflow(true)
+//!     // how many samples a subscriber can borrow in parallel
+//!     .subscriber_max_borrowed_samples(2)
+//!     // the maximum history size a subscriber can request
+//!     .history_size(3)
+//!     // the maximum buffer size of a subscriber
+//!     .subscriber_buffer_size(4)
+//!     // the maximum amount of subscribers of this service
+//!     .max_subscribers(5)
+//!     // the maximum amount of publishers of this service
+//!     .max_publishers(2)
+//!     .create::<u64>()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Event
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"EventQos")?;
+//!
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     // the maximum amount of notifiers of this service
+//!     .max_notifiers(2)
+//!     // the maximum amount of listeners of this service
+//!     .max_listeners(2)
+//!     .create()?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! # Port Behavior
+//!
+//! Certain ports in Elkodon provide users with the flexibility to define custom behaviors in
+//! specific situations.
+//! Custom port behaviors can be specified during the creation of a port,
+//! utilizing the port factory or service, immediately following the specification of the port
+//! type. This feature enhances the adaptability of Elkodon to diverse use cases and scenarios.
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! use elkodon::service::port_factory::publisher::UnableToDeliverStrategy;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .enable_safe_overflow(false)
+//!     .open_or_create::<u64>()?;
+//!
+//! let publisher = service.publisher()
+//!     // the maximum amount of samples this publisher can loan in parallel
+//!     .max_loaned_samples(2)
+//!     // defines the behavior when a sample could not be delivered when the subscriber buffer is
+//!     // full, only useful in an non-overflow scenario
+//!     .unable_to_deliver_strategy(UnableToDeliverStrategy::DiscardSample)
+//!     .create()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
 //!
 //! # Custom Configuration
 //!
-//! # A Brief Tour Of Messaging Patterns
+//! Elkodon offers the flexibility to configure default quality of service settings, paths, and
+//! file suffixes through a custom configuration file.
+//!
+//! For in-depth details and examples, please visit the
+//! [GitHub config folder](https://github.com/elkodon/elkodon/tree/main/config).
 
+/// Handles Elkodons global configuration
 pub mod global_config;
+
 pub(crate) mod message;
+
+/// The ports or communication endpoints of Elkodon
 pub mod port;
+
+/// The payload that is received by a [`crate::port::subscriber::Subscriber`].
 pub mod sample;
+
+/// The payload that is sent by a [`crate::port::publisher::Publisher`].
 pub mod sample_mut;
+
+/// The foundation of communication the service with its messaging patterns
 pub mod service;
 
 #[doc(hidden)]
