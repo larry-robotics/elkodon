@@ -25,12 +25,10 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v3
 
-      - name: Install latest stable
-        uses: actions-rs/toolchain@v1
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
-          override: true
           components: rustfmt, clippy
 
       - name: Prepare system
@@ -41,28 +39,16 @@ jobs:
           icacls "C:\Temp" /t /c /grant Everyone:F
 
       - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt --all -- --check
 
       - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+        run: cargo clippy -- -D warnings
 
       - name: Run cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --workspace
+        run: cargo build --workspace --all-targets
 
-      - name: Run cargo test subset
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --workspace --all --no-fail-fast
+      - name: Run cargo test
+        run: cargo test --workspace --no-fail-fast
 
   grcov:
     needs: preflight-check
@@ -140,43 +126,35 @@ jobs:
 #     steps:
 #       - name: Checkout sources
 #         uses: actions/checkout@v3
-# 
+#
 #       - name: Install dependencies
 #         run: sudo apt-get -y install libacl1-dev
-# 
+#
 #       - name: Create test users and groups
 #         run: |
 #           sudo useradd testuser1
 #           sudo useradd testuser2
 #           sudo groupadd testgroup1
 #           sudo groupadd testgroup2
-# 
-#       - name: Install latest stable
-#         uses: actions-rs/toolchain@v1
+#
+#       - name: Setup Rust
+#         uses: dtolnay/rust-toolchain@v1
 #         with:
-#           profile: minimal
 #           toolchain: stable
-#           override: true
 #           components: rustfmt, clippy
-# 
+#
 #       - name: Run cargo fmt
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: fmt
-#           args: --all -- --check
-# 
+#         run: cargo fmt --all -- --check
+#
 #       - name: Run cargo clippy
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: clippy
-#           args: -- -D warnings
-# 
-#       - name: Run cargo test workspace
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: test
-#           args: --workspace -- --test-threads=1
-# 
+#         run: cargo clippy -- -D warnings
+#
+#       - name: Run cargo build
+#         run: cargo build --workspace --all-targets
+#
+#       - name: Run cargo test
+#         run: cargo test --workspace --no-fail-fast
+#
 #   freebsd:
 #     timeout-minutes: 20
 #     runs-on: macos-12
@@ -213,38 +191,25 @@ jobs:
 #     steps:
 #       - name: Checkout sources
 #         uses: actions/checkout@v3
-# 
-#       - name: Install latest stable
-#         uses: actions-rs/toolchain@v1
+#
+#       - name: Setup Rust
+#         uses: dtolnay/rust-toolchain@v1
 #         with:
-#           profile: minimal
 #           toolchain: stable
-#           override: true
 #           components: rustfmt, clippy
 # 
 #       - name: Run cargo fmt
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: fmt
-#           args: --all -- --check
+#         run: cargo fmt --all -- --check
 # 
 #       - name: Run cargo clippy
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: clippy
-#           args: -- -D warnings
-# 
+#         run: cargo clippy -- -D warnings
+#
 #       - name: Run cargo build
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: build
-#           args: --workspace
-# 
+#         run: cargo build --workspace --all-targets
+
 #       - name: Run cargo test subset
-#         uses: actions-rs/cargo@v1
-#         with:
-#           command: test
-#           args: >
+#         run: |
+#           cargo test
 #             -p elkodon_pal_concurrency_primitives 
 #             -p elkodon_pal_posix
 #             -p elkodon_bb_container
@@ -254,4 +219,4 @@ jobs:
 #             -p elkodon_bb_memory
 #             -p elkodon_bb_system_types
 #             -p elkodon_bb_testing
-#             --lib --bins --tests -- --test-threads=1
+#             --lib --bins --tests
