@@ -2,6 +2,10 @@
 
 cd $(git rev-parse --show-toplevel)
 
+LLVM_PROFILE_PATH="target/debug/llvm-profile-files"
+export LLVM_PROFILE_FILE="${LLVM_PROFILE_PATH}/elkodon-%p-%m.profraw"
+export RUSTFLAGS="-Cinstrument-coverage"
+
 CLEAN=0
 GENERATE=0
 REPORT=0
@@ -11,27 +15,28 @@ LCOV=0
 
 cleanup() {
     find . -name "*profraw" -exec rm {} \;
-    rm json5format.profdata
+    if [[ -d "./target/coverage" ]]; then rm -rf ./target/coverage; fi
 }
 
 generate_profile() {
-    RUSTFLAGS="-C instrument-coverage" cargo test --workspace -- --test-threads=1
+    cargo test --workspace -- --test-threads=1
 }
 
 merge_report() {
+    mkdir -p ./target/coverage/
     local FILES=$(find . -name "*profraw")
-    llvm-profdata merge -sparse $FILES -o json5format.profdata
+    llvm-profdata merge -sparse $FILES -o ./target/coverage/json5format.profdata
 }
 
 generate() {
     cleanup
     generate_profile
-    merge_report
+    # merge_report
 }
 
 show_overview() {
     local FILES=$(ls ./target/debug/deps/*tests* | grep -v ".d\$")
-    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=json5format.profdata"
+    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./target/coverage/json5format.profdata"
 
     for FILE in $FILES 
     do
@@ -42,7 +47,7 @@ show_overview() {
 }
 
 show_report() {
-    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=json5format.profdata"
+    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./target/coverage/json5format.profdata"
 
     for FILE in $FILES 
     do
@@ -54,13 +59,42 @@ show_report() {
 }
 
 generate_html_report() {
-    mkdir -p ./target/coverage/html/
-    grcov . --binary-path ./target/debug/deps/ -s . -t html --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/html
+    mkdir -p ./target/coverage/
+    grcov \
+          **/${LLVM_PROFILE_PATH} \
+          **/**/${LLVM_PROFILE_PATH} \
+          --binary-path ./target/debug \
+          --source-dir . \
+          --output-type html \
+          --branch \
+          --ignore-not-existing \
+          --ignore "**/build.rs" \
+          --ignore "**/tests/*" \
+          --ignore "**/examples/*" \
+          --ignore "**/benchmarks/*" \
+          --ignore "**/target/*" \
+          --ignore "**/.cargo/*" \
+          --output-path ./target/coverage/html
+    sed -i 's/coverage/grcov/' target/coverage/html/coverage.json
 }
 
 generate_lcov_report() {
     mkdir -p ./target/coverage/
-    grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/tests.lcov
+    grcov \
+          **/${LLVM_PROFILE_PATH} \
+          **/**/${LLVM_PROFILE_PATH} \
+          --binary-path ./target/debug \
+          --source-dir . \
+          --output-type lcov \
+          --branch \
+          --ignore-not-existing \
+          --ignore "**/build.rs" \
+          --ignore "**/tests/*" \
+          --ignore "**/examples/*" \
+          --ignore "**/benchmarks/*" \
+          --ignore "**/target/*" \
+          --ignore "**/.cargo/*" \
+          --output-path ./target/coverage/lcov.info
 }
 
 
