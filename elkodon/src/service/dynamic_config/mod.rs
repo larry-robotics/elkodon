@@ -18,7 +18,7 @@ pub(crate) enum DecrementReferenceCounterResult {
 }
 
 #[derive(Debug)]
-pub enum MessagingPattern {
+pub(crate) enum MessagingPattern {
     PublishSubscribe(publish_subscribe::DynamicConfig),
     Event(event::DynamicConfig),
 }

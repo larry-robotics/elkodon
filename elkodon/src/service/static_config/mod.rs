@@ -18,7 +18,7 @@ pub enum MessagingPattern {
 }
 
 impl MessagingPattern {
-    pub fn is_same_pattern(&self, rhs: &MessagingPattern) -> bool {
+    pub(crate) fn is_same_pattern(&self, rhs: &MessagingPattern) -> bool {
         match self {
             MessagingPattern::PublishSubscribe(_) => {
                 matches!(rhs, MessagingPattern::PublishSubscribe(_))
@@ -29,7 +29,7 @@ impl MessagingPattern {
         }
     }
 
-    pub fn required_amount_of_samples_per_data_segment(
+    pub(crate) fn required_amount_of_samples_per_data_segment(
         &self,
         publisher_max_loaned_samples: usize,
     ) -> usize {
@@ -53,7 +53,10 @@ pub struct StaticConfig {
 }
 
 impl StaticConfig {
-    pub fn new_event<Hasher: Hash>(service_name: &ServiceName, config: &config::Config) -> Self {
+    pub(crate) fn new_event<Hasher: Hash>(
+        service_name: &ServiceName,
+        config: &config::Config,
+    ) -> Self {
         Self {
             uuid: Hasher::new(service_name.as_bytes()).as_hex_string(),
             service_name: *service_name,
@@ -61,7 +64,7 @@ impl StaticConfig {
         }
     }
 
-    pub fn new_publish_subscribe<Hasher: Hash>(
+    pub(crate) fn new_publish_subscribe<Hasher: Hash>(
         service_name: &ServiceName,
         config: &config::Config,
     ) -> Self {

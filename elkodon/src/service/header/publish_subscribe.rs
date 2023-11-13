@@ -17,7 +17,7 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn new(publisher_port_id: UniquePublisherId) -> Self {
+    pub(crate) fn new(publisher_port_id: UniquePublisherId) -> Self {
         let now = Time::now().unwrap();
         Self {
             publisher_port_id,

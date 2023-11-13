@@ -178,7 +178,7 @@ pub struct ServiceState<'config, Static: StaticStorage, Dynamic: DynamicStorage<
 impl<'config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>>
     ServiceState<'config, Static, Dynamic>
 {
-    pub fn new(
+    pub(crate) fn new(
         static_config: StaticConfig,
         global_config: &'config config::Config,
         dynamic_storage: Dynamic,

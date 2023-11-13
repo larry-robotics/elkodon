@@ -6,19 +6,19 @@ use elkodon_bb_memory::bump_allocator::BumpAllocator;
 use crate::port::port_identifiers::{UniqueListenerId, UniqueNotifierId};
 
 #[derive(Debug, Clone, Copy)]
-pub struct DynamicConfigSettings {
+pub(crate) struct DynamicConfigSettings {
     pub number_of_listeners: usize,
     pub number_of_notifiers: usize,
 }
 
 #[derive(Debug)]
-pub struct DynamicConfig {
+pub(crate) struct DynamicConfig {
     pub(crate) listeners: Container<UniqueListenerId>,
     pub(crate) notifiers: Container<UniqueNotifierId>,
 }
 
 impl DynamicConfig {
-    pub fn new(config: &DynamicConfigSettings) -> Self {
+    pub(crate) fn new(config: &DynamicConfigSettings) -> Self {
         Self {
             listeners: unsafe { Container::new_uninit(config.number_of_listeners) },
             notifiers: unsafe { Container::new_uninit(config.number_of_notifiers) },
@@ -34,32 +34,24 @@ impl DynamicConfig {
             "This should never happen! Unable to initialize notifier port id container.");
     }
 
-    pub fn memory_size(config: &DynamicConfigSettings) -> usize {
+    pub(crate) fn memory_size(config: &DynamicConfigSettings) -> usize {
         Container::<UniqueListenerId>::memory_size(config.number_of_listeners)
             + Container::<UniqueNotifierId>::memory_size(config.number_of_notifiers)
     }
 
-    pub fn number_of_supported_listeners(&self) -> usize {
-        self.listeners.capacity()
-    }
-
-    pub fn number_of_supported_notifiers(&self) -> usize {
-        self.notifiers.capacity()
-    }
-
-    pub fn number_of_listeners(&self) -> usize {
+    pub(crate) fn number_of_listeners(&self) -> usize {
         self.listeners.len()
     }
 
-    pub fn number_of_notifiers(&self) -> usize {
+    pub(crate) fn number_of_notifiers(&self) -> usize {
         self.notifiers.len()
     }
 
-    pub fn add_listener_id(&self, id: UniqueListenerId) -> Option<UniqueIndex> {
+    pub(crate) fn add_listener_id(&self, id: UniqueListenerId) -> Option<UniqueIndex> {
         unsafe { self.listeners.add(id) }
     }
 
-    pub fn add_notifier_id(&self, id: UniqueNotifierId) -> Option<UniqueIndex> {
+    pub(crate) fn add_notifier_id(&self, id: UniqueNotifierId) -> Option<UniqueIndex> {
         unsafe { self.notifiers.add(id) }
     }
 }

@@ -6,19 +6,19 @@ use elkodon_bb_memory::bump_allocator::BumpAllocator;
 use crate::port::port_identifiers::{UniquePublisherId, UniqueSubscriberId};
 
 #[derive(Debug, Clone, Copy)]
-pub struct DynamicConfigSettings {
+pub(crate) struct DynamicConfigSettings {
     pub number_of_subscribers: usize,
     pub number_of_publishers: usize,
 }
 
 #[derive(Debug)]
-pub struct DynamicConfig {
+pub(crate) struct DynamicConfig {
     pub(crate) subscribers: Container<UniqueSubscriberId>,
     pub(crate) publishers: Container<UniquePublisherId>,
 }
 
 impl DynamicConfig {
-    pub fn new(config: &DynamicConfigSettings) -> Self {
+    pub(crate) fn new(config: &DynamicConfigSettings) -> Self {
         Self {
             subscribers: unsafe { Container::new_uninit(config.number_of_subscribers) },
             publishers: unsafe { Container::new_uninit(config.number_of_publishers) },
@@ -34,32 +34,24 @@ impl DynamicConfig {
             "This should never happen! Unable to initialize publisher port id container.");
     }
 
-    pub fn memory_size(config: &DynamicConfigSettings) -> usize {
+    pub(crate) fn memory_size(config: &DynamicConfigSettings) -> usize {
         Container::<UniqueSubscriberId>::memory_size(config.number_of_subscribers)
             + Container::<UniquePublisherId>::memory_size(config.number_of_publishers)
     }
 
-    pub fn number_of_publishers(&self) -> usize {
+    pub(crate) fn number_of_publishers(&self) -> usize {
         self.publishers.len()
     }
 
-    pub fn number_of_subscribers(&self) -> usize {
+    pub(crate) fn number_of_subscribers(&self) -> usize {
         self.subscribers.len()
     }
 
-    pub fn number_of_supported_publishers(&self) -> usize {
-        self.publishers.capacity()
-    }
-
-    pub fn number_of_supported_subscribers(&self) -> usize {
-        self.subscribers.capacity()
-    }
-
-    pub fn add_subscriber_id(&self, id: UniqueSubscriberId) -> Option<UniqueIndex> {
+    pub(crate) fn add_subscriber_id(&self, id: UniqueSubscriberId) -> Option<UniqueIndex> {
         unsafe { self.subscribers.add(id) }
     }
 
-    pub fn add_publisher_id(&self, id: UniquePublisherId) -> Option<UniqueIndex> {
+    pub(crate) fn add_publisher_id(&self, id: UniquePublisherId) -> Option<UniqueIndex> {
         unsafe { self.publishers.add(id) }
     }
 }
