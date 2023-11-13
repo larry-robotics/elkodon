@@ -39,6 +39,10 @@
 
 # continue
 
+* document
+    * service
+* ?is publisher history tested?
+
 * Write tests for `Sample` & `SampleMut`
 
 * Fix platforms

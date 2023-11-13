@@ -1,3 +1,36 @@
+//! # Examples
+//!
+//! ```
+//! use elkodon::{prelude::*, service::port_factory::publisher::UnableToDeliverStrategy};
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .open_or_create::<u64>()?;
+//!
+//! let publisher = service
+//!     .publisher()
+//!     // defines how many samples can be loaned in parallel
+//!     .max_loaned_samples(5)
+//!     // defines behavior when subscriber queue is full in an non-overflowing service
+//!     .unable_to_deliver_strategy(UnableToDeliverStrategy::DiscardSample)
+//!     .create()?;
+//!
+//! // loan some memory and send it
+//! let mut sample = publisher.loan()?;
+//! unsafe {
+//!     sample.as_mut_ptr().write(1337);
+//! }
+//! publisher.send(sample)?;
+//!
+//! // send a copy of the value
+//! publisher.send_copy(313)?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use std::cell::UnsafeCell;
 use std::fmt::Debug;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
@@ -31,6 +64,8 @@ use elkodon_cal::zero_copy_connection::{
     ZeroCopyConnection, ZeroCopyCreationError, ZeroCopySendError, ZeroCopySender,
 };
 
+/// Defines a failure that can occur when a [`Publisher`] is created with
+/// [`crate::service::port_factory::publisher::PortFactoryPublisher`].
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum PublisherCreateError {
     ExceedsMaxSupportedPublishers,
@@ -45,6 +80,8 @@ impl std::fmt::Display for PublisherCreateError {
 
 impl std::error::Error for PublisherCreateError {}
 
+/// Defines a failure that can occur in [`Publisher::loan()`] or is part of [`SendCopyError`]
+/// emitted in [`Publisher::send_copy()`].
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum LoanError {
     OutOfMemory,
@@ -60,7 +97,9 @@ impl std::fmt::Display for LoanError {
 
 impl std::error::Error for LoanError {}
 
-enum_gen! { SendCopyError
+enum_gen! {
+    /// Failure that can be emitted when a [`crate::sample::Sample`] is sent via [`Publisher::send_copy()`].
+    SendCopyError
   mapping:
     LoanError to LoanError,
     ZeroCopyCreationError to ConnectionError
@@ -106,6 +145,7 @@ pub(crate) fn data_segment_config<'config, Service: service::Details<'config>>(
     <Service::SharedMemory as NamedConceptMgmt>::Configuration::default().suffix(f)
 }
 
+/// Sending endpoint of a publish-subscriber based communication.
 #[derive(Debug)]
 pub struct Publisher<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug> {
     port_id: UniquePublisherId,
@@ -410,6 +450,9 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         }
     }
 
+    /// Sets the [`DegrationCallback`] of the [`Publisher`]. Whenever a connection to a
+    /// [`crate::port::subscriber::Subscriber`] is corrupted or a seems to be dead, this callback
+    /// is called and depending on the returned [`DegrationAction`] measures will be taken.
     pub fn set_degration_callback<
         F: Fn(
                 service::static_config::StaticConfig,
@@ -427,6 +470,10 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         }
     }
 
+    /// Explicitly updates all connections to the [`crate::port::subscriber::Subscriber`]s. This is
+    /// required to be called whenever a new [`crate::port::subscriber::Subscriber`] connected to
+    /// the service. It is done implicitly whenever [`Publisher::send()`] or [`Publisher::send_copy()`]
+    /// is called.
     pub fn update_connections(&self) -> Result<(), ZeroCopyCreationError> {
         if unsafe { (*self.subscriber_list_state.get()).update() } {
             fail!(from self, when self.populate_subscriber_channels(),
@@ -436,6 +483,10 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         Ok(())
     }
 
+    /// Send a previously loaned [`Publisher::loan()`] [`SampleMut`] to all connected
+    /// [`crate::port::subscriber::Subscriber`]s of the service.
+    /// On success it returns the number of [`crate::port::subscriber::Subscriber`]s that received
+    /// the data, otherwise a [`ZeroCopyCreationError`] describing the failure.
     pub fn send<'publisher>(
         &'publisher self,
         sample: SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>,
@@ -446,6 +497,9 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         )
     }
 
+    /// Copies the input `value` into a [`SampleMut`] and delivers it.
+    /// On success it returns the number of [`crate::port::subscriber::Subscriber`]s that received
+    /// the data, otherwise a [`SendCopyError`] describing the failure.
     pub fn send_copy(&self, value: MessageType) -> Result<usize, SendCopyError> {
         let msg = "Unable to send copy of message";
         let mut sample = fail!(from self, when self.loan(),
@@ -458,6 +512,8 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         )
     }
 
+    /// Loans/allocates a [`SampleMut`] from the underlying data segment of the [`Publisher`].
+    /// On failure it returns [`LoanError`] describing the failure.
     pub fn loan<'publisher>(
         &'publisher self,
     ) -> Result<SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>, LoanError> {

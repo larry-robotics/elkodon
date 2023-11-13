@@ -1,3 +1,24 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .open_or_create::<u64>()?;
+//!
+//! let subscriber = service.subscriber().create()?;
+//!
+//! while let Some(sample) = subscriber.receive()? {
+//!     println!("received: {:?}", *sample);
+//! }
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use std::cell::UnsafeCell;
 use std::fmt::Debug;
 use std::{marker::PhantomData, ptr::NonNull};
@@ -18,6 +39,7 @@ use super::details::publisher_connections::{Connection, ConnectionFailure, Publi
 use super::port_identifiers::{UniquePublisherId, UniqueSubscriberId};
 use super::DegrationCallback;
 
+/// Defines the failure that can occur when receiving data with [`Subscriber::receive()`].
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum ReceiveError {
     ExceedsMaxBorrowedSamples,
@@ -32,6 +54,8 @@ impl std::fmt::Display for ReceiveError {
 
 impl std::error::Error for ReceiveError {}
 
+/// Describes the failures when a new [`Subscriber`] is created via the
+/// [`crate::service::port_factory::subscriber::PortFactorySubscriber`].
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum SubscriberCreateError {
     ExceedsMaxSupportedSubscribers,
@@ -45,6 +69,7 @@ impl std::fmt::Display for SubscriberCreateError {
 
 impl std::error::Error for SubscriberCreateError {}
 
+/// The receiving endpoint of a publish-subscribe communication.
 #[derive(Debug)]
 pub struct Subscriber<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug> {
     dynamic_config_guard: Option<UniqueIndex<'a>>,
@@ -207,6 +232,9 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         }
     }
 
+    /// Sets the [`DegrationCallback`] of the [`Subscriber`]. Whenever a connection to a
+    /// [`crate::port::publisher::Publisher`] is corrupted or a seems to be dead, this callback
+    /// is called and depending on the returned [`DegrationAction`] measures will be taken.
     pub fn set_degration_callback<
         F: Fn(
                 service::static_config::StaticConfig,
@@ -224,6 +252,8 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         }
     }
 
+    /// Receives a [`Sample`] from [`crate::port::publisher::Publisher`]. If no sample could be
+    /// received [`None`] is returned. If a failure occurs [`ReceiveError`] is returned.
     pub fn receive<'subscriber>(
         &'subscriber self,
     ) -> Result<Option<Sample<'a, 'subscriber, 'config, Service, Header, MessageType>>, ReceiveError>
@@ -248,6 +278,10 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         Ok(None)
     }
 
+    /// Explicitly updates all connections to the [`crate::port::publisher::Publisher`]s. This is
+    /// required to be called whenever a new [`crate::port::publisher::Publisher`] connected to
+    /// the service. It is done implicitly whenever [`Subscriber::receive()`]
+    /// is called.
     pub fn update_connections(&self) -> Result<(), ConnectionFailure> {
         if unsafe { (*self.publisher_list_state.get()).update() } {
             fail!(from self, when self.populate_publisher_channels(),
