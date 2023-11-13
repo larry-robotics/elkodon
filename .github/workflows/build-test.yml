@@ -74,7 +74,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install dependencies
-      run: sudo apt-get -y install libacl1-dev
+      run: sudo apt-get -y install libacl1-dev llvm
 
     - name: Create test users and groups
       run: |

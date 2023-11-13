@@ -1,6 +1,9 @@
 #!/bin/bash
 
-cd $(git rev-parse --show-toplevel)
+COLOR_OFF='\033[0m'
+COLOR_RED='\033[1;31m'
+COLOR_GREEN='\033[1;32m'
+COLOR_YELLOW='\033[1;33m'
 
 LLVM_PROFILE_PATH="target/debug/llvm-profile-files"
 export LLVM_PROFILE_FILE="${LLVM_PROFILE_PATH}/elkodon-%p-%m.profraw"
@@ -13,6 +16,12 @@ OVERVIEW=0
 HTML=0
 LCOV=0
 
+cd $(git rev-parse --show-toplevel)
+
+dependency_check() {
+    which $1 1> /dev/null || { echo -e "${COLOR_RED}'${1}' not found. Aborting!${COLOR_OFF}"; exit 1; }
+}
+
 cleanup() {
     find . -name "*profraw" -exec rm {} \;
     if [[ -d "./target/coverage" ]]; then rm -rf ./target/coverage; fi
@@ -23,6 +32,8 @@ generate_profile() {
 }
 
 merge_report() {
+    dependency_check llvm-profdata
+
     mkdir -p ./target/coverage/
     local FILES=$(find . -name "*profraw")
     llvm-profdata merge -sparse $FILES -o ./target/coverage/json5format.profdata
@@ -31,11 +42,13 @@ merge_report() {
 generate() {
     cleanup
     generate_profile
-    # merge_report
+    merge_report
 }
 
 show_overview() {
-    local FILES=$(ls ./target/debug/deps/*tests* | grep -v ".d\$")
+    dependency_check llvm-cov
+
+    local FILES=$(find ./target/debug/deps/ -type f -executable)
     CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./target/coverage/json5format.profdata"
 
     for FILE in $FILES 
@@ -47,18 +60,24 @@ show_overview() {
 }
 
 show_report() {
+    dependency_check llvm-cov
+    dependency_check rustfilt
+
+    local FILES=$(find ./target/debug/deps/ -type f -executable)
     CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./target/coverage/json5format.profdata"
 
     for FILE in $FILES 
     do
         CMD="$CMD --object $FILE"
     done
-    CMD="$CMD --show-instantiations --show-line-counts-or-regions --Xdemangler=rustfilt | less -R"
+    CMD="$CMD --show-instantiation-summary --Xdemangler=rustfilt | less -R"
 
     eval $CMD
 }
 
 generate_html_report() {
+    dependency_check grcov
+
     mkdir -p ./target/coverage/
     grcov \
           **/${LLVM_PROFILE_PATH} \
@@ -79,6 +98,8 @@ generate_html_report() {
 }
 
 generate_lcov_report() {
+    dependency_check grcov
+
     mkdir -p ./target/coverage/
     grcov \
           **/${LLVM_PROFILE_PATH} \
