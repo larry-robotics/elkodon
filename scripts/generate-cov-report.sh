@@ -9,6 +9,8 @@ LLVM_PROFILE_PATH="target/debug/llvm-profile-files"
 export LLVM_PROFILE_FILE="${LLVM_PROFILE_PATH}/elkodon-%p-%m.profraw"
 export RUSTFLAGS="-Cinstrument-coverage"
 
+COVERAGE_DIR="target/debug/coverage"
+
 CLEAN=0
 GENERATE=0
 REPORT=0
@@ -24,7 +26,7 @@ dependency_check() {
 
 cleanup() {
     find . -name "*profraw" -exec rm {} \;
-    if [[ -d "./target/coverage" ]]; then rm -rf ./target/coverage; fi
+    if [[ -d "./${COVERAGE_DIR}" ]]; then rm -rf ./${COVERAGE_DIR}; fi
 }
 
 generate_profile() {
@@ -34,9 +36,9 @@ generate_profile() {
 merge_report() {
     dependency_check llvm-profdata
 
-    mkdir -p ./target/coverage/
+    mkdir -p ./${COVERAGE_DIR}/
     local FILES=$(find . -name "*profraw")
-    llvm-profdata merge -sparse $FILES -o ./target/coverage/json5format.profdata
+    llvm-profdata merge -sparse $FILES -o ./${COVERAGE_DIR}/json5format.profdata
 }
 
 generate() {
@@ -49,7 +51,7 @@ show_overview() {
     dependency_check llvm-cov
 
     local FILES=$(find ./target/debug/deps/ -type f -executable)
-    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./target/coverage/json5format.profdata"
+    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./${COVERAGE_DIR}/json5format.profdata"
 
     for FILE in $FILES 
     do
@@ -64,7 +66,7 @@ show_report() {
     dependency_check rustfilt
 
     local FILES=$(find ./target/debug/deps/ -type f -executable)
-    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./target/coverage/json5format.profdata"
+    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./${COVERAGE_DIR}/json5format.profdata"
 
     for FILE in $FILES 
     do
@@ -78,7 +80,7 @@ show_report() {
 generate_html_report() {
     dependency_check grcov
 
-    mkdir -p ./target/coverage/
+    mkdir -p ./${COVERAGE_DIR}/
     grcov \
           **/${LLVM_PROFILE_PATH} \
           **/**/${LLVM_PROFILE_PATH} \
@@ -93,14 +95,15 @@ generate_html_report() {
           --ignore "**/benchmarks/*" \
           --ignore "**/target/*" \
           --ignore "**/.cargo/*" \
-          --output-path ./target/coverage/html
-    sed -i 's/coverage/grcov/' target/coverage/html/coverage.json
+          --output-path ./${COVERAGE_DIR}/html
+    sed -i 's/coverage/grcov/' ${COVERAGE_DIR}/html/coverage.json
+    sed -i 's/coverage/grcov/' ${COVERAGE_DIR}/html/badges/*.svg
 }
 
 generate_lcov_report() {
     dependency_check grcov
 
-    mkdir -p ./target/coverage/
+    mkdir -p ./${COVERAGE_DIR}/
     grcov \
           **/${LLVM_PROFILE_PATH} \
           **/**/${LLVM_PROFILE_PATH} \
@@ -115,7 +118,7 @@ generate_lcov_report() {
           --ignore "**/benchmarks/*" \
           --ignore "**/target/*" \
           --ignore "**/.cargo/*" \
-          --output-path ./target/coverage/lcov.info
+          --output-path ./${COVERAGE_DIR}/lcov.info
 }
 
 
