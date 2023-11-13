@@ -1,3 +1,27 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+//! #
+//! # let service = zero_copy::Service::new(&service_name)
+//! #     .publish_subscribe()
+//! #     .open_or_create::<u64>()?;
+//! #
+//! # let publisher = service.publisher().create()?;
+//!
+//! let mut sample = publisher.loan()?;
+//!
+//! unsafe { sample.as_mut_ptr().write(1234) };
+//! println!("timestamp: {:?}, publisher port id: {:?}",
+//!     sample.header().time_stamp(), sample.header().publisher_id());
+//! publisher.send(sample)?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use crate::{message::Message, port::publisher::Publisher, service};
 use elkodon_cal::shared_memory::*;
 use std::{fmt::Debug, mem::MaybeUninit, ptr::NonNull, sync::atomic::Ordering};
@@ -6,7 +30,7 @@ use std::{fmt::Debug, mem::MaybeUninit, ptr::NonNull, sync::atomic::Ordering};
 /// to all connected [`crate::port::subscriber::Subscriber`]s. If the [`SampleMut`] is not sent
 /// it will release the loaned memory when going out of scope.
 ///
-/// ## Notes
+/// # Notes
 ///
 /// Does not implement [`Send`] since it releases unsent samples in the [`Publisher`] and the
 /// [`Publisher`] is not thread-safe!

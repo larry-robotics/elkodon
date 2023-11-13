@@ -11,14 +11,18 @@ use elkodon_bb_log::{fail, trace, warn};
 
 use crate::service::port_factory::publisher::UnableToDeliverStrategy;
 
+/// Path to the default config file
 #[cfg(target_os = "windows")]
 pub const DEFAULT_CONFIG_FILE: FilePath =
     unsafe { FilePath::new_unchecked(b"config\\elkodon_win.toml") };
 
+/// Path to the default config file
 #[cfg(not(target_os = "windows"))]
 pub const DEFAULT_CONFIG_FILE: FilePath =
     unsafe { FilePath::new_unchecked(b"config/elkodon.toml") };
 
+/// Failures occurring while creating a new [`Config`] object with [`Config::from_file()`] or
+/// [`Config::setup_from_file()`]
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum ConfigCreationError {
     FailedToOpenConfigFile,
@@ -34,43 +38,79 @@ impl std::fmt::Display for ConfigCreationError {
 
 impl std::error::Error for ConfigCreationError {}
 
+/// All configurable settings of a [`crate::service::Service`].
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Service {
+    /// The directory in which all service files are stored
     pub directory: String,
+    /// The suffix of the publishers data segment
     pub publisher_data_segment_suffix: String,
+    /// The suffix of the static config file
     pub static_config_storage_suffix: String,
+    /// The suffix of the dynamic config file
     pub dynamic_config_storage_suffix: String,
+    /// Defines the time of how long another process will wait until the service creation is
+    /// finalized
     pub creation_timeout: Duration,
+    /// The suffix of a one-to-one connection
     pub connection_suffix: String,
 }
 
+/// The global settings
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Global {
+    /// The path under which all other directories or files will be created
     pub root_path: String,
+    /// [`crate::service::Service`] settings
     pub service: Service,
 }
 
+/// Default settings. These values are used when the user in the code does not specify anything
+/// else.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Defaults {
+    /// Default settings for the messaging pattern publish-subscribe
     pub publish_subscribe: PublishSubscribe,
+    /// Default settings for the messaging pattern event
     pub event: Event,
 }
 
+/// Default settings for the publish-subscribe messaging pattern. These settings are used unless
+/// the user specifies custom QoS or port settings.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PublishSubscribe {
+    /// The maximum amount of supported [`crate::port::subscriber::Subscriber`]
     pub max_subscribers: usize,
+    /// The maximum amount of supported [`crate::port::publisher::Publisher`]
     pub max_publishers: usize,
+    /// The maximum buffer size a [`crate::port::subscriber::Subscriber`] can have
     pub subscriber_buffer_size: usize,
+    /// The maximum amount of [`crate::sample::Sample`]s a [`crate::port::subscriber::Subscriber`] can
+    /// hold in parallel.
     pub subscriber_max_borrowed_samples: usize,
+    /// The maximum amount of [`crate::sample_mut::SampleMut`]s a [`crate::port::publisher::Publisher`] can
+    /// loan in parallel.
     pub publisher_max_loaned_samples: usize,
+    /// The maximum history size a [`crate::port::subscriber::Subscriber`] can request from a
+    /// [`crate::port::publisher::Publisher`].
     pub publisher_history_size: usize,
+    /// Defines if the how the [`crate::port::subscriber::Subscriber`] buffer behaves when it is
+    /// full. When safe overflow is activated, the [`crate::port::publisher::Publisher`] will
+    /// replace the oldest [`crate::sample::Sample`] with the newest one.
     pub enable_safe_overflow: bool,
+    /// If no safe overflow is activated it defines the deliver strategy of the
+    /// [`crate::port::publisher::Publisher`] when the [`crate::port::subscriber::Subscriber`]s
+    /// buffer is full.
     pub unable_to_deliver_strategy: UnableToDeliverStrategy,
 }
 
+/// Default settings for the event messaging pattern. These settings are used unless
+/// the user specifies custom QoS or port settings.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Event {
+    /// The maximum amount of supported [`crate::port::listener::Listener`]
     pub max_listeners: usize,
+    /// The maximum amount of supported [`crate::port::notifier::Notifier`]
     pub max_notifiers: usize,
 }
 

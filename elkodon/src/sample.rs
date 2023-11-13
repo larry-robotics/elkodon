@@ -1,3 +1,24 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! # let service = zero_copy::Service::new(&service_name)
+//! #   .publish_subscribe()
+//! #   .open_or_create::<u64>()?;
+//! # let subscriber = service.subscriber().create()?;
+//!
+//! while let Some(sample) = subscriber.receive()? {
+//!     println!("received: {:?}", *sample);
+//!     println!("header timestamp {:?}, publisher id {:?}",
+//!         sample.header().time_stamp(), sample.header().publisher_id());
+//! }
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use std::{fmt::Debug, ops::Deref, ptr::NonNull};
 
 use crate::{message::Message, port::subscriber::Subscriber, service};
