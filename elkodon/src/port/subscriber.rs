@@ -46,14 +46,9 @@ impl std::fmt::Display for SubscriberCreateError {
 impl std::error::Error for SubscriberCreateError {}
 
 #[derive(Debug)]
-pub struct Subscriber<
-    'a,
-    'global_config: 'a,
-    Service: service::Details<'global_config>,
-    MessageType: Debug,
-> {
+pub struct Subscriber<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug> {
     dynamic_config_guard: Option<UniqueIndex<'a>>,
-    publisher_connections: PublisherConnections<'global_config, Service>,
+    publisher_connections: PublisherConnections<'config, Service>,
     service: &'a Service,
     degration_callback: Option<DegrationCallback<'a>>,
 
@@ -61,8 +56,8 @@ pub struct Subscriber<
     _phantom_message_type: PhantomData<MessageType>,
 }
 
-impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageType: Debug>
-    Subscriber<'a, 'global_config, Service, MessageType>
+impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
+    Subscriber<'a, 'config, Service, MessageType>
 {
     pub(crate) fn new(
         service: &'a Service,
@@ -183,11 +178,9 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
     fn receive_from_connection<'subscriber>(
         &'subscriber self,
         channel_id: usize,
-        connection: &mut Connection<'global_config, Service>,
-    ) -> Result<
-        Option<Sample<'a, 'subscriber, 'global_config, Service, Header, MessageType>>,
-        ReceiveError,
-    > {
+        connection: &mut Connection<'config, Service>,
+    ) -> Result<Option<Sample<'a, 'subscriber, 'config, Service, Header, MessageType>>, ReceiveError>
+    {
         let msg = "Unable to receive another sample";
         match connection.receiver.receive() {
             Ok(data) => match data {
@@ -233,10 +226,8 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
 
     pub fn receive<'subscriber>(
         &'subscriber self,
-    ) -> Result<
-        Option<Sample<'a, 'subscriber, 'global_config, Service, Header, MessageType>>,
-        ReceiveError,
-    > {
+    ) -> Result<Option<Sample<'a, 'subscriber, 'config, Service, Header, MessageType>>, ReceiveError>
+    {
         if let Err(e) = self.update_connections() {
             fail!(from self,
                 with ReceiveError::ConnectionFailure(e),

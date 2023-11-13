@@ -4,7 +4,7 @@
 //!
 //! ```
 //! use elkodon::prelude::*;
-//! use elkodon::global_config::Config;
+//! use elkodon::config::Config;
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
 //!
@@ -25,7 +25,7 @@
 //!
 //! ```
 //! use elkodon::prelude::*;
-//! use elkodon::global_config::Config;
+//! use elkodon::config::Config;
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let event_name = ServiceName::new(b"MyEventName")?;
 //!
@@ -44,13 +44,13 @@
 //!
 //! ## Set Global Config From Custom File
 //!
-//! The [`crate::global_config::Config::setup_global_config_from_file()`] call must be the first
+//! The [`crate::config::Config::setup_global_config_from_file()`] call must be the first
 //! call in the system. If another
 //! instance accesses the global config, it will be loaded with default values and can no longer
 //! be overridden with new values from a custom file.
 //!
 //! ```no_run
-//! use elkodon::global_config::Config;
+//! use elkodon::config::Config;
 //! use elkodon_bb_system_types::file_path::FilePath;
 //! use elkodon_bb_container::semantic_string::SemanticString;
 //!
@@ -64,7 +64,7 @@
 //! ## Generate Config From Custom File
 //!
 //! ```no_run
-//! use elkodon::global_config::Config;
+//! use elkodon::config::Config;
 //! use elkodon_bb_system_types::file_path::FilePath;
 //! use elkodon_bb_container::semantic_string::SemanticString;
 //!

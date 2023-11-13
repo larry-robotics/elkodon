@@ -25,17 +25,15 @@ impl std::fmt::Display for ListenerCreateError {
 impl std::error::Error for ListenerCreateError {}
 
 #[derive(Debug)]
-pub struct Listener<'a, 'global_config: 'a, Service: service::Details<'global_config>> {
+pub struct Listener<'a, 'config: 'a, Service: service::Details<'config>> {
     _dynamic_config_guard: Option<UniqueIndex<'a>>,
     listener: <Service::Event as elkodon_cal::event::Event<EventId>>::Listener,
     cache: Vec<EventId>,
     _phantom_a: PhantomData<&'a Service>,
-    _phantom_b: PhantomData<&'global_config ()>,
+    _phantom_b: PhantomData<&'config ()>,
 }
 
-impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
-    Listener<'a, 'global_config, Service>
-{
+impl<'a, 'config: 'a, Service: service::Details<'config>> Listener<'a, 'config, Service> {
     pub(crate) fn new(service: &'a Service) -> Result<Self, ListenerCreateError> {
         let msg = "Failed to create listener";
         let origin = "Listener::new()";

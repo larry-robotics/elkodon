@@ -1,6 +1,6 @@
 #[generic_tests::define]
 mod service_event {
-    use elkodon::global_config::Config;
+    use elkodon::config::Config;
     use elkodon::port::event_id::EventId;
     use elkodon::service::{
         builder::event::{EventCreateError, EventOpenError},

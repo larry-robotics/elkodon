@@ -6,7 +6,7 @@ use elkodon_bb_log::fatal_panic;
 use elkodon_cal::hash::Hash;
 use serde::{Deserialize, Serialize};
 
-use crate::global_config;
+use crate::config;
 
 use super::service_name::ServiceName;
 
@@ -53,10 +53,7 @@ pub struct StaticConfig {
 }
 
 impl StaticConfig {
-    pub fn new_event<Hasher: Hash>(
-        service_name: &ServiceName,
-        config: &global_config::Config,
-    ) -> Self {
+    pub fn new_event<Hasher: Hash>(service_name: &ServiceName, config: &config::Config) -> Self {
         Self {
             uuid: Hasher::new(service_name.as_bytes()).as_hex_string(),
             service_name: *service_name,
@@ -66,7 +63,7 @@ impl StaticConfig {
 
     pub fn new_publish_subscribe<Hasher: Hash>(
         service_name: &ServiceName,
-        config: &global_config::Config,
+        config: &config::Config,
     ) -> Self {
         Self {
             uuid: Hasher::new(service_name.as_bytes()).as_hex_string(),

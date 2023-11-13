@@ -67,20 +67,18 @@ pub struct LocalPublisherConfig {
 #[derive(Debug)]
 pub struct PortFactoryPublisher<
     'factory,
-    'global_config,
-    Service: service::Details<'global_config>,
+    'config,
+    Service: service::Details<'config>,
     MessageType: Debug,
 > {
     config: LocalPublisherConfig,
-    pub(crate) factory: &'factory PortFactory<'global_config, Service, MessageType>,
+    pub(crate) factory: &'factory PortFactory<'config, Service, MessageType>,
 }
 
-impl<'factory, 'global_config, Service: service::Details<'global_config>, MessageType: Debug>
-    PortFactoryPublisher<'factory, 'global_config, Service, MessageType>
+impl<'factory, 'config, Service: service::Details<'config>, MessageType: Debug>
+    PortFactoryPublisher<'factory, 'config, Service, MessageType>
 {
-    pub(crate) fn new(
-        factory: &'factory PortFactory<'global_config, Service, MessageType>,
-    ) -> Self {
+    pub(crate) fn new(factory: &'factory PortFactory<'config, Service, MessageType>) -> Self {
         Self {
             config: LocalPublisherConfig {
                 max_loaned_samples: factory
@@ -114,8 +112,7 @@ impl<'factory, 'global_config, Service: service::Details<'global_config>, Messag
 
     pub fn create(
         self,
-    ) -> Result<Publisher<'factory, 'global_config, Service, MessageType>, PublisherCreateError>
-    {
+    ) -> Result<Publisher<'factory, 'config, Service, MessageType>, PublisherCreateError> {
         Ok(
             fail!(from self, when Publisher::new(&self.factory.service, self.factory.service.state().static_config.publish_subscribe(), &self.config),
                 "Failed to create new Publisher port."),

@@ -11,7 +11,7 @@ use crate::service;
 use crate::service::header::publish_subscribe::Header;
 use crate::service::port_factory::publisher::{LocalPublisherConfig, UnableToDeliverStrategy};
 use crate::service::static_config::publish_subscribe;
-use crate::{global_config, sample_mut::SampleMut};
+use crate::{config, sample_mut::SampleMut};
 use elkodon_bb_container::queue::Queue;
 use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_elementary::allocator::AllocationError;
@@ -84,8 +84,8 @@ pub(crate) fn data_segment_name(publisher_id: UniquePublisherId) -> FileName {
     file
 }
 
-pub(crate) fn data_segment_config<'global_config, Service: service::Details<'global_config>>(
-    global_config: &global_config::Config,
+pub(crate) fn data_segment_config<'config, Service: service::Details<'config>>(
+    global_config: &config::Config,
 ) -> <Service::SharedMemory as NamedConceptMgmt>::Configuration {
     let origin = "data_segment_config()";
 
@@ -107,18 +107,13 @@ pub(crate) fn data_segment_config<'global_config, Service: service::Details<'glo
 }
 
 #[derive(Debug)]
-pub struct Publisher<
-    'a,
-    'global_config: 'a,
-    Service: service::Details<'global_config>,
-    MessageType: Debug,
-> {
+pub struct Publisher<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug> {
     port_id: UniquePublisherId,
     pub(crate) sample_reference_counter: Vec<AtomicU64>,
     pub(crate) data_segment: Service::SharedMemory,
     config: LocalPublisherConfig,
 
-    subscriber_connections: SubscriberConnections<'global_config, Service>,
+    subscriber_connections: SubscriberConnections<'config, Service>,
     subscriber_list_state: UnsafeCell<ContainerState<'a, UniqueSubscriberId>>,
     history: Option<UnsafeCell<Queue<usize>>>,
     service: &'a Service,
@@ -128,8 +123,8 @@ pub struct Publisher<
     _phantom_message_type: PhantomData<MessageType>,
 }
 
-impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageType: Debug>
-    Publisher<'a, 'global_config, Service, MessageType>
+impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
+    Publisher<'a, 'config, Service, MessageType>
 {
     pub(crate) fn new(
         service: &'a Service,
@@ -261,7 +256,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
         Ok(())
     }
 
-    fn deliver_history(&self, connection: &Connection<'global_config, Service>) {
+    fn deliver_history(&self, connection: &Connection<'config, Service>) {
         match &self.history {
             None => (),
             Some(history) => {
@@ -289,7 +284,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
 
     fn create_data_segment(
         port_id: UniquePublisherId,
-        global_config: &'global_config global_config::Config,
+        global_config: &'config config::Config,
         number_of_samples: usize,
     ) -> Result<Service::SharedMemory, SharedMemoryCreateError> {
         let allocator_config = shm_allocator::pool_allocator::Config {
@@ -333,8 +328,8 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
 
     fn deliver_sample(&self, address_to_chunk: usize) -> usize {
         let deliver_call = match self.config.unable_to_deliver_strategy {
-            UnableToDeliverStrategy::Block => <<Service as service::Details<'global_config>>::Connection as ZeroCopyConnection>::Sender::blocking_send,
-            UnableToDeliverStrategy::DiscardSample => <<Service as service::Details<'global_config>>::Connection as ZeroCopyConnection>::Sender::try_send,
+            UnableToDeliverStrategy::Block => <<Service as service::Details<'config>>::Connection as ZeroCopyConnection>::Sender::blocking_send,
+            UnableToDeliverStrategy::DiscardSample => <<Service as service::Details<'config>>::Connection as ZeroCopyConnection>::Sender::try_send,
         };
 
         let mut number_of_recipients = 0;
@@ -443,7 +438,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
 
     pub fn send<'publisher>(
         &'publisher self,
-        sample: SampleMut<'a, 'publisher, 'global_config, Service, Header, MessageType>,
+        sample: SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>,
     ) -> Result<usize, ZeroCopyCreationError> {
         Ok(
             fail!(from self, when self.send_impl(sample.offset_to_chunk().value()),
@@ -465,8 +460,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
 
     pub fn loan<'publisher>(
         &'publisher self,
-    ) -> Result<SampleMut<'a, 'publisher, 'global_config, Service, Header, MessageType>, LoanError>
-    {
+    ) -> Result<SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>, LoanError> {
         self.retrieve_returned_samples();
         let msg = "Unable to loan Sample";
 

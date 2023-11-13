@@ -1,7 +1,7 @@
 pub mod event;
 pub mod publish_subscribe;
 
-use crate::global_config;
+use crate::config;
 use crate::service;
 use crate::service::dynamic_config::DynamicConfig;
 use crate::service::static_config::*;
@@ -80,15 +80,15 @@ impl<S: Service> Builder<S> {
         }
     }
 
-    pub fn publish_subscribe<'global_config>(
+    pub fn publish_subscribe<'config>(
         self,
-    ) -> publish_subscribe::Builder<'global_config, S::Type<'global_config>> {
-        self.publish_subscribe_with_custom_config(global_config::Config::get_global_config())
+    ) -> publish_subscribe::Builder<'config, S::Type<'config>> {
+        self.publish_subscribe_with_custom_config(config::Config::get_global_config())
     }
 
     pub fn publish_subscribe_with_custom_config(
         self,
-        config: &global_config::Config,
+        config: &config::Config,
     ) -> publish_subscribe::Builder<'_, S::Type<'_>> {
         BuilderWithServiceType::new(
             StaticConfig::new_publish_subscribe::<
@@ -99,13 +99,13 @@ impl<S: Service> Builder<S> {
         .publish_subscribe()
     }
 
-    pub fn event<'global_config>(self) -> event::Builder<'global_config, S::Type<'global_config>> {
-        self.event_with_custom_config(global_config::Config::get_global_config())
+    pub fn event<'config>(self) -> event::Builder<'config, S::Type<'config>> {
+        self.event_with_custom_config(config::Config::get_global_config())
     }
 
     pub fn event_with_custom_config(
         self,
-        config: &global_config::Config,
+        config: &config::Config,
     ) -> event::Builder<'_, S::Type<'_>> {
         BuilderWithServiceType::new(
             StaticConfig::new_event::<
@@ -118,20 +118,15 @@ impl<S: Service> Builder<S> {
 }
 
 #[derive(Debug)]
-pub struct BuilderWithServiceType<'global_config, ServiceType: service::Details<'global_config>> {
+pub struct BuilderWithServiceType<'config, ServiceType: service::Details<'config>> {
     service_config: StaticConfig,
-    global_config: &'global_config global_config::Config,
+    global_config: &'config config::Config,
     _phantom_data: PhantomData<ServiceType>,
-    _phantom_lifetime_b: PhantomData<&'global_config ()>,
+    _phantom_lifetime_b: PhantomData<&'config ()>,
 }
 
-impl<'global_config, ServiceType: service::Details<'global_config>>
-    BuilderWithServiceType<'global_config, ServiceType>
-{
-    fn new(
-        service_config: StaticConfig,
-        global_config: &'global_config global_config::Config,
-    ) -> Self {
+impl<'config, ServiceType: service::Details<'config>> BuilderWithServiceType<'config, ServiceType> {
+    fn new(service_config: StaticConfig, global_config: &'config config::Config) -> Self {
         Self {
             service_config,
             global_config,
@@ -140,11 +135,11 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         }
     }
 
-    fn publish_subscribe(self) -> publish_subscribe::Builder<'global_config, ServiceType> {
+    fn publish_subscribe(self) -> publish_subscribe::Builder<'config, ServiceType> {
         publish_subscribe::Builder::new(self)
     }
 
-    fn event(self) -> event::Builder<'global_config, ServiceType> {
+    fn event(self) -> event::Builder<'config, ServiceType> {
         event::Builder::new(self)
     }
 
@@ -264,7 +259,7 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
     fn create_static_config_storage(
         &self,
     ) -> Result<
-        <<ServiceType as service::Details<'global_config>>::StaticStorage as StaticStorage>::Locked,
+        <<ServiceType as service::Details<'config>>::StaticStorage as StaticStorage>::Locked,
         StaticStorageCreateError,
     > {
         Ok(

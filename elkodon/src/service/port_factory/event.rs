@@ -8,23 +8,15 @@ use super::listener::PortFactoryListener;
 use super::notifier::PortFactoryNotifier;
 
 #[derive(Debug)]
-pub struct PortFactory<'global_config, Service: service::Details<'global_config>> {
+pub struct PortFactory<'config, Service: service::Details<'config>> {
     pub(crate) service: Service,
-    _phantom_lifetime_b: PhantomData<&'global_config ()>,
+    _phantom_lifetime_b: PhantomData<&'config ()>,
 }
 
-unsafe impl<'global_config, Service: service::Details<'global_config>> Send
-    for PortFactory<'global_config, Service>
-{
-}
-unsafe impl<'global_config, Service: service::Details<'global_config>> Sync
-    for PortFactory<'global_config, Service>
-{
-}
+unsafe impl<'config, Service: service::Details<'config>> Send for PortFactory<'config, Service> {}
+unsafe impl<'config, Service: service::Details<'config>> Sync for PortFactory<'config, Service> {}
 
-impl<'global_config, Service: service::Details<'global_config>>
-    PortFactory<'global_config, Service>
-{
+impl<'config, Service: service::Details<'config>> PortFactory<'config, Service> {
     pub(crate) fn new(service: Service) -> Self {
         Self {
             service,
@@ -62,11 +54,11 @@ impl<'global_config, Service: service::Details<'global_config>>
             .number_of_notifiers()
     }
 
-    pub fn notifier<'a>(&'a self) -> PortFactoryNotifier<'a, 'global_config, Service> {
+    pub fn notifier<'a>(&'a self) -> PortFactoryNotifier<'a, 'config, Service> {
         PortFactoryNotifier::new(self)
     }
 
-    pub fn listener<'a>(&'a self) -> PortFactoryListener<'a, 'global_config, Service> {
+    pub fn listener<'a>(&'a self) -> PortFactoryListener<'a, 'config, Service> {
         PortFactoryListener { factory: self }
     }
 }

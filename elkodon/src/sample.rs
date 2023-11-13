@@ -29,22 +29,18 @@ use crate::{message::Message, port::subscriber::Subscriber, service};
 pub struct Sample<
     'a,
     'subscriber,
-    'global_config,
-    Service: service::Details<'global_config>,
+    'config,
+    Service: service::Details<'config>,
     Header: Debug,
     MessageType: Debug,
 > {
-    pub(crate) subscriber: &'subscriber Subscriber<'a, 'global_config, Service, MessageType>,
+    pub(crate) subscriber: &'subscriber Subscriber<'a, 'config, Service, MessageType>,
     pub(crate) ptr: NonNull<Message<Header, MessageType>>,
     pub(crate) channel_id: usize,
 }
 
-impl<
-        'global_config,
-        Service: service::Details<'global_config>,
-        Header: Debug,
-        MessageType: Debug,
-    > Deref for Sample<'_, '_, 'global_config, Service, Header, MessageType>
+impl<'config, Service: service::Details<'config>, Header: Debug, MessageType: Debug> Deref
+    for Sample<'_, '_, 'config, Service, Header, MessageType>
 {
     type Target = MessageType;
     fn deref(&self) -> &Self::Target {
@@ -55,11 +51,11 @@ impl<
 impl<
         'a,
         'subscriber,
-        'global_config,
-        Service: service::Details<'global_config>,
+        'config,
+        Service: service::Details<'config>,
         Header: Debug,
         MessageType: Debug,
-    > Drop for Sample<'a, 'subscriber, 'global_config, Service, Header, MessageType>
+    > Drop for Sample<'a, 'subscriber, 'config, Service, Header, MessageType>
 {
     fn drop(&mut self) {
         self.subscriber
@@ -70,11 +66,11 @@ impl<
 impl<
         'a,
         'subscriber,
-        'global_config,
-        Service: service::Details<'global_config>,
+        'config,
+        Service: service::Details<'config>,
         Header: Debug,
         MessageType: Debug,
-    > Sample<'a, 'subscriber, 'global_config, Service, Header, MessageType>
+    > Sample<'a, 'subscriber, 'config, Service, Header, MessageType>
 {
     /// Returns a reference to the payload of the sample
     pub fn payload(&self) -> &MessageType {

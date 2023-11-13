@@ -1,6 +1,6 @@
 #[generic_tests::define]
 mod service_publish_subscribe {
-    use elkodon::global_config::Config;
+    use elkodon::config::Config;
     use elkodon::port::publisher::{LoanError, PublisherCreateError};
     use elkodon::port::subscriber::SubscriberCreateError;
     use elkodon::service::builder::publish_subscribe::PublishSubscribeCreateError;

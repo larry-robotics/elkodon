@@ -8,27 +8,23 @@ use crate::service::service_name::ServiceName;
 use super::{publisher::PortFactoryPublisher, subscriber::PortFactorySubscriber};
 
 #[derive(Debug)]
-pub struct PortFactory<
-    'global_config,
-    Service: service::Details<'global_config>,
-    MessageType: Debug,
-> {
+pub struct PortFactory<'config, Service: service::Details<'config>, MessageType: Debug> {
     pub(crate) service: Service,
     _phantom_message_type: PhantomData<MessageType>,
-    _phantom_lifetime_b: PhantomData<&'global_config ()>,
+    _phantom_lifetime_b: PhantomData<&'config ()>,
 }
 
-unsafe impl<'global_config, Service: service::Details<'global_config>, MessageType: Debug> Send
-    for PortFactory<'global_config, Service, MessageType>
+unsafe impl<'config, Service: service::Details<'config>, MessageType: Debug> Send
+    for PortFactory<'config, Service, MessageType>
 {
 }
-unsafe impl<'global_config, Service: service::Details<'global_config>, MessageType: Debug> Sync
-    for PortFactory<'global_config, Service, MessageType>
+unsafe impl<'config, Service: service::Details<'config>, MessageType: Debug> Sync
+    for PortFactory<'config, Service, MessageType>
 {
 }
 
-impl<'global_config, Service: service::Details<'global_config>, MessageType: Debug>
-    PortFactory<'global_config, Service, MessageType>
+impl<'config, Service: service::Details<'config>, MessageType: Debug>
+    PortFactory<'config, Service, MessageType>
 {
     pub(crate) fn new(service: Service) -> Self {
         Self {
@@ -108,15 +104,11 @@ impl<'global_config, Service: service::Details<'global_config>, MessageType: Deb
             .enable_safe_overflow
     }
 
-    pub fn subscriber<'a>(
-        &'a self,
-    ) -> PortFactorySubscriber<'a, 'global_config, Service, MessageType> {
+    pub fn subscriber<'a>(&'a self) -> PortFactorySubscriber<'a, 'config, Service, MessageType> {
         PortFactorySubscriber { factory: self }
     }
 
-    pub fn publisher<'a>(
-        &'a self,
-    ) -> PortFactoryPublisher<'a, 'global_config, Service, MessageType> {
+    pub fn publisher<'a>(&'a self) -> PortFactoryPublisher<'a, 'config, Service, MessageType> {
         PortFactoryPublisher::new(self)
     }
 }

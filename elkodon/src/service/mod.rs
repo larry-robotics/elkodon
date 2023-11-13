@@ -10,7 +10,7 @@ pub mod zero_copy;
 
 use std::fmt::Debug;
 
-use crate::global_config;
+use crate::config;
 use crate::port::event_id::EventId;
 use crate::port::port_identifiers::{UniqueListenerId, UniquePublisherId, UniqueSubscriberId};
 use crate::service::dynamic_config::DynamicConfig;
@@ -75,11 +75,8 @@ pub(crate) fn dynamic_config_storage_name(static_config: &StaticConfig) -> FileN
     FileName::new(static_config.uuid().as_bytes()).unwrap()
 }
 
-pub(crate) fn dynamic_config_storage_config<
-    'global_config,
-    Service: crate::service::Details<'global_config>,
->(
-    global_config: &global_config::Config,
+pub(crate) fn dynamic_config_storage_config<'config, Service: crate::service::Details<'config>>(
+    global_config: &config::Config,
 ) -> <Service::DynamicStorage as NamedConceptMgmt>::Configuration {
     let origin = "dynamic_config_storage_config()";
 
@@ -104,11 +101,8 @@ pub(crate) fn static_config_storage_name(uuid: &str) -> FileName {
     FileName::new(uuid.as_bytes()).unwrap()
 }
 
-pub(crate) fn static_config_storage_config<
-    'global_config,
-    Service: crate::service::Details<'global_config>,
->(
-    global_config: &global_config::Config,
+pub(crate) fn static_config_storage_config<'config, Service: crate::service::Details<'config>>(
+    global_config: &config::Config,
 ) -> <Service::StaticStorage as NamedConceptMgmt>::Configuration {
     let origin = "dynamic_config_storage_config()";
 
@@ -158,11 +152,8 @@ pub(crate) fn connection_name(
     file
 }
 
-pub(crate) fn connection_config<
-    'global_config,
-    Service: crate::service::Details<'global_config>,
->(
-    global_config: &global_config::Config,
+pub(crate) fn connection_config<'config, Service: crate::service::Details<'config>>(
+    global_config: &config::Config,
 ) -> <Service::Connection as NamedConceptMgmt>::Configuration {
     let origin = "connection_config()";
 
@@ -177,23 +168,19 @@ pub(crate) fn connection_config<
     <Service::Connection as NamedConceptMgmt>::Configuration::default().suffix(f)
 }
 #[derive(Debug)]
-pub struct ServiceState<
-    'global_config,
-    Static: StaticStorage,
-    Dynamic: DynamicStorage<DynamicConfig>,
-> {
+pub struct ServiceState<'config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>> {
     pub(crate) static_config: StaticConfig,
-    pub(crate) global_config: &'global_config global_config::Config,
+    pub(crate) global_config: &'config config::Config,
     pub(crate) dynamic_storage: Dynamic,
     pub(crate) static_storage: Static,
 }
 
-impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>>
-    ServiceState<'global_config, Static, Dynamic>
+impl<'config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>>
+    ServiceState<'config, Static, Dynamic>
 {
     pub fn new(
         static_config: StaticConfig,
-        global_config: &'global_config global_config::Config,
+        global_config: &'config config::Config,
         dynamic_storage: Dynamic,
         static_storage: Static,
     ) -> Self {
@@ -208,8 +195,8 @@ impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfi
     }
 }
 
-impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>> Drop
-    for ServiceState<'global_config, Static, Dynamic>
+impl<'config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>> Drop
+    for ServiceState<'config, Static, Dynamic>
 {
     fn drop(&mut self) {
         match self.dynamic_storage.get().decrement_reference_counter() {
@@ -233,7 +220,7 @@ pub trait Service: Sized {
     }
 }
 
-pub trait Details<'global_config>: Debug + Sized {
+pub trait Details<'config>: Debug + Sized {
     type ServiceNameHasher: Hash;
     type StaticStorage: StaticStorage;
     type ConfigSerializer: Serialize;
@@ -242,23 +229,21 @@ pub trait Details<'global_config>: Debug + Sized {
     type Connection: ZeroCopyConnection;
     type Event: Event<EventId>;
 
-    fn from_state(
-        state: ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>,
-    ) -> Self;
+    fn from_state(state: ServiceState<'config, Self::StaticStorage, Self::DynamicStorage>) -> Self;
 
-    fn state(&self) -> &ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>;
+    fn state(&self) -> &ServiceState<'config, Self::StaticStorage, Self::DynamicStorage>;
 
     fn state_mut(
         &mut self,
-    ) -> &mut ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>;
+    ) -> &mut ServiceState<'config, Self::StaticStorage, Self::DynamicStorage>;
 
     fn does_exist(service_name: &ServiceName) -> Result<bool, ServiceDoesExistError> {
-        Self::does_exist_from_config(service_name, global_config::Config::get_global_config())
+        Self::does_exist_from_config(service_name, config::Config::get_global_config())
     }
 
     fn does_exist_from_config(
         service_name: &ServiceName,
-        config: &'global_config global_config::Config,
+        config: &'config config::Config,
     ) -> Result<bool, ServiceDoesExistError> {
         let msg = format!("Unable to verify if \"{}\" exists", service_name);
         let origin = "Service::does_exist_from_config()";
@@ -319,11 +304,11 @@ pub trait Details<'global_config>: Debug + Sized {
     }
 
     fn list() -> Result<Vec<StaticConfig>, ServiceListError> {
-        Self::list_from_config(global_config::Config::get_global_config())
+        Self::list_from_config(config::Config::get_global_config())
     }
 
     fn list_from_config(
-        config: &'global_config global_config::Config,
+        config: &'config config::Config,
     ) -> Result<Vec<StaticConfig>, ServiceListError> {
         let msg = "Unable to list all services";
         let origin = "Service::list_from_config()";

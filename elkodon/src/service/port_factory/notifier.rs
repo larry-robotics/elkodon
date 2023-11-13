@@ -11,16 +11,15 @@ use crate::service;
 use super::event::PortFactory;
 
 #[derive(Debug)]
-pub struct PortFactoryNotifier<'factory, 'global_config, Service: service::Details<'global_config>>
-{
-    pub(crate) factory: &'factory PortFactory<'global_config, Service>,
+pub struct PortFactoryNotifier<'factory, 'config, Service: service::Details<'config>> {
+    pub(crate) factory: &'factory PortFactory<'config, Service>,
     default_event_id: EventId,
 }
 
-impl<'factory, 'global_config, Service: service::Details<'global_config>>
-    PortFactoryNotifier<'factory, 'global_config, Service>
+impl<'factory, 'config, Service: service::Details<'config>>
+    PortFactoryNotifier<'factory, 'config, Service>
 {
-    pub(crate) fn new(factory: &'factory PortFactory<'global_config, Service>) -> Self {
+    pub(crate) fn new(factory: &'factory PortFactory<'config, Service>) -> Self {
         Self {
             factory,
             default_event_id: EventId::default(),
@@ -32,9 +31,7 @@ impl<'factory, 'global_config, Service: service::Details<'global_config>>
         self
     }
 
-    pub fn create(
-        &self,
-    ) -> Result<Notifier<'factory, 'global_config, Service>, NotifierCreateError> {
+    pub fn create(&self) -> Result<Notifier<'factory, 'config, Service>, NotifierCreateError> {
         Ok(
             fail!(from self, when Notifier::new(&self.factory.service, self.default_event_id),
                     "Failed to create new Notifier port."),

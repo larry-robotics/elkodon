@@ -1,4 +1,4 @@
-use crate::global_config;
+use crate::config;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq, Serialize, Deserialize)]
@@ -8,7 +8,7 @@ pub struct StaticConfig {
 }
 
 impl StaticConfig {
-    pub fn new(config: &global_config::Config) -> Self {
+    pub fn new(config: &config::Config) -> Self {
         Self {
             max_notifiers: config.defaults.event.max_notifiers,
             max_listeners: config.defaults.event.max_listeners,

@@ -37,15 +37,13 @@ impl std::fmt::Display for NotifierConnectionUpdateFailure {
 impl std::error::Error for NotifierConnectionUpdateFailure {}
 
 #[derive(Debug, Default)]
-struct ListenerConnections<'global_config, Service: service::Details<'global_config>> {
+struct ListenerConnections<'config, Service: service::Details<'config>> {
     #[allow(clippy::type_complexity)]
     connections:
         Vec<UnsafeCell<Option<<Service::Event as elkodon_cal::event::Event<EventId>>::Notifier>>>,
 }
 
-impl<'global_config, Service: service::Details<'global_config>>
-    ListenerConnections<'global_config, Service>
-{
+impl<'config, Service: service::Details<'config>> ListenerConnections<'config, Service> {
     fn new(size: usize) -> Self {
         let mut new_self = Self {
             connections: vec![],
@@ -96,18 +94,16 @@ impl<'global_config, Service: service::Details<'global_config>>
 }
 
 #[derive(Debug)]
-pub struct Notifier<'a, 'global_config: 'a, Service: service::Details<'global_config>> {
-    listener_connections: ListenerConnections<'global_config, Service>,
+pub struct Notifier<'a, 'config: 'a, Service: service::Details<'config>> {
+    listener_connections: ListenerConnections<'config, Service>,
     listener_list_state: UnsafeCell<ContainerState<'a, UniqueListenerId>>,
     default_event_id: EventId,
     _dynamic_config_guard: Option<UniqueIndex<'a>>,
     _phantom_a: PhantomData<&'a Service>,
-    _phantom_b: PhantomData<&'global_config ()>,
+    _phantom_b: PhantomData<&'config ()>,
 }
 
-impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
-    Notifier<'a, 'global_config, Service>
-{
+impl<'a, 'config: 'a, Service: service::Details<'config>> Notifier<'a, 'config, Service> {
     pub(crate) fn new(
         service: &'a Service,
         default_event_id: EventId,

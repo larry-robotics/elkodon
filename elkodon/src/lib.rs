@@ -249,7 +249,7 @@
 //! [GitHub config folder](https://github.com/elkodon/elkodon/tree/main/config).
 
 /// Handles Elkodons global configuration
-pub mod global_config;
+pub mod config;
 
 pub(crate) mod message;
 

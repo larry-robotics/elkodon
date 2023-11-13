@@ -8,17 +8,14 @@ use crate::service;
 use super::event::PortFactory;
 
 #[derive(Debug)]
-pub struct PortFactoryListener<'factory, 'global_config, Service: service::Details<'global_config>>
-{
-    pub(crate) factory: &'factory PortFactory<'global_config, Service>,
+pub struct PortFactoryListener<'factory, 'config, Service: service::Details<'config>> {
+    pub(crate) factory: &'factory PortFactory<'config, Service>,
 }
 
-impl<'factory, 'global_config, Service: service::Details<'global_config>>
-    PortFactoryListener<'factory, 'global_config, Service>
+impl<'factory, 'config, Service: service::Details<'config>>
+    PortFactoryListener<'factory, 'config, Service>
 {
-    pub fn create(
-        &self,
-    ) -> Result<Listener<'factory, 'global_config, Service>, ListenerCreateError> {
+    pub fn create(&self) -> Result<Listener<'factory, 'config, Service>, ListenerCreateError> {
         Ok(fail!(from self, when Listener::new(&self.factory.service),
                     "Failed to create new Listener port."))
     }

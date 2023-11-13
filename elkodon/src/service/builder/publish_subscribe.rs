@@ -79,8 +79,8 @@ impl std::fmt::Display for PublishSubscribeOpenOrCreateError {
 impl std::error::Error for PublishSubscribeOpenOrCreateError {}
 
 #[derive(Debug)]
-pub struct Builder<'global_config, ServiceType: service::Details<'global_config>> {
-    base: builder::BuilderWithServiceType<'global_config, ServiceType>,
+pub struct Builder<'config, ServiceType: service::Details<'config>> {
+    base: builder::BuilderWithServiceType<'config, ServiceType>,
     verify_number_of_subscribers: bool,
     verify_number_of_publishers: bool,
     verify_subscriber_buffer_size: bool,
@@ -89,10 +89,8 @@ pub struct Builder<'global_config, ServiceType: service::Details<'global_config>
     verify_enable_safe_overflow: bool,
 }
 
-impl<'global_config, ServiceType: service::Details<'global_config>>
-    Builder<'global_config, ServiceType>
-{
-    pub(crate) fn new(base: builder::BuilderWithServiceType<'global_config, ServiceType>) -> Self {
+impl<'config, ServiceType: service::Details<'config>> Builder<'config, ServiceType> {
+    pub(crate) fn new(base: builder::BuilderWithServiceType<'config, ServiceType>) -> Self {
         let mut new_self = Self {
             base,
             verify_number_of_publishers: false,
@@ -186,7 +184,7 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
     pub fn open_or_create<MessageType: Debug>(
         mut self,
     ) -> Result<
-        publish_subscribe::PortFactory<'global_config, ServiceType, MessageType>,
+        publish_subscribe::PortFactory<'config, ServiceType, MessageType>,
         PublishSubscribeOpenOrCreateError,
     > {
         let msg = "Unable to open or create publish subscribe service";
@@ -222,7 +220,7 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
     pub fn open<MessageType: Debug>(
         mut self,
     ) -> Result<
-        publish_subscribe::PortFactory<'global_config, ServiceType, MessageType>,
+        publish_subscribe::PortFactory<'config, ServiceType, MessageType>,
         PublishSubscribeOpenError,
     > {
         let msg = "Unable to open publish subscribe service";
@@ -295,7 +293,7 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
     pub fn create<MessageType: Debug>(
         mut self,
     ) -> Result<
-        publish_subscribe::PortFactory<'global_config, ServiceType, MessageType>,
+        publish_subscribe::PortFactory<'config, ServiceType, MessageType>,
         PublishSubscribeCreateError,
     > {
         self.adjust_properties_to_meaningful_values();

@@ -1,7 +1,7 @@
 use std::cell::UnsafeCell;
 
 use crate::{
-    global_config,
+    config,
     port::{
         port_identifiers::{UniquePublisherId, UniqueSubscriberId},
         publisher::{data_segment_config, data_segment_name},
@@ -35,17 +35,15 @@ impl std::fmt::Display for ConnectionFailure {
 impl std::error::Error for ConnectionFailure {}
 
 #[derive(Debug)]
-pub(crate) struct Connection<'global_config, Service: service::Details<'global_config>> {
+pub(crate) struct Connection<'config, Service: service::Details<'config>> {
     pub(crate) receiver:
-        <<Service as service::Details<'global_config>>::Connection as ZeroCopyConnection>::Receiver,
+        <<Service as service::Details<'config>>::Connection as ZeroCopyConnection>::Receiver,
     pub(crate) data_segment: Service::SharedMemory,
 }
 
-impl<'global_config, Service: service::Details<'global_config>>
-    Connection<'global_config, Service>
-{
+impl<'config, Service: service::Details<'config>> Connection<'config, Service> {
     fn new(
-        this: &PublisherConnections<'global_config, Service>,
+        this: &PublisherConnections<'config, Service>,
         publisher_id: UniquePublisherId,
     ) -> Result<Self, ConnectionFailure> {
         let msg = format!(
@@ -54,9 +52,9 @@ impl<'global_config, Service: service::Details<'global_config>>
         );
 
         let receiver = fail!(from this,
-                        when <<Service as service::Details<'global_config>>::Connection as ZeroCopyConnection>::
+                        when <<Service as service::Details<'config>>::Connection as ZeroCopyConnection>::
                             Builder::new( &connection_name(publisher_id, this.subscriber_id))
-                                    .config(&connection_config::<Service>(this.global_config))
+                                    .config(&connection_config::<Service>(this.config))
                                     .buffer_size(this.static_config.subscriber_buffer_size)
                                     .receiver_max_borrowed_samples(this.static_config.subscriber_max_borrowed_samples)
                                     .enable_safe_overflow(this.static_config.enable_safe_overflow)
@@ -66,7 +64,7 @@ impl<'global_config, Service: service::Details<'global_config>>
         let data_segment = fail!(from this,
                             when <Service::SharedMemory as SharedMemory<PoolAllocator>>::
                                 Builder::new(&data_segment_name(publisher_id))
-                                .config(&data_segment_config::<Service>(this.global_config))
+                                .config(&data_segment_config::<Service>(this.config))
                                 .open(),
                             "{} since the publishers data segment could not be mapped into the process.", msg);
 
@@ -77,26 +75,24 @@ impl<'global_config, Service: service::Details<'global_config>>
     }
 }
 #[derive(Debug)]
-pub(crate) struct PublisherConnections<'global_config, Service: service::Details<'global_config>> {
-    connections: Vec<UnsafeCell<Option<Connection<'global_config, Service>>>>,
+pub(crate) struct PublisherConnections<'config, Service: service::Details<'config>> {
+    connections: Vec<UnsafeCell<Option<Connection<'config, Service>>>>,
     subscriber_id: UniqueSubscriberId,
-    global_config: &'global_config global_config::Config,
+    config: &'config config::Config,
     static_config: StaticConfig,
 }
 
-impl<'global_config, Service: service::Details<'global_config>>
-    PublisherConnections<'global_config, Service>
-{
+impl<'config, Service: service::Details<'config>> PublisherConnections<'config, Service> {
     pub(crate) fn new(
         capacity: usize,
         subscriber_id: UniqueSubscriberId,
-        global_config: &'global_config global_config::Config,
+        config: &'config config::Config,
         static_config: &StaticConfig,
     ) -> Self {
         Self {
             connections: (0..capacity).map(|_| UnsafeCell::new(None)).collect(),
             subscriber_id,
-            global_config,
+            config,
             static_config: static_config.clone(),
         }
     }
@@ -105,13 +101,13 @@ impl<'global_config, Service: service::Details<'global_config>>
         self.subscriber_id
     }
 
-    pub(crate) fn get(&self, index: usize) -> &Option<Connection<'global_config, Service>> {
+    pub(crate) fn get(&self, index: usize) -> &Option<Connection<'config, Service>> {
         unsafe { &*self.connections[index].get() }
     }
 
     // only used internally as convinience function
     #[allow(clippy::mut_from_ref)]
-    pub(crate) fn get_mut(&self, index: usize) -> &mut Option<Connection<'global_config, Service>> {
+    pub(crate) fn get_mut(&self, index: usize) -> &mut Option<Connection<'config, Service>> {
         #[deny(clippy::mut_from_ref)]
         unsafe {
             &mut *self.connections[index].get()

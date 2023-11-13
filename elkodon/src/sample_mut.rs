@@ -38,22 +38,18 @@ use std::{fmt::Debug, mem::MaybeUninit, ptr::NonNull, sync::atomic::Ordering};
 pub struct SampleMut<
     'a,
     'publisher,
-    'global_config,
-    Service: service::Details<'global_config>,
+    'config,
+    Service: service::Details<'config>,
     Header: Debug,
     MessageType: Debug,
 > {
-    publisher: &'publisher Publisher<'a, 'global_config, Service, MessageType>,
+    publisher: &'publisher Publisher<'a, 'config, Service, MessageType>,
     ptr: NonNull<MaybeUninit<Message<Header, MessageType>>>,
     offset_to_chunk: PointerOffset,
 }
 
-impl<
-        'global_config,
-        Service: service::Details<'global_config>,
-        Header: Debug,
-        MessageType: Debug,
-    > Drop for SampleMut<'_, '_, 'global_config, Service, Header, MessageType>
+impl<'config, Service: service::Details<'config>, Header: Debug, MessageType: Debug> Drop
+    for SampleMut<'_, '_, 'config, Service, Header, MessageType>
 {
     fn drop(&mut self) {
         self.publisher.release_sample(self.offset_to_chunk);
@@ -64,14 +60,14 @@ impl<
 impl<
         'a,
         'publisher,
-        'global_config,
-        Service: service::Details<'global_config>,
+        'config,
+        Service: service::Details<'config>,
         Header: Debug,
         MessageType: Debug,
-    > SampleMut<'a, 'publisher, 'global_config, Service, Header, MessageType>
+    > SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>
 {
     pub(crate) fn new(
-        publisher: &'publisher Publisher<'a, 'global_config, Service, MessageType>,
+        publisher: &'publisher Publisher<'a, 'config, Service, MessageType>,
         ptr: NonNull<MaybeUninit<Message<Header, MessageType>>>,
         offset_to_chunk: PointerOffset,
     ) -> Self {
