@@ -1,3 +1,80 @@
+//! # Examples
+//!
+//! ## Publish-Subscriber
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! use elkodon::global_config::Config;
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! // create a default config and override some entries
+//! let mut custom_config = Config::default();
+//! custom_config.defaults.publish_subscribe.max_publishers = 5;
+//! custom_config.global.root_path = "/tmp/another/root/path".to_string();
+//!
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe_with_custom_config(&custom_config)
+//!     .open_or_create::<u64>()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Event
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! use elkodon::global_config::Config;
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # let event_name = ServiceName::new(b"MyEventName")?;
+//!
+//! // create a default config and override some entries
+//! let mut custom_config = Config::default();
+//! custom_config.defaults.event.max_notifiers = 5;
+//! custom_config.global.service.directory = "custom_service_dir".to_string();
+//!
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event_with_custom_config(&custom_config)
+//!     .open_or_create()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Set Global Config From Custom File
+//!
+//! The [`crate::global_config::Config::setup_global_config_from_file()`] call must be the first
+//! call in the system. If another
+//! instance accesses the global config, it will be loaded with default values and can no longer
+//! be overridden with new values from a custom file.
+//!
+//! ```no_run
+//! use elkodon::global_config::Config;
+//! use elkodon_bb_system_types::file_path::FilePath;
+//! use elkodon_bb_container::semantic_string::SemanticString;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! Config::setup_global_config_from_file(
+//!     &FilePath::new(b"my/custom/config/file.toml")?)?;
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Generate Config From Custom File
+//!
+//! ```no_run
+//! use elkodon::global_config::Config;
+//! use elkodon_bb_system_types::file_path::FilePath;
+//! use elkodon_bb_container::semantic_string::SemanticString;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let custom_config = Config::from_file(
+//!     &FilePath::new(b"my/custom/config/file.toml")?)?;
+//! # Ok(())
+//! # }
+//! ```
+
 use elkodon_bb_container::byte_string::FixedSizeByteString;
 use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_elementary::lazy_singleton::*;
@@ -22,7 +99,7 @@ pub const DEFAULT_CONFIG_FILE: FilePath =
     unsafe { FilePath::new_unchecked(b"config/elkodon.toml") };
 
 /// Failures occurring while creating a new [`Config`] object with [`Config::from_file()`] or
-/// [`Config::setup_from_file()`]
+/// [`Config::setup_global_config_from_file()`]
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum ConfigCreationError {
     FailedToOpenConfigFile,
@@ -63,6 +140,17 @@ pub struct Global {
     pub root_path: String,
     /// [`crate::service::Service`] settings
     pub service: Service,
+}
+
+impl Global {
+    pub fn get_absolute_service_dir(&self) -> Path {
+        let mut path = Path::new(self.root_path.as_bytes()).unwrap();
+        path.add_path_entry(
+            &FixedSizeByteString::from_bytes(self.service.directory.as_bytes()).unwrap(),
+        )
+        .unwrap();
+        path
+    }
 }
 
 /// Default settings. These values are used when the user in the code does not specify anything
@@ -114,13 +202,20 @@ pub struct Event {
     pub max_notifiers: usize,
 }
 
+/// Represents the configuration elkodon will use. It is separated into two parts, the [`Global`]
+/// settings that every instance will use and the [`Defaults`] that are used unless the user does
+/// overrides them.
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Entries {
+pub struct Config {
+    /// Global settings
     pub global: Global,
+    /// Default settings that can be overridden by the user
     pub defaults: Defaults,
 }
 
-impl Default for Entries {
+static ELKODON_CONFIG: LazySingleton<Config> = LazySingleton::<Config>::new();
+
+impl Default for Config {
     fn default() -> Self {
         Self {
             global: Global {
@@ -157,25 +252,9 @@ impl Default for Entries {
     }
 }
 
-impl Global {
-    pub fn get_absolute_service_dir(&self) -> Path {
-        let mut path = Path::new(self.root_path.as_bytes()).unwrap();
-        path.add_path_entry(
-            &FixedSizeByteString::from_bytes(self.service.directory.as_bytes()).unwrap(),
-        )
-        .unwrap();
-        path
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct Config {
-    entries: Entries,
-}
-
-static ELKODON_CONFIG: LazySingleton<Config> = LazySingleton::<Config>::new();
-
 impl Config {
+    /// Loads a configuration from a file. On success it returns a [`Config`] object otherwise a
+    /// [`ConfigCreationError`] describing the failure.
     pub fn from_file(config_file: &FilePath) -> Result<Config, ConfigCreationError> {
         let msg = "Failed to create config";
         let mut new_config = Self::default();
@@ -190,7 +269,7 @@ impl Config {
                 "{} since the config file contents could not be read.", msg);
 
         match toml::from_str(&contents) {
-            Ok(v) => new_config.entries = v,
+            Ok(v) => new_config = v,
             Err(e) => {
                 fail!(from new_config, with ConfigCreationError::UnableToDeserializeContents,
                                 "{} since the contents could not be deserialized ({}).", msg, e);
@@ -201,17 +280,12 @@ impl Config {
         Ok(new_config)
     }
 
-    pub fn from_entries(entries: &Entries) -> Self {
-        Self {
-            entries: entries.clone(),
-        }
-    }
-
-    pub fn get(&self) -> &Entries {
-        &self.entries
-    }
-
-    pub fn setup_from_file(config_file: &FilePath) -> Result<&'static Config, ConfigCreationError> {
+    /// Sets up the global configuration from a file. If the global configuration was already setup
+    /// it will print a warning and does not load the file. It returns the [`Config`] when the file
+    /// could be successfully loaded otherwise a [`ConfigCreationError`] describing the error.
+    pub fn setup_global_config_from_file(
+        config_file: &FilePath,
+    ) -> Result<&'static Config, ConfigCreationError> {
         if ELKODON_CONFIG.is_initialized() {
             return Ok(ELKODON_CONFIG.get());
         }
@@ -228,9 +302,14 @@ impl Config {
         Ok(ELKODON_CONFIG.get())
     }
 
+    /// Returns the global configuration. If the global configuration was not
+    /// [`Config::setup_global_config_from_file()`] it will load a default config. If
+    /// [`Config::setup_global_config_from_file()`]
+    /// is called after this function was called, no file will be loaded since the global default
+    /// config was already populated.
     pub fn get_global_config() -> &'static Config {
         if !ELKODON_CONFIG.is_initialized()
-            && Config::setup_from_file(&DEFAULT_CONFIG_FILE).is_err()
+            && Config::setup_global_config_from_file(&DEFAULT_CONFIG_FILE).is_err()
         {
             warn!(from "Config::get_global_config()", "Unable to load default config file, populate config with default values.");
             ELKODON_CONFIG.set_value(Config::default());

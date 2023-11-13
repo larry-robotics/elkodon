@@ -79,7 +79,7 @@ pub(crate) fn dynamic_config_storage_config<
     'global_config,
     Service: crate::service::Details<'global_config>,
 >(
-    global_config: &global_config::Entries,
+    global_config: &global_config::Config,
 ) -> <Service::DynamicStorage as NamedConceptMgmt>::Configuration {
     let origin = "dynamic_config_storage_config()";
 
@@ -108,7 +108,7 @@ pub(crate) fn static_config_storage_config<
     'global_config,
     Service: crate::service::Details<'global_config>,
 >(
-    global_config: &global_config::Entries,
+    global_config: &global_config::Config,
 ) -> <Service::StaticStorage as NamedConceptMgmt>::Configuration {
     let origin = "dynamic_config_storage_config()";
 
@@ -162,7 +162,7 @@ pub(crate) fn connection_config<
     'global_config,
     Service: crate::service::Details<'global_config>,
 >(
-    global_config: &global_config::Entries,
+    global_config: &global_config::Config,
 ) -> <Service::Connection as NamedConceptMgmt>::Configuration {
     let origin = "connection_config()";
 
@@ -183,7 +183,7 @@ pub struct ServiceState<
     Dynamic: DynamicStorage<DynamicConfig>,
 > {
     pub(crate) static_config: StaticConfig,
-    pub(crate) global_config: &'global_config global_config::Entries,
+    pub(crate) global_config: &'global_config global_config::Config,
     pub(crate) dynamic_storage: Dynamic,
     pub(crate) static_storage: Static,
 }
@@ -193,7 +193,7 @@ impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfi
 {
     pub fn new(
         static_config: StaticConfig,
-        global_config: &'global_config global_config::Entries,
+        global_config: &'global_config global_config::Config,
         dynamic_storage: Dynamic,
         static_storage: Static,
     ) -> Self {
@@ -262,7 +262,7 @@ pub trait Details<'global_config>: Debug + Sized {
     ) -> Result<bool, ServiceDoesExistError> {
         let msg = format!("Unable to verify if \"{}\" exists", service_name);
         let origin = "Service::does_exist_from_config()";
-        let static_storage_config = static_config_storage_config::<Self>(config.get());
+        let static_storage_config = static_config_storage_config::<Self>(config);
 
         let services = fail!(from origin,
                  when <Self::StaticStorage as NamedConceptMgmt>::list_cfg(&static_storage_config),
@@ -327,7 +327,7 @@ pub trait Details<'global_config>: Debug + Sized {
     ) -> Result<Vec<StaticConfig>, ServiceListError> {
         let msg = "Unable to list all services";
         let origin = "Service::list_from_config()";
-        let static_storage_config = static_config_storage_config::<Self>(config.get());
+        let static_storage_config = static_config_storage_config::<Self>(config);
 
         let services = fail!(from origin,
                 when <Self::StaticStorage as NamedConceptMgmt>::list_cfg(&static_storage_config),

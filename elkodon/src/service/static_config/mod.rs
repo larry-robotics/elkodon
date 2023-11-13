@@ -55,7 +55,7 @@ pub struct StaticConfig {
 impl StaticConfig {
     pub fn new_event<Hasher: Hash>(
         service_name: &ServiceName,
-        config: &global_config::Entries,
+        config: &global_config::Config,
     ) -> Self {
         Self {
             uuid: Hasher::new(service_name.as_bytes()).as_hex_string(),
@@ -66,7 +66,7 @@ impl StaticConfig {
 
     pub fn new_publish_subscribe<Hasher: Hash>(
         service_name: &ServiceName,
-        config: &global_config::Entries,
+        config: &global_config::Config,
     ) -> Self {
         Self {
             uuid: Hasher::new(service_name.as_bytes()).as_hex_string(),

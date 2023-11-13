@@ -1,6 +1,6 @@
 #[generic_tests::define]
 mod service_publish_subscribe {
-    use elkodon::global_config::{Config, Entries};
+    use elkodon::global_config::Config;
     use elkodon::port::publisher::{LoanError, PublisherCreateError};
     use elkodon::port::subscriber::SubscriberCreateError;
     use elkodon::service::builder::publish_subscribe::PublishSubscribeCreateError;
@@ -278,7 +278,7 @@ mod service_publish_subscribe {
             .create::<u64>()
             .unwrap();
 
-        let defaults = &Config::get_global_config().get().defaults;
+        let defaults = &Config::get_global_config().defaults;
 
         assert_that!(
             sut.max_supported_publishers(), eq
@@ -320,18 +320,26 @@ mod service_publish_subscribe {
     #[test]
     fn settings_can_be_modified_via_custom_config<Sut: Service>() {
         let service_name = generate_name();
-        let mut entries = Entries::default();
-        entries.defaults.publish_subscribe.max_publishers = 9;
-        entries.defaults.publish_subscribe.max_subscribers = 10;
-        entries.defaults.publish_subscribe.enable_safe_overflow = false;
-        entries.defaults.publish_subscribe.publisher_history_size = 11;
-        entries
+        let mut custom_config = Config::default();
+        custom_config.defaults.publish_subscribe.max_publishers = 9;
+        custom_config.defaults.publish_subscribe.max_subscribers = 10;
+        custom_config
+            .defaults
+            .publish_subscribe
+            .enable_safe_overflow = false;
+        custom_config
+            .defaults
+            .publish_subscribe
+            .publisher_history_size = 11;
+        custom_config
             .defaults
             .publish_subscribe
             .subscriber_max_borrowed_samples = 12;
-        entries.defaults.publish_subscribe.subscriber_buffer_size = 13;
+        custom_config
+            .defaults
+            .publish_subscribe
+            .subscriber_buffer_size = 13;
 
-        let custom_config = Config::from_entries(&entries);
         let sut = Sut::new(&service_name)
             .publish_subscribe_with_custom_config(&custom_config)
             .create::<u64>()

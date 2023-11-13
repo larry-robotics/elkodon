@@ -80,7 +80,7 @@ impl<'global_config, Service: service::Details<'global_config>>
 pub(crate) struct PublisherConnections<'global_config, Service: service::Details<'global_config>> {
     connections: Vec<UnsafeCell<Option<Connection<'global_config, Service>>>>,
     subscriber_id: UniqueSubscriberId,
-    global_config: &'global_config global_config::Entries,
+    global_config: &'global_config global_config::Config,
     static_config: StaticConfig,
 }
 
@@ -90,7 +90,7 @@ impl<'global_config, Service: service::Details<'global_config>>
     pub(crate) fn new(
         capacity: usize,
         subscriber_id: UniqueSubscriberId,
-        global_config: &'global_config global_config::Entries,
+        global_config: &'global_config global_config::Config,
         static_config: &StaticConfig,
     ) -> Self {
         Self {

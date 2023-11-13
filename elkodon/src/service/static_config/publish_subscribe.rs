@@ -13,7 +13,7 @@ pub struct StaticConfig {
 }
 
 impl StaticConfig {
-    pub fn new(config: &global_config::Entries) -> Self {
+    pub fn new(config: &global_config::Config) -> Self {
         Self {
             max_subscribers: config.defaults.publish_subscribe.max_subscribers,
             max_publishers: config.defaults.publish_subscribe.max_publishers,

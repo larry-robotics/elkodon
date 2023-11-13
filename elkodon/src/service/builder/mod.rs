@@ -88,13 +88,13 @@ impl<S: Service> Builder<S> {
 
     pub fn publish_subscribe_with_custom_config(
         self,
-        entries: &global_config::Config,
+        config: &global_config::Config,
     ) -> publish_subscribe::Builder<'_, S::Type<'_>> {
         BuilderWithServiceType::new(
             StaticConfig::new_publish_subscribe::<
                 <<S as service::Service>::Type<'_> as service::Details<'_>>::ServiceNameHasher,
-            >(&self.name, entries.get()),
-            entries.get(),
+            >(&self.name, config),
+            config,
         )
         .publish_subscribe()
     }
@@ -105,13 +105,13 @@ impl<S: Service> Builder<S> {
 
     pub fn event_with_custom_config(
         self,
-        entries: &global_config::Config,
+        config: &global_config::Config,
     ) -> event::Builder<'_, S::Type<'_>> {
         BuilderWithServiceType::new(
             StaticConfig::new_event::<
                 <<S as service::Service>::Type<'_> as service::Details<'_>>::ServiceNameHasher,
-            >(&self.name, entries.get()),
-            entries.get(),
+            >(&self.name, config),
+            config,
         )
         .event()
     }
@@ -120,7 +120,7 @@ impl<S: Service> Builder<S> {
 #[derive(Debug)]
 pub struct BuilderWithServiceType<'global_config, ServiceType: service::Details<'global_config>> {
     service_config: StaticConfig,
-    global_config: &'global_config global_config::Entries,
+    global_config: &'global_config global_config::Config,
     _phantom_data: PhantomData<ServiceType>,
     _phantom_lifetime_b: PhantomData<&'global_config ()>,
 }
@@ -130,7 +130,7 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
 {
     fn new(
         service_config: StaticConfig,
-        global_config: &'global_config global_config::Entries,
+        global_config: &'global_config global_config::Config,
     ) -> Self {
         Self {
             service_config,

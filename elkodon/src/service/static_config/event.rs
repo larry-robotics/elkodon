@@ -8,7 +8,7 @@ pub struct StaticConfig {
 }
 
 impl StaticConfig {
-    pub fn new(config: &global_config::Entries) -> Self {
+    pub fn new(config: &global_config::Config) -> Self {
         Self {
             max_notifiers: config.defaults.event.max_notifiers,
             max_listeners: config.defaults.event.max_listeners,

@@ -85,7 +85,7 @@ pub(crate) fn data_segment_name(publisher_id: UniquePublisherId) -> FileName {
 }
 
 pub(crate) fn data_segment_config<'global_config, Service: service::Details<'global_config>>(
-    global_config: &global_config::Entries,
+    global_config: &global_config::Config,
 ) -> <Service::SharedMemory as NamedConceptMgmt>::Configuration {
     let origin = "data_segment_config()";
 
@@ -289,7 +289,7 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>, MessageT
 
     fn create_data_segment(
         port_id: UniquePublisherId,
-        global_config: &'global_config global_config::Entries,
+        global_config: &'global_config global_config::Config,
         number_of_samples: usize,
     ) -> Result<Service::SharedMemory, SharedMemoryCreateError> {
         let allocator_config = shm_allocator::pool_allocator::Config {
