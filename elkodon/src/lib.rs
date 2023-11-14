@@ -1,7 +1,9 @@
 //! # Elkodon
 //!
 //! Elkodon is a cutting-edge service-oriented zero-copy lock-free inter-process communication
-//! middleware. Designed to support various messaging patterns, Elkodon empowers developers with
+//! middleware. Designed to support various
+//! [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern)s
+//! Elkodon empowers developers with
 //! the flexibility of:
 //!
 //! - Publish-Subscribe
@@ -13,7 +15,8 @@
 //! For a comprehensive list of all planned features, please refer to the
 //! [GitHub Roadmap](https://github.com/elkodon/elkodon/ROADMAP.md).
 //!
-//! Services are uniquely identified by name and messaging pattern. They can be instantiated with
+//! Services are uniquely identified by name and
+//! [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern). They can be instantiated with
 //! diverse quality-of-service settings and are envisioned to be deployable in a `no_std` and
 //! safety-critical environment in the future.
 //!
@@ -28,7 +31,7 @@
 //!
 //! # Examples
 //!
-//! Each service is uniquely identified by a [`crate::service::service_name::ServiceName`].
+//! Each service is uniquely identified by a [`ServiceName`](crate::service::service_name::ServiceName).
 //! Initiating communication requires the creation of a service, which serves as a port factory.
 //! With this factory, endpoints for the service can be created, enabling seamless communication.
 //!
@@ -158,7 +161,8 @@
 //!
 //! Quality of service settings, or service settings, play a crucial role in determining memory
 //! allocation in a worst-case scenario. These settings can be configured during the creation of
-//! a service, immediately after defining the messaging pattern. In cases where the service
+//! a service, immediately after defining the
+//! [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern). In cases where the service
 //! already exists, these settings are interpreted as minimum requirements, ensuring a flexible
 //! and dynamic approach to memory management.
 //!
@@ -262,7 +266,8 @@ pub mod sample;
 /// The payload that is sent by a [`crate::port::publisher::Publisher`].
 pub mod sample_mut;
 
-/// The foundation of communication the service with its messaging patterns
+/// The foundation of communication the service with its
+/// [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern)
 pub mod service;
 
 #[doc(hidden)]

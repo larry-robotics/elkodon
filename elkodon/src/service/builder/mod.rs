@@ -1,4 +1,11 @@
+//! # Example
+//!
+//! See [`crate::service`]
+
+/// Builder for [`MessagingPattern::Event`](crate::service::messaging_pattern::MessagingPattern::Event)
 pub mod event;
+
+/// Builder for [`MessagingPattern::PublishSubscribe`](crate::service::messaging_pattern::MessagingPattern::PublishSubscribe)
 pub mod publish_subscribe;
 
 use crate::config;
@@ -36,6 +43,7 @@ enum ServiceState {
 }
 
 enum_gen! {
+#[doc(hidden)]
     OpenDynamicStorageFailure
   entry:
     IsMarkedForDestruction
@@ -52,6 +60,7 @@ impl std::fmt::Display for OpenDynamicStorageFailure {
 impl std::error::Error for OpenDynamicStorageFailure {}
 
 enum_gen! {
+#[doc(hidden)]
     ReadStaticStorageFailure
   mapping:
     StaticStorageOpenError,
@@ -66,6 +75,11 @@ impl std::fmt::Display for ReadStaticStorageFailure {
 
 impl std::error::Error for ReadStaticStorageFailure {}
 
+/// Builder to create or open [`Service`]s
+///
+/// # Example
+///
+/// See [`crate::service`]
 #[derive(Debug)]
 pub struct Builder<S: Service> {
     name: ServiceName,
@@ -80,12 +94,17 @@ impl<S: Service> Builder<S> {
         }
     }
 
+    /// Create a new builder to create a
+    /// [`MessagingPattern::PublishSubscribe`](crate::service::messaging_pattern::MessagingPattern::PublishSubscribe) [`Service`].
     pub fn publish_subscribe<'config>(
         self,
     ) -> publish_subscribe::Builder<'config, S::Type<'config>> {
         self.publish_subscribe_with_custom_config(config::Config::get_global_config())
     }
 
+    /// Create a new builder to create a
+    /// [`MessagingPattern::PublishSubscribe`](crate::service::messaging_pattern::MessagingPattern::PublishSubscribe) [`Service`].
+    /// with a custom [`config::Config`]
     pub fn publish_subscribe_with_custom_config(
         self,
         config: &config::Config,
@@ -99,10 +118,15 @@ impl<S: Service> Builder<S> {
         .publish_subscribe()
     }
 
+    /// Create a new builder to create a
+    /// [`MessagingPattern::Event`](crate::service::messaging_pattern::MessagingPattern::Event) [`Service`].
     pub fn event<'config>(self) -> event::Builder<'config, S::Type<'config>> {
         self.event_with_custom_config(config::Config::get_global_config())
     }
 
+    /// Create a new builder to create a
+    /// [`MessagingPattern::Event`](crate::service::messaging_pattern::MessagingPattern::Event) [`Service`].
+    /// with a custom [`config::Config`]
     pub fn event_with_custom_config(
         self,
         config: &config::Config,
@@ -117,6 +141,7 @@ impl<S: Service> Builder<S> {
     }
 }
 
+#[doc(hidden)]
 #[derive(Debug)]
 pub struct BuilderWithServiceType<'config, ServiceType: service::Details<'config>> {
     service_config: StaticConfig,

@@ -42,6 +42,7 @@
 * document
     * service
 * ?is publisher history tested?
+* test all QoS of all services, also with requirements when opening
 
 * Write tests for `Sample` & `SampleMut`
 
