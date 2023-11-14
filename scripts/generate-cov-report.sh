@@ -1,6 +1,15 @@
 #!/bin/bash
 
-cd $(git rev-parse --show-toplevel)
+COLOR_OFF='\033[0m'
+COLOR_RED='\033[1;31m'
+COLOR_GREEN='\033[1;32m'
+COLOR_YELLOW='\033[1;33m'
+
+LLVM_PROFILE_PATH="target/debug/llvm-profile-files"
+export LLVM_PROFILE_FILE="${LLVM_PROFILE_PATH}/elkodon-%p-%m.profraw"
+export RUSTFLAGS="-Cinstrument-coverage"
+
+COVERAGE_DIR="target/debug/coverage"
 
 CLEAN=0
 GENERATE=0
@@ -9,18 +18,27 @@ OVERVIEW=0
 HTML=0
 LCOV=0
 
+cd $(git rev-parse --show-toplevel)
+
+dependency_check() {
+    which $1 1> /dev/null || { echo -e "${COLOR_RED}'${1}' not found. Aborting!${COLOR_OFF}"; exit 1; }
+}
+
 cleanup() {
     find . -name "*profraw" -exec rm {} \;
-    rm json5format.profdata
+    if [[ -d "./${COVERAGE_DIR}" ]]; then rm -rf ./${COVERAGE_DIR}; fi
 }
 
 generate_profile() {
-    RUSTFLAGS="-C instrument-coverage" cargo test --workspace -- --test-threads=1
+    cargo test --workspace -- --test-threads=1
 }
 
 merge_report() {
+    dependency_check llvm-profdata
+
+    mkdir -p ./${COVERAGE_DIR}/
     local FILES=$(find . -name "*profraw")
-    llvm-profdata merge -sparse $FILES -o json5format.profdata
+    llvm-profdata merge -sparse $FILES -o ./${COVERAGE_DIR}/json5format.profdata
 }
 
 generate() {
@@ -30,8 +48,10 @@ generate() {
 }
 
 show_overview() {
-    local FILES=$(ls ./target/debug/deps/*tests* | grep -v ".d\$")
-    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=json5format.profdata"
+    dependency_check llvm-cov
+
+    local FILES=$(find ./target/debug/deps/ -type f -executable)
+    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./${COVERAGE_DIR}/json5format.profdata"
 
     for FILE in $FILES 
     do
@@ -42,25 +62,63 @@ show_overview() {
 }
 
 show_report() {
-    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=json5format.profdata"
+    dependency_check llvm-cov
+    dependency_check rustfilt
+
+    local FILES=$(find ./target/debug/deps/ -type f -executable)
+    CMD="llvm-cov report --use-color --ignore-filename-regex='/.cargo/registry' --instr-profile=./${COVERAGE_DIR}/json5format.profdata"
 
     for FILE in $FILES 
     do
         CMD="$CMD --object $FILE"
     done
-    CMD="$CMD --show-instantiations --show-line-counts-or-regions --Xdemangler=rustfilt | less -R"
+    CMD="$CMD --show-instantiation-summary --Xdemangler=rustfilt | less -R"
 
     eval $CMD
 }
 
 generate_html_report() {
-    mkdir -p ./target/coverage/html/
-    grcov . --binary-path ./target/debug/deps/ -s . -t html --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/html
+    dependency_check grcov
+
+    mkdir -p ./${COVERAGE_DIR}/
+    grcov \
+          **/${LLVM_PROFILE_PATH} \
+          **/**/${LLVM_PROFILE_PATH} \
+          --binary-path ./target/debug \
+          --source-dir . \
+          --output-type html \
+          --branch \
+          --ignore-not-existing \
+          --ignore "**/build.rs" \
+          --ignore "**/tests/*" \
+          --ignore "**/examples/*" \
+          --ignore "**/benchmarks/*" \
+          --ignore "**/target/*" \
+          --ignore "**/.cargo/*" \
+          --output-path ./${COVERAGE_DIR}/html
+    sed -i 's/coverage/grcov/' ${COVERAGE_DIR}/html/coverage.json
+    sed -i 's/coverage/grcov/' ${COVERAGE_DIR}/html/badges/*.svg
 }
 
 generate_lcov_report() {
-    mkdir -p ./target/coverage/
-    grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/tests.lcov
+    dependency_check grcov
+
+    mkdir -p ./${COVERAGE_DIR}/
+    grcov \
+          **/${LLVM_PROFILE_PATH} \
+          **/**/${LLVM_PROFILE_PATH} \
+          --binary-path ./target/debug \
+          --source-dir . \
+          --output-type lcov \
+          --branch \
+          --ignore-not-existing \
+          --ignore "**/build.rs" \
+          --ignore "**/tests/*" \
+          --ignore "**/examples/*" \
+          --ignore "**/benchmarks/*" \
+          --ignore "**/target/*" \
+          --ignore "**/.cargo/*" \
+          --output-path ./${COVERAGE_DIR}/lcov.info
 }
 
 
