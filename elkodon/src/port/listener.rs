@@ -119,7 +119,8 @@ impl<'a, 'config: 'a, Service: service::Details<'config>> Listener<'a, 'config, 
     }
 
     /// Non-blocking wait for new [`EventId`]s. If no [`EventId`]s were notified the returned slice
-    /// is empty. On error it returns [`ListenerWaitError`] that describes the error in detail.
+    /// is empty. On error it returns [`ListenerWaitError`] is returned which describes the error
+    /// in detail.
     pub fn try_wait(&mut self) -> Result<&[EventId], ListenerWaitError> {
         self.cache.clear();
         self.fill_cache()?;
@@ -129,7 +130,8 @@ impl<'a, 'config: 'a, Service: service::Details<'config>> Listener<'a, 'config, 
 
     /// Blocking wait for new [`EventId`]s until either an [`EventId`] was received or the timeout
     /// has passed. If no [`EventId`]s were notified the returned slice
-    /// is empty. On error it returns [`ListenerWaitError`] that describes the error in detail.
+    /// is empty. On error it returns [`ListenerWaitError`] is returned which describes the error
+    /// in detail.
     pub fn timed_wait(&mut self, timeout: Duration) -> Result<&[EventId], ListenerWaitError> {
         use elkodon_cal::event::Listener;
         self.cache.clear();
@@ -147,7 +149,8 @@ impl<'a, 'config: 'a, Service: service::Details<'config>> Listener<'a, 'config, 
 
     /// Blocking wait for new [`EventId`]s until either an [`EventId`].
     /// Sporadic wakeups can occur and if no [`EventId`]s were notified the returned slice
-    /// is empty. On error it returns [`ListenerWaitError`] that describes the error in detail.
+    /// is empty. On error it returns [`ListenerWaitError`] is returned which describes the error
+    /// in detail.
     pub fn blocking_wait(&mut self) -> Result<&[EventId], ListenerWaitError> {
         use elkodon_cal::event::Listener;
         self.cache.clear();

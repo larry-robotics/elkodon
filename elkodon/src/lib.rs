@@ -20,9 +20,9 @@
 //! diverse quality-of-service settings and are envisioned to be deployable in a `no_std` and
 //! safety-critical environment in the future.
 //!
-//! Moreover, Elkodon offers configuration options that enable multiple service setups to coexist
+//! Moreover, elkodon offers configuration options that enable multiple service setups to coexist
 //! on the same machine or even within the same process without interference. This versatility
-//! allows Elkodon to seamlessly integrate with other frameworks simultaneously.
+//! allows elkodon to seamlessly integrate with other frameworks simultaneously.
 //!
 //! Elkodon traces its lineage back to the
 //! [eclipse iceoryx](https://github.com/eclipse-iceoryx/iceoryx) project, addressing a major
@@ -214,11 +214,11 @@
 //!
 //! # Port Behavior
 //!
-//! Certain ports in Elkodon provide users with the flexibility to define custom behaviors in
+//! Certain ports in elkodon provide users with the flexibility to define custom behaviors in
 //! specific situations.
 //! Custom port behaviors can be specified during the creation of a port,
 //! utilizing the port factory or service, immediately following the specification of the port
-//! type. This feature enhances the adaptability of Elkodon to diverse use cases and scenarios.
+//! type. This feature enhances the adaptability of elkodon to diverse use cases and scenarios.
 //!
 //! ```
 //! use elkodon::prelude::*;
@@ -252,12 +252,12 @@
 //! For in-depth details and examples, please visit the
 //! [GitHub config folder](https://github.com/elkodon/elkodon/tree/main/config).
 
-/// Handles Elkodons global configuration
+/// Handles elkodons global configuration
 pub mod config;
 
 pub(crate) mod message;
 
-/// The ports or communication endpoints of Elkodon
+/// The ports or communication endpoints of elkodon
 pub mod port;
 
 /// The payload that is received by a [`crate::port::subscriber::Subscriber`].

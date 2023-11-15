@@ -216,16 +216,18 @@ impl<'a, 'config: 'a, Service: service::Details<'config>> Notifier<'a, 'config, 
 
     /// Notifies all [`crate::port::listener::Listener`] connected to the service with the default
     /// event id provided on creation.
-    /// On failure it returns [`NotifierConnectionUpdateFailure`] otherwise the number of
-    /// [`crate::port::listener::Listener`]s that were notified.
+    /// On success the number of
+    /// [`crate::port::listener::Listener`]s that were notified otherwise it returns
+    /// [`NotifierConnectionUpdateFailure`].
     pub fn notify(&self) -> Result<usize, NotifierConnectionUpdateFailure> {
         self.notify_with_custom_event_id(self.default_event_id)
     }
 
     /// Notifies all [`crate::port::listener::Listener`] connected to the service with a custom
     /// [`EventId`].
-    /// On failure it returns [`NotifierConnectionUpdateFailure`] otherwise the number of
-    /// [`crate::port::listener::Listener`]s that were notified.
+    /// On success the number of
+    /// [`crate::port::listener::Listener`]s that were notified otherwise it returns
+    /// [`NotifierConnectionUpdateFailure`].
     pub fn notify_with_custom_event_id(
         &self,
         value: EventId,

@@ -28,7 +28,7 @@ impl<'config, Service: service::Details<'config>> Connection<'config, Service> {
         let sender = fail!(from this, when <<Service as service::Details<'config>>::Connection as ZeroCopyConnection>::
                         Builder::new( &connection_name(this.port_id, subscriber_id))
                                 .config(&connection_config::<Service>(this.config))
-                                .buffer_size(this.static_config.subscriber_buffer_size)
+                                .buffer_size(this.static_config.subscriber_max_buffer_size)
                                 .receiver_max_borrowed_samples(this.static_config.subscriber_max_borrowed_samples)
                                 .enable_safe_overflow(this.static_config.enable_safe_overflow)
                                 .create_sender(),

@@ -116,6 +116,7 @@ impl std::fmt::Display for ConfigCreationError {
 impl std::error::Error for ConfigCreationError {}
 
 /// All configurable settings of a [`crate::service::Service`].
+#[non_exhaustive]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Service {
     /// The directory in which all service files are stored
@@ -134,6 +135,7 @@ pub struct Service {
 }
 
 /// The global settings
+#[non_exhaustive]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct Global {
     /// The path under which all other directories or files will be created
@@ -155,6 +157,7 @@ impl Global {
 
 /// Default settings. These values are used when the user in the code does not specify anything
 /// else.
+#[non_exhaustive]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Defaults {
     /// Default settings for the messaging pattern publish-subscribe
@@ -165,6 +168,7 @@ pub struct Defaults {
 
 /// Default settings for the publish-subscribe messaging pattern. These settings are used unless
 /// the user specifies custom QoS or port settings.
+#[non_exhaustive]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PublishSubscribe {
     /// The maximum amount of supported [`crate::port::subscriber::Subscriber`]
@@ -172,7 +176,7 @@ pub struct PublishSubscribe {
     /// The maximum amount of supported [`crate::port::publisher::Publisher`]
     pub max_publishers: usize,
     /// The maximum buffer size a [`crate::port::subscriber::Subscriber`] can have
-    pub subscriber_buffer_size: usize,
+    pub subscriber_max_buffer_size: usize,
     /// The maximum amount of [`crate::sample::Sample`]s a [`crate::port::subscriber::Subscriber`] can
     /// hold in parallel.
     pub subscriber_max_borrowed_samples: usize,
@@ -182,7 +186,7 @@ pub struct PublishSubscribe {
     /// The maximum history size a [`crate::port::subscriber::Subscriber`] can request from a
     /// [`crate::port::publisher::Publisher`].
     pub publisher_history_size: usize,
-    /// Defines if the how the [`crate::port::subscriber::Subscriber`] buffer behaves when it is
+    /// Defines how the [`crate::port::subscriber::Subscriber`] buffer behaves when it is
     /// full. When safe overflow is activated, the [`crate::port::publisher::Publisher`] will
     /// replace the oldest [`crate::sample::Sample`] with the newest one.
     pub enable_safe_overflow: bool,
@@ -194,6 +198,7 @@ pub struct PublishSubscribe {
 
 /// Default settings for the event messaging pattern. These settings are used unless
 /// the user specifies custom QoS or port settings.
+#[non_exhaustive]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Event {
     /// The maximum amount of supported [`crate::port::listener::Listener`]
@@ -202,14 +207,16 @@ pub struct Event {
     pub max_notifiers: usize,
 }
 
-/// Represents the configuration elkodon will use. It is separated into two parts, the [`Global`]
-/// settings that every instance will use and the [`Defaults`] that are used unless the user does
-/// overrides them.
+/// Represents the configuration that Elkodon will utilize. It is divided into two sections:
+/// the [Global] settings, which must align with the Elkodon instance the application intends to
+/// join, and the [Defaults] for communication within that Elkodon instance. The user has the
+/// flexibility to override both sections.
+#[non_exhaustive]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Config {
-    /// Global settings
+    /// Global settings for the elkodon instance
     pub global: Global,
-    /// Default settings that can be overridden by the user
+    /// Default settings
     pub defaults: Defaults,
 }
 
@@ -237,7 +244,7 @@ impl Default for Config {
                     max_subscribers: 8,
                     max_publishers: 2,
                     publisher_history_size: 1,
-                    subscriber_buffer_size: 2,
+                    subscriber_max_buffer_size: 2,
                     subscriber_max_borrowed_samples: 2,
                     publisher_max_loaned_samples: 2,
                     enable_safe_overflow: true,
@@ -293,7 +300,7 @@ impl Config {
         if !ELKODON_CONFIG.set_value(Config::from_file(config_file)?) {
             warn!(
                 from ELKODON_CONFIG.get(),
-                "Configuration already loaded and set up, cannot load another one."
+                "Configuration already loaded and set up, cannot load another one. This may happen when this function is called from multiple threads."
             );
             return Ok(ELKODON_CONFIG.get());
         }

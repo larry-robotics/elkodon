@@ -15,7 +15,7 @@ use elkodon_cal::static_storage::StaticStorageLocked;
 
 use super::ServiceState;
 
-/// Failures that can occur when an existing [`MessagingPattern::PublishSubscribe`] [`Service`] shall be opened.
+/// Errors that can occur when an existing [`MessagingPattern::PublishSubscribe`] [`Service`] shall be opened.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum PublishSubscribeOpenError {
     DoesNotExist,
@@ -43,7 +43,7 @@ impl std::fmt::Display for PublishSubscribeOpenError {
 
 impl std::error::Error for PublishSubscribeOpenError {}
 
-/// Failures that can occur when a new [`MessagingPattern::PublishSubscribe`] [`Service`] shall be created.
+/// Errors that can occur when a new [`MessagingPattern::PublishSubscribe`] [`Service`] shall be created.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum PublishSubscribeCreateError {
     Corrupted,
@@ -70,7 +70,7 @@ enum ServiceAvailabilityState {
 }
 
 enum_gen! {
-    /// Failures that can occur when a [`MessagingPattern::PublishSubscribe`] [`Service`] shall be
+    /// Errors that can occur when a [`MessagingPattern::PublishSubscribe`] [`Service`] shall be
     /// created or opened.
     PublishSubscribeOpenOrCreateError
   mapping:
@@ -96,7 +96,7 @@ pub struct Builder<'config, ServiceType: service::Details<'config>> {
     base: builder::BuilderWithServiceType<'config, ServiceType>,
     verify_number_of_subscribers: bool,
     verify_number_of_publishers: bool,
-    verify_subscriber_buffer_size: bool,
+    verify_subscriber_max_buffer_size: bool,
     verify_subscriber_max_borrowed_samples: bool,
     verify_publisher_history_size: bool,
     verify_enable_safe_overflow: bool,
@@ -108,7 +108,7 @@ impl<'config, ServiceType: service::Details<'config>> Builder<'config, ServiceTy
             base,
             verify_number_of_publishers: false,
             verify_number_of_subscribers: false,
-            verify_subscriber_buffer_size: false,
+            verify_subscriber_max_buffer_size: false,
             verify_publisher_history_size: false,
             verify_subscriber_max_borrowed_samples: false,
             verify_enable_safe_overflow: false,
@@ -168,9 +168,9 @@ impl<'config, ServiceType: service::Details<'config>> Builder<'config, ServiceTy
     /// If the [`Service`] is created it defines how many [`crate::sample::Sample`] a
     /// [`crate::port::subscriber::Subscriber`] can store in its internal buffer. If an existing
     /// [`Service`] is opened it defines the minimum required.
-    pub fn subscriber_buffer_size(mut self, value: usize) -> Self {
-        self.config_details_mut().subscriber_buffer_size = value;
-        self.verify_subscriber_buffer_size = true;
+    pub fn subscriber_max_buffer_size(mut self, value: usize) -> Self {
+        self.config_details_mut().subscriber_max_buffer_size = value;
+        self.verify_subscriber_max_buffer_size = true;
         self
     }
 
@@ -336,7 +336,8 @@ impl<'config, ServiceType: service::Details<'config>> Builder<'config, ServiceTy
         self.config_details_mut().type_name = std::any::type_name::<MessageType>().to_string();
 
         if !self.config_details().enable_safe_overflow
-            && (self.config_details().subscriber_buffer_size < self.config_details().history_size)
+            && (self.config_details().subscriber_max_buffer_size
+                < self.config_details().history_size)
         {
             fail!(from self, with PublishSubscribeCreateError::SubscriberBufferMustBeLargerThanHistorySize,
                 "{} since the history size is greater than the subscriber buffer size. The subscriber buffer size must be always greater or equal to the history size in the non-overflowing setup.", msg);
@@ -424,10 +425,10 @@ impl<'config, ServiceType: service::Details<'config>> Builder<'config, ServiceTy
             settings.subscriber_max_borrowed_samples = 1;
         }
 
-        if settings.subscriber_buffer_size == 0 {
+        if settings.subscriber_max_buffer_size == 0 {
             warn!(from origin,
                 "Setting the subscribers buffer size to 0 is not supported. Adjust it to 1, the smallest supported value.");
-            settings.subscriber_buffer_size = 1;
+            settings.subscriber_max_buffer_size = 1;
         }
 
         if settings.max_subscribers == 0 {
@@ -474,12 +475,13 @@ impl<'config, ServiceType: service::Details<'config>> Builder<'config, ServiceTy
                                 msg, existing_settings.max_subscribers, required_settings.max_subscribers);
         }
 
-        if self.verify_subscriber_buffer_size
-            && existing_settings.subscriber_buffer_size < required_settings.subscriber_buffer_size
+        if self.verify_subscriber_max_buffer_size
+            && existing_settings.subscriber_max_buffer_size
+                < required_settings.subscriber_max_buffer_size
         {
             fail!(from self, with PublishSubscribeOpenError::DoesNotSupportRequestedMinBufferSize,
                                 "{} since the service supports only a subscriber buffer size of {} but a buffer size of {} was requested.",
-                                msg, existing_settings.subscriber_buffer_size, required_settings.subscriber_buffer_size);
+                                msg, existing_settings.subscriber_max_buffer_size, required_settings.subscriber_max_buffer_size);
         }
 
         if self.verify_publisher_history_size

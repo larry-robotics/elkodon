@@ -12,7 +12,7 @@
 //! println!("type name:                        {:?}", pubsub.static_config().type_name());
 //! println!("max publishers:                   {:?}", pubsub.static_config().max_supported_publishers());
 //! println!("max subscribers:                  {:?}", pubsub.static_config().max_supported_subscribers());
-//! println!("subscriber buffer size:           {:?}", pubsub.static_config().subscriber_buffer_size());
+//! println!("subscriber buffer size:           {:?}", pubsub.static_config().subscriber_max_buffer_size());
 //! println!("history size:                     {:?}", pubsub.static_config().history_size());
 //! println!("subscriber max borrowed samples:  {:?}", pubsub.static_config().subscriber_max_borrowed_samples());
 //! println!("safe overflow:                    {:?}", pubsub.static_config().has_safe_overflow());
@@ -33,7 +33,7 @@ pub struct StaticConfig {
     pub(crate) max_subscribers: usize,
     pub(crate) max_publishers: usize,
     pub(crate) history_size: usize,
-    pub(crate) subscriber_buffer_size: usize,
+    pub(crate) subscriber_max_buffer_size: usize,
     pub(crate) subscriber_max_borrowed_samples: usize,
     pub(crate) enable_safe_overflow: bool,
     pub(crate) type_name: String,
@@ -45,7 +45,10 @@ impl StaticConfig {
             max_subscribers: config.defaults.publish_subscribe.max_subscribers,
             max_publishers: config.defaults.publish_subscribe.max_publishers,
             history_size: config.defaults.publish_subscribe.publisher_history_size,
-            subscriber_buffer_size: config.defaults.publish_subscribe.subscriber_buffer_size,
+            subscriber_max_buffer_size: config
+                .defaults
+                .publish_subscribe
+                .subscriber_max_buffer_size,
             subscriber_max_borrowed_samples: config
                 .defaults
                 .publish_subscribe
@@ -71,8 +74,8 @@ impl StaticConfig {
     }
 
     /// Returns the maximum supported buffer size for [`crate::port::subscriber::Subscriber`] port
-    pub fn subscriber_buffer_size(&self) -> usize {
-        self.subscriber_buffer_size
+    pub fn subscriber_max_buffer_size(&self) -> usize {
+        self.subscriber_max_buffer_size
     }
 
     /// Returns how many [`crate::sample::Sample`] a [`crate::port::subscriber::Subscriber`] port

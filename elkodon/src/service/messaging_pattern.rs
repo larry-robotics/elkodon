@@ -7,15 +7,15 @@
 //!
 //! See the
 //! [Wikipedia Article: Publish-subscribe pattern](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
-//! It uses uni-directional communication where `1` to `n`
-//! [`Publisher`](crate::port::publisher::Publisher)s continuously send data to `1` to `m`
+//! It uses uni-directional communication where `n`
+//! [`Publisher`](crate::port::publisher::Publisher)s continuously send data to `m`
 //! [`Subscriber`](crate::port::subscriber::Subscriber)s.
 //!
 //! ### Event
 //!
 //! Enable processes to notify and wakeup other processes by sending events that are uniquely
-//! identified by a [`crate::port::event_id::EventId`]. Hereby, `1` to `n`
-//! [`Notifier`](crate::port::notifier::Notifier)s can notify `1` to `m`
+//! identified by a [`crate::port::event_id::EventId`]. Hereby, `n`
+//! [`Notifier`](crate::port::notifier::Notifier)s can notify `m`
 //! [`Listener`](crate::port::listener::Listener)s.
 //!
 //! **Note:** This does **not** send or receive POSIX signals nor is it based on them.
@@ -24,6 +24,7 @@ use crate::service::static_config::publish_subscribe;
 use serde::{Deserialize, Serialize};
 
 /// Contains the static config of the corresponding messaging pattern.
+#[non_exhaustive]
 #[derive(Debug, Clone, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "messaging_pattern")]
 pub enum MessagingPattern {
@@ -49,7 +50,8 @@ impl MessagingPattern {
     ) -> usize {
         match self {
             MessagingPattern::PublishSubscribe(v) => {
-                v.max_subscribers * (v.subscriber_buffer_size + v.subscriber_max_borrowed_samples)
+                v.max_subscribers
+                    * (v.subscriber_max_buffer_size + v.subscriber_max_borrowed_samples)
                     + v.history_size
                     + publisher_max_loaned_samples
                     + 1

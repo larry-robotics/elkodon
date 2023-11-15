@@ -101,7 +101,7 @@ mod service_publish_subscribe {
             .enable_safe_overflow(false)
             .history_size(2)
             .subscriber_max_borrowed_samples(2)
-            .subscriber_buffer_size(2)
+            .subscriber_max_buffer_size(2)
             .create::<u64>();
         assert_that!(sut, is_ok);
 
@@ -196,7 +196,7 @@ mod service_publish_subscribe {
         // buffer size
         let sut2 = Sut::new(&service_name)
             .publish_subscribe()
-            .subscriber_buffer_size(3)
+            .subscriber_max_buffer_size(3)
             .open::<u64>();
 
         assert_that!(sut2, is_err);
@@ -207,7 +207,7 @@ mod service_publish_subscribe {
 
         let sut2 = Sut::new(&service_name)
             .publish_subscribe()
-            .subscriber_buffer_size(1)
+            .subscriber_max_buffer_size(1)
             .open::<u64>();
 
         assert_that!(sut2, is_ok);
@@ -300,7 +300,7 @@ mod service_publish_subscribe {
             .enable_safe_overflow(false)
             .history_size(6)
             .subscriber_max_borrowed_samples(7)
-            .subscriber_buffer_size(8)
+            .subscriber_max_buffer_size(8)
             .create::<u64>();
         assert_that!(_sut, is_ok);
 
@@ -314,7 +314,7 @@ mod service_publish_subscribe {
         assert_that!(sut.static_config().has_safe_overflow(), eq false);
         assert_that!(sut.static_config().history_size(), eq 6);
         assert_that!(sut.static_config().subscriber_max_borrowed_samples(), eq 7);
-        assert_that!(sut.static_config().subscriber_buffer_size(), eq 8);
+        assert_that!(sut.static_config().subscriber_max_buffer_size(), eq 8);
     }
 
     #[test]
@@ -338,7 +338,7 @@ mod service_publish_subscribe {
         custom_config
             .defaults
             .publish_subscribe
-            .subscriber_buffer_size = 13;
+            .subscriber_max_buffer_size = 13;
 
         let sut = Sut::new(&service_name)
             .publish_subscribe_with_custom_config(&custom_config)
@@ -350,7 +350,7 @@ mod service_publish_subscribe {
         assert_that!(sut.static_config().has_safe_overflow(), eq false);
         assert_that!(sut.static_config().history_size(), eq 11);
         assert_that!(sut.static_config().subscriber_max_borrowed_samples(), eq 12);
-        assert_that!(sut.static_config().subscriber_buffer_size(), eq 13);
+        assert_that!(sut.static_config().subscriber_max_buffer_size(), eq 13);
 
         let sut2 = Sut::new(&service_name)
             .publish_subscribe()
@@ -362,7 +362,7 @@ mod service_publish_subscribe {
         assert_that!(sut2.static_config().has_safe_overflow(), eq false);
         assert_that!(sut2.static_config().history_size(), eq 11);
         assert_that!(sut2.static_config().subscriber_max_borrowed_samples(), eq 12);
-        assert_that!(sut2.static_config().subscriber_buffer_size(), eq 13);
+        assert_that!(sut2.static_config().subscriber_max_buffer_size(), eq 13);
     }
 
     #[test]
@@ -609,7 +609,7 @@ mod service_publish_subscribe {
         let sut = Sut::new(&service_name)
             .publish_subscribe()
             .enable_safe_overflow(true)
-            .subscriber_buffer_size(BUFFER_SIZE)
+            .subscriber_max_buffer_size(BUFFER_SIZE)
             .create::<usize>()
             .unwrap();
 
@@ -638,7 +638,7 @@ mod service_publish_subscribe {
         let sut = Sut::new(&service_name)
             .publish_subscribe()
             .enable_safe_overflow(false)
-            .subscriber_buffer_size(BUFFER_SIZE)
+            .subscriber_max_buffer_size(BUFFER_SIZE)
             .create::<usize>()
             .unwrap();
 
@@ -671,7 +671,7 @@ mod service_publish_subscribe {
             .publish_subscribe()
             .enable_safe_overflow(false)
             .history_size(12)
-            .subscriber_buffer_size(11)
+            .subscriber_max_buffer_size(11)
             .create::<usize>();
 
         assert_that!(sut, is_err);
@@ -689,7 +689,7 @@ mod service_publish_subscribe {
         let sut = Sut::new(&service_name)
             .publish_subscribe()
             .history_size(3)
-            .subscriber_buffer_size(BUFFER_SIZE)
+            .subscriber_max_buffer_size(BUFFER_SIZE)
             .create::<usize>()
             .unwrap();
 
@@ -716,7 +716,7 @@ mod service_publish_subscribe {
         let sut = Sut::new(&service_name)
             .publish_subscribe()
             .history_size(0)
-            .subscriber_buffer_size(BUFFER_SIZE)
+            .subscriber_max_buffer_size(BUFFER_SIZE)
             .create::<usize>()
             .unwrap();
 
@@ -740,7 +740,7 @@ mod service_publish_subscribe {
             .max_publishers(1)
             .max_subscribers(2)
             .history_size(0)
-            .subscriber_buffer_size(BUFFER_SIZE)
+            .subscriber_max_buffer_size(BUFFER_SIZE)
             .subscriber_max_borrowed_samples(1)
             .create::<usize>()
             .unwrap();
@@ -774,7 +774,7 @@ mod service_publish_subscribe {
             .max_subscribers(max_subscribers)
             .enable_safe_overflow(true)
             .history_size(history_size)
-            .subscriber_buffer_size(buffer_size)
+            .subscriber_max_buffer_size(buffer_size)
             .subscriber_max_borrowed_samples(max_borrow)
             .create::<usize>()
             .unwrap();
@@ -1036,11 +1036,11 @@ mod service_publish_subscribe {
         let service_name = generate_name();
         let sut = Sut::new(&service_name)
             .publish_subscribe()
-            .subscriber_buffer_size(0)
+            .subscriber_max_buffer_size(0)
             .create::<u64>()
             .unwrap();
 
-        assert_that!(sut.static_config().subscriber_buffer_size(), eq 1);
+        assert_that!(sut.static_config().subscriber_max_buffer_size(), eq 1);
     }
 
     #[test]

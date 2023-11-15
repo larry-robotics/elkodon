@@ -126,7 +126,7 @@ mod publisher {
         let service_name = generate_name();
         let service = Sut::new(&service_name)
             .publish_subscribe()
-            .subscriber_buffer_size(1)
+            .subscriber_max_buffer_size(1)
             .enable_safe_overflow(false)
             .create::<u64>()
             .unwrap();
@@ -144,7 +144,7 @@ mod publisher {
             s.spawn(|| {
                 let service = Sut::new(&service_name)
                     .publish_subscribe()
-                    .subscriber_buffer_size(1)
+                    .subscriber_max_buffer_size(1)
                     .open::<u64>()
                     .unwrap();
 
