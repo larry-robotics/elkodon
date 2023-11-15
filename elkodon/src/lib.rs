@@ -256,6 +256,7 @@
 pub mod config;
 
 pub(crate) mod message;
+pub(crate) mod raw_sample;
 
 /// The ports or communication endpoints of elkodon
 pub mod port;
