@@ -1,3 +1,15 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use elkodon_bb_container::semantic_string;
 use elkodon_bb_container::semantic_string::SemanticString;
 use serde::{de::Visitor, Deserialize, Serialize};
@@ -5,6 +17,7 @@ use serde::{de::Visitor, Deserialize, Serialize};
 const SERVICE_NAME_LENGTH: usize = 255;
 
 semantic_string! {
+  /// The unique name for a service.
   name: ServiceName,
   capacity: SERVICE_NAME_LENGTH,
   invalid_content: |value: &[u8]| {

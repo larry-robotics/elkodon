@@ -1,3 +1,23 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! // use `zero_copy` as communication variant
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .open_or_create::<u64>()?;
+//!
+//! let publisher = service.publisher().create()?;
+//! let subscriber = service.subscriber().create()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use crate::port::event_id::EventId;
 use crate::service::dynamic_config::DynamicConfig;
 use elkodon_cal::shm_allocator::pool_allocator::PoolAllocator;
@@ -5,6 +25,7 @@ use elkodon_cal::*;
 
 use super::ServiceState;
 
+/// Defines a zero copy inter-process communication setup based on posix mechanisms.
 #[derive(Debug)]
 pub struct Service<'config> {
     state: ServiceState<

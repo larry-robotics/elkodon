@@ -270,7 +270,7 @@ pub mod sample_mut;
 /// [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern)
 pub mod service;
 
-#[doc(hidden)]
+/// Loads a meaninful subset to cover 90% of the elkodon communication use cases.
 pub mod prelude {
     pub use crate::port::event_id::EventId;
     pub use crate::service::{

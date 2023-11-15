@@ -1,7 +1,29 @@
+//! Defines the messaging pattern used in a [`Service`](crate::service::Service)-based
+//! communication.
+//!
+//! ## Messaging Patterns
+//!
+//! ### Publish-Subscribe
+//!
+//! See the
+//! [Wikipedia Article: Publish-subscribe pattern](https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern).
+//! It uses uni-directional communication where `1` to `n`
+//! [`Publisher`](crate::port::publisher::Publisher)s continuously send data to `1` to `m`
+//! [`Subscriber`](crate::port::subscriber::Subscriber)s.
+//!
+//! ### Event
+//!
+//! Enable processes to notify and wakeup other processes by sending events that are uniquely
+//! identified by a [`crate::port::event_id::EventId`]. Hereby, `1` to `n`
+//! [`Notifier`](crate::port::notifier::Notifier)s can notify `1` to `m`
+//! [`Listener`](crate::port::listener::Listener)s.
+//!
+//! **Note:** This does **not** send or receive POSIX signals nor is it based on them.
 use crate::service::static_config::event;
 use crate::service::static_config::publish_subscribe;
 use serde::{Deserialize, Serialize};
 
+/// Contains the static config of the corresponding messaging pattern.
 #[derive(Debug, Clone, Eq, Hash, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "messaging_pattern")]
 pub enum MessagingPattern {
