@@ -281,11 +281,11 @@ mod service_publish_subscribe {
         let defaults = &Config::get_global_config().defaults;
 
         assert_that!(
-            sut.max_supported_publishers(), eq
+            sut.static_config().max_supported_publishers(), eq
             defaults.publish_subscribe.max_publishers
         );
         assert_that!(
-            sut.max_supported_subscribers(), eq
+            sut.static_config().max_supported_subscribers(), eq
             defaults.publish_subscribe.max_subscribers
         );
     }
@@ -309,12 +309,12 @@ mod service_publish_subscribe {
             .open::<u64>()
             .unwrap();
 
-        assert_that!(sut.max_supported_publishers(), eq 4);
-        assert_that!(sut.max_supported_subscribers(), eq 5);
-        assert_that!(sut.has_safe_overflow(), eq false);
-        assert_that!(sut.history_size(), eq 6);
-        assert_that!(sut.subscriber_max_borrowed_samples(), eq 7);
-        assert_that!(sut.subscriber_buffer_size(), eq 8);
+        assert_that!(sut.static_config().max_supported_publishers(), eq 4);
+        assert_that!(sut.static_config().max_supported_subscribers(), eq 5);
+        assert_that!(sut.static_config().has_safe_overflow(), eq false);
+        assert_that!(sut.static_config().history_size(), eq 6);
+        assert_that!(sut.static_config().subscriber_max_borrowed_samples(), eq 7);
+        assert_that!(sut.static_config().subscriber_buffer_size(), eq 8);
     }
 
     #[test]
@@ -345,24 +345,24 @@ mod service_publish_subscribe {
             .create::<u64>()
             .unwrap();
 
-        assert_that!(sut.max_supported_publishers(), eq 9);
-        assert_that!(sut.max_supported_subscribers(), eq 10);
-        assert_that!(sut.has_safe_overflow(), eq false);
-        assert_that!(sut.history_size(), eq 11);
-        assert_that!(sut.subscriber_max_borrowed_samples(), eq 12);
-        assert_that!(sut.subscriber_buffer_size(), eq 13);
+        assert_that!(sut.static_config().max_supported_publishers(), eq 9);
+        assert_that!(sut.static_config().max_supported_subscribers(), eq 10);
+        assert_that!(sut.static_config().has_safe_overflow(), eq false);
+        assert_that!(sut.static_config().history_size(), eq 11);
+        assert_that!(sut.static_config().subscriber_max_borrowed_samples(), eq 12);
+        assert_that!(sut.static_config().subscriber_buffer_size(), eq 13);
 
         let sut2 = Sut::new(&service_name)
             .publish_subscribe()
             .open::<u64>()
             .unwrap();
 
-        assert_that!(sut2.max_supported_publishers(), eq 9);
-        assert_that!(sut2.max_supported_subscribers(), eq 10);
-        assert_that!(sut2.has_safe_overflow(), eq false);
-        assert_that!(sut2.history_size(), eq 11);
-        assert_that!(sut2.subscriber_max_borrowed_samples(), eq 12);
-        assert_that!(sut2.subscriber_buffer_size(), eq 13);
+        assert_that!(sut2.static_config().max_supported_publishers(), eq 9);
+        assert_that!(sut2.static_config().max_supported_subscribers(), eq 10);
+        assert_that!(sut2.static_config().has_safe_overflow(), eq false);
+        assert_that!(sut2.static_config().history_size(), eq 11);
+        assert_that!(sut2.static_config().subscriber_max_borrowed_samples(), eq 12);
+        assert_that!(sut2.static_config().subscriber_buffer_size(), eq 13);
     }
 
     #[test]
@@ -385,22 +385,22 @@ mod service_publish_subscribe {
 
         for i in 0..MAX_PUBLISHERS / 2 {
             publishers.push(sut.publisher().create().unwrap());
-            assert_that!(sut.number_of_publishers(), eq 2 * i + 1);
-            assert_that!(sut2.number_of_publishers(), eq 2 * i + 1);
-            assert_that!(sut.number_of_subscribers(), eq 0);
-            assert_that!(sut2.number_of_subscribers(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_publishers(), eq 2 * i + 1);
+            assert_that!(sut2.dynamic_config().number_of_publishers(), eq 2 * i + 1);
+            assert_that!(sut.dynamic_config().number_of_subscribers(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_subscribers(), eq 0);
 
             publishers.push(sut2.publisher().create().unwrap());
-            assert_that!(sut.number_of_publishers(), eq 2 * i + 2);
-            assert_that!(sut2.number_of_publishers(), eq 2 * i + 2);
-            assert_that!(sut.number_of_subscribers(), eq 0);
-            assert_that!(sut2.number_of_subscribers(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_publishers(), eq 2 * i + 2);
+            assert_that!(sut2.dynamic_config().number_of_publishers(), eq 2 * i + 2);
+            assert_that!(sut.dynamic_config().number_of_subscribers(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_subscribers(), eq 0);
         }
 
         for i in 0..MAX_PUBLISHERS {
             publishers.pop();
-            assert_that!(sut.number_of_publishers(), eq MAX_PUBLISHERS - i - 1);
-            assert_that!(sut2.number_of_publishers(), eq MAX_PUBLISHERS - i - 1);
+            assert_that!(sut.dynamic_config().number_of_publishers(), eq MAX_PUBLISHERS - i - 1);
+            assert_that!(sut2.dynamic_config().number_of_publishers(), eq MAX_PUBLISHERS - i - 1);
         }
     }
 
@@ -424,22 +424,22 @@ mod service_publish_subscribe {
 
         for i in 0..MAX_SUBSCRIBERS / 2 {
             subscribers.push(sut.subscriber().create().unwrap());
-            assert_that!(sut.number_of_subscribers(), eq 2 * i + 1);
-            assert_that!(sut2.number_of_subscribers(), eq 2 * i + 1);
-            assert_that!(sut.number_of_publishers(), eq 0);
-            assert_that!(sut2.number_of_publishers(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_subscribers(), eq 2 * i + 1);
+            assert_that!(sut2.dynamic_config().number_of_subscribers(), eq 2 * i + 1);
+            assert_that!(sut.dynamic_config().number_of_publishers(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_publishers(), eq 0);
 
             subscribers.push(sut2.subscriber().create().unwrap());
-            assert_that!(sut.number_of_subscribers(), eq 2 * i + 2);
-            assert_that!(sut2.number_of_subscribers(), eq 2 * i + 2);
-            assert_that!(sut.number_of_publishers(), eq 0);
-            assert_that!(sut2.number_of_publishers(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_subscribers(), eq 2 * i + 2);
+            assert_that!(sut2.dynamic_config().number_of_subscribers(), eq 2 * i + 2);
+            assert_that!(sut.dynamic_config().number_of_publishers(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_publishers(), eq 0);
         }
 
         for i in 0..MAX_SUBSCRIBERS {
             subscribers.pop();
-            assert_that!(sut.number_of_subscribers(), eq MAX_SUBSCRIBERS - i - 1);
-            assert_that!(sut2.number_of_subscribers(), eq MAX_SUBSCRIBERS - i - 1);
+            assert_that!(sut.dynamic_config().number_of_subscribers(), eq MAX_SUBSCRIBERS - i - 1);
+            assert_that!(sut2.dynamic_config().number_of_subscribers(), eq MAX_SUBSCRIBERS - i - 1);
         }
     }
 
@@ -1004,7 +1004,7 @@ mod service_publish_subscribe {
             .create::<u64>()
             .unwrap();
 
-        assert_that!(sut.max_supported_publishers(), eq 1);
+        assert_that!(sut.static_config().max_supported_publishers(), eq 1);
     }
 
     #[test]
@@ -1016,7 +1016,7 @@ mod service_publish_subscribe {
             .create::<u64>()
             .unwrap();
 
-        assert_that!(sut.max_supported_subscribers(), eq 1);
+        assert_that!(sut.static_config().max_supported_subscribers(), eq 1);
     }
 
     #[test]
@@ -1028,7 +1028,7 @@ mod service_publish_subscribe {
             .create::<u64>()
             .unwrap();
 
-        assert_that!(sut.subscriber_max_borrowed_samples(), eq 1);
+        assert_that!(sut.static_config().subscriber_max_borrowed_samples(), eq 1);
     }
 
     #[test]
@@ -1040,7 +1040,7 @@ mod service_publish_subscribe {
             .create::<u64>()
             .unwrap();
 
-        assert_that!(sut.subscriber_buffer_size(), eq 1);
+        assert_that!(sut.static_config().subscriber_buffer_size(), eq 1);
     }
 
     #[test]

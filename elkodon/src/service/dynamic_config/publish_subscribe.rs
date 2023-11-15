@@ -1,3 +1,19 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let pubsub = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .open_or_create::<u64>()?;
+//!
+//! println!("number of active publishers:      {:?}", pubsub.dynamic_config().number_of_publishers());
+//! println!("number of active subscribers:     {:?}", pubsub.dynamic_config().number_of_subscribers());
+//! # Ok(())
+//! # }
+//! ```
 use elkodon_bb_elementary::relocatable_container::RelocatableContainer;
 use elkodon_bb_lock_free::mpmc::{container::*, unique_index_set::UniqueIndex};
 use elkodon_bb_log::fatal_panic;
@@ -11,8 +27,10 @@ pub(crate) struct DynamicConfigSettings {
     pub number_of_publishers: usize,
 }
 
+/// The dynamic configuration of an [`crate::service::messaging_pattern::MessagingPattern::Event`]
+/// based service. Contains dynamic parameters like the connected endpoints etc..
 #[derive(Debug)]
-pub(crate) struct DynamicConfig {
+pub struct DynamicConfig {
     pub(crate) subscribers: Container<UniqueSubscriberId>,
     pub(crate) publishers: Container<UniquePublisherId>,
 }
@@ -39,11 +57,13 @@ impl DynamicConfig {
             + Container::<UniquePublisherId>::memory_size(config.number_of_publishers)
     }
 
-    pub(crate) fn number_of_publishers(&self) -> usize {
+    /// Returns how many [`crate::port::publisher::Publisher`] ports are currently connected.
+    pub fn number_of_publishers(&self) -> usize {
         self.publishers.len()
     }
 
-    pub(crate) fn number_of_subscribers(&self) -> usize {
+    /// Returns how many [`crate::port::subscriber::Subscriber`] ports are currently connected.
+    pub fn number_of_subscribers(&self) -> usize {
         self.subscribers.len()
     }
 

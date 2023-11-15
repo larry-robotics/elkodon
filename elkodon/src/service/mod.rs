@@ -90,7 +90,9 @@
 
 /// The builder to create or open [`Service`]s
 pub mod builder;
-mod dynamic_config;
+
+/// The dynamic configuration of a [`Service`]
+pub mod dynamic_config;
 
 /// Defines the message headers for various
 /// [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern)s

@@ -1,3 +1,19 @@
+//! # Examples
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     .open_or_create()?;
+//!
+//! println!("number of active listeners:   {:?}", event.dynamic_config().number_of_listeners());
+//! println!("number of active notifiers:   {:?}", event.dynamic_config().number_of_notifiers());
+//! # Ok(())
+//! # }
+//! ```
 use elkodon_bb_elementary::relocatable_container::RelocatableContainer;
 use elkodon_bb_lock_free::mpmc::{container::*, unique_index_set::UniqueIndex};
 use elkodon_bb_log::fatal_panic;
@@ -11,8 +27,10 @@ pub(crate) struct DynamicConfigSettings {
     pub number_of_notifiers: usize,
 }
 
+/// The dynamic configuration of an [`crate::service::messaging_pattern::MessagingPattern::Event`]
+/// based service. Contains dynamic parameters like the connected endpoints etc..
 #[derive(Debug)]
-pub(crate) struct DynamicConfig {
+pub struct DynamicConfig {
     pub(crate) listeners: Container<UniqueListenerId>,
     pub(crate) notifiers: Container<UniqueNotifierId>,
 }
@@ -39,11 +57,13 @@ impl DynamicConfig {
             + Container::<UniqueNotifierId>::memory_size(config.number_of_notifiers)
     }
 
-    pub(crate) fn number_of_listeners(&self) -> usize {
+    /// Returns the how many [`crate::port::listener::Listener`] ports are currently connected.
+    pub fn number_of_listeners(&self) -> usize {
         self.listeners.len()
     }
 
-    pub(crate) fn number_of_notifiers(&self) -> usize {
+    /// Returns the how many [`crate::port::notifier::Notifier`] ports are currently connected.
+    pub fn number_of_notifiers(&self) -> usize {
         self.notifiers.len()
     }
 

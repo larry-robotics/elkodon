@@ -10,10 +10,11 @@
 //!     .open_or_create()?;
 //!
 //! println!("name:                         {:?}", event.name());
-//! println!("max listeners:                {:?}", event.max_supported_listeners());
-//! println!("max notifiers:                {:?}", event.max_supported_notifiers());
-//! println!("number of active listeners:   {:?}", event.number_of_listeners());
-//! println!("number of active notifiers:   {:?}", event.number_of_notifiers());
+//! println!("uuid:                         {:?}", event.uuid());
+//! println!("max listeners:                {:?}", event.static_config().max_supported_listeners());
+//! println!("max notifiers:                {:?}", event.static_config().max_supported_notifiers());
+//! println!("number of active listeners:   {:?}", event.dynamic_config().number_of_listeners());
+//! println!("number of active notifiers:   {:?}", event.dynamic_config().number_of_notifiers());
 //!
 //! let listener = event.listener().create()?;
 //! let notifier = event.notifier().create()?;
@@ -22,8 +23,8 @@
 //! ```
 use elkodon_cal::dynamic_storage::DynamicStorage;
 
-use crate::service;
-use crate::service::ServiceName;
+use crate::service::{self, static_config};
+use crate::service::{dynamic_config, ServiceName};
 use std::marker::PhantomData;
 
 use super::listener::PortFactoryListener;
@@ -55,34 +56,21 @@ impl<'config, Service: service::Details<'config>> PortFactory<'config, Service> 
         self.service.state().static_config.service_name()
     }
 
-    /// Returns the maximum supported amount of [`crate::port::listener::Listener`]
-    pub fn max_supported_listeners(&self) -> usize {
-        self.service.state().static_config.event().max_listeners
+    /// Returns the uuid of the [`crate::service::Service`]
+    pub fn uuid(&self) -> &str {
+        self.service.state().static_config.uuid()
     }
 
-    /// Returns the maximum supported amount of [`crate::port::notifier::Notifier`]
-    pub fn max_supported_notifiers(&self) -> usize {
-        self.service.state().static_config.event().max_notifiers
+    /// Returns the [`static_config::event::StaticConfig`] of the [`crate::service::Service`].
+    /// Contains all settings that never change during the lifetime of the service.
+    pub fn static_config(&self) -> &static_config::event::StaticConfig {
+        self.service.state().static_config.event()
     }
 
-    /// Returns the number of active [`crate::port::listener::Listener`] ports
-    pub fn number_of_listeners(&self) -> usize {
-        self.service
-            .state()
-            .dynamic_storage
-            .get()
-            .event()
-            .number_of_listeners()
-    }
-
-    /// Returns the number of active [`crate::port::notifier::Notifier`] ports
-    pub fn number_of_notifiers(&self) -> usize {
-        self.service
-            .state()
-            .dynamic_storage
-            .get()
-            .event()
-            .number_of_notifiers()
+    /// Returns the [`dynamic_config::event::DynamicConfig`] of the [`crate::service::Service`].
+    /// Contains all dynamic settings, like the current participants etc..
+    pub fn dynamic_config(&self) -> &dynamic_config::event::DynamicConfig {
+        self.service.state().dynamic_storage.get().event()
     }
 
     /// Returns a [`PortFactoryNotifier`] to create a new [`crate::port::notifier::Notifier`] port

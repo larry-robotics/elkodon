@@ -1,4 +1,11 @@
+/// The static service configuration of an
+/// [`MessagingPattern::Event`]
+/// based service.
 pub mod event;
+
+/// The static service configuration of an
+/// [`MessagingPattern::PublishSubscribe`]
+/// based service.
 pub mod publish_subscribe;
 
 use crate::service::messaging_pattern::MessagingPattern;
@@ -11,6 +18,7 @@ use crate::config;
 
 use super::service_name::ServiceName;
 
+/// Defines a common set of static service configuration details every service shares.
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub struct StaticConfig {
     uuid: String,
@@ -43,14 +51,17 @@ impl StaticConfig {
         }
     }
 
+    /// Returns the uuid of the [`crate::service::Service`]
     pub fn uuid(&self) -> &str {
         &self.uuid
     }
 
+    /// Returns the [`ServiceName`] of the [`crate::service::Service`]
     pub fn service_name(&self) -> &ServiceName {
         &self.service_name
     }
 
+    /// Returns the [`MessagingPattern`] of the [`crate::service::Service`]
     pub fn messaging_pattern(&self) -> &MessagingPattern {
         &self.messaging_pattern
     }
