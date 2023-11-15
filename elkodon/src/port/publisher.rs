@@ -19,9 +19,8 @@
 //!
 //! // loan some memory and send it
 //! let mut sample = publisher.loan()?;
-//! unsafe {
-//!     sample.as_mut_ptr().write(1337);
-//! }
+//! sample.payload_mut().write(1337);
+//! let sample = unsafe { sample.assume_init() };
 //! publisher.send(sample)?;
 //!
 //! // send a copy of the value
@@ -34,12 +33,13 @@
 use std::cell::UnsafeCell;
 use std::fmt::Debug;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-use std::{alloc::Layout, marker::PhantomData, mem::MaybeUninit, ptr::NonNull};
+use std::{alloc::Layout, marker::PhantomData, mem::MaybeUninit};
 
 use super::port_identifiers::{UniquePublisherId, UniqueSubscriberId};
 use crate::message::Message;
 use crate::port::details::subscriber_connections::*;
 use crate::port::{DegrationAction, DegrationCallback};
+use crate::raw_sample::RawSampleMut;
 use crate::service;
 use crate::service::header::publish_subscribe::Header;
 use crate::service::port_factory::publisher::{LocalPublisherConfig, UnableToDeliverStrategy};
@@ -505,7 +505,7 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         let mut sample = fail!(from self, when self.loan(),
                                     "{} since the loan of a sample failed.", msg);
 
-        unsafe { sample.as_mut_ptr().write(value) };
+        sample.payload_mut().write(value);
         Ok(
             fail!(from self, when self.send_impl(sample.offset_to_chunk().value()),
             "{} since the underlying send operation failed.", msg),
@@ -516,7 +516,10 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
     /// On failure it returns [`LoanError`] describing the failure.
     pub fn loan<'publisher>(
         &'publisher self,
-    ) -> Result<SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>, LoanError> {
+    ) -> Result<
+        SampleMut<'a, 'publisher, 'config, Service, Header, MaybeUninit<MessageType>>,
+        LoanError,
+    > {
         self.retrieve_returned_samples();
         let msg = "Unable to loan Sample";
 
@@ -539,17 +542,20 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
                                 "{} since the allocated sample is already in use! This should never happen!", msg);
                 }
 
-                let mut chunk_ptr;
-                unsafe {
-                    chunk_ptr = NonNull::new_unchecked(
-                        chunk.data_ptr as *mut MaybeUninit<Message<Header, MessageType>>,
-                    );
-                    let header_ptr =
-                        std::ptr::addr_of_mut!((*chunk_ptr.as_mut().as_mut_ptr()).header);
-                    header_ptr.write(Header::new(self.port_id))
-                }
+                let message =
+                    chunk.data_ptr as *mut MaybeUninit<Message<Header, MaybeUninit<MessageType>>>;
 
-                Ok(SampleMut::new(self, chunk_ptr, chunk.offset))
+                let sample = unsafe {
+                    (*message).write(Message {
+                        header: Header::new(self.port_id),
+                        data: MaybeUninit::uninit(),
+                    });
+                    RawSampleMut::new_unchecked(
+                        message as *mut Message<Header, MaybeUninit<MessageType>>,
+                    )
+                };
+
+                Ok(SampleMut::new(self, sample, chunk.offset))
             }
             Err(ShmAllocationError::AllocationError(AllocationError::OutOfMemory)) => {
                 fail!(from self, with LoanError::OutOfMemory,

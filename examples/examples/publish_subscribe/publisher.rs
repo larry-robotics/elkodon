@@ -14,17 +14,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut counter: u64 = 0;
 
     while !SignalHandler::termination_requested() {
+        counter += 1;
+
         let mut sample = publisher.loan()?;
-        unsafe {
-            sample.as_mut_ptr().write(TransmissionData {
-                x: counter as i32,
-                y: counter as i32 * 3,
-                funky: counter as f64 * 812.12,
-            });
-        }
+
+        sample.payload_mut().write(TransmissionData {
+            x: counter as i32,
+            y: counter as i32 * 3,
+            funky: counter as f64 * 812.12,
+        });
+
+        let sample = unsafe { sample.assume_init() };
         publisher.send(sample)?;
 
-        counter += 1;
         println!("Send sample {} ...", counter);
 
         std::thread::sleep(std::time::Duration::from_secs(1));

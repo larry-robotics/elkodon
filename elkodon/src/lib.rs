@@ -88,7 +88,8 @@
 //!
 //! while !SignalHandler::termination_requested() {
 //!     let mut sample = publisher.loan()?;
-//!     unsafe { sample.as_mut_ptr().write(1234) };
+//!     sample.payload_mut().write(1234);
+//!     let sample = unsafe { sample.assume_init() };
 //!     publisher.send(sample)?;
 //!
 //!     std::thread::sleep(std::time::Duration::from_secs(1));
