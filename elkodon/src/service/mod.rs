@@ -15,7 +15,7 @@
 //!     .enable_safe_overflow(true)
 //!     .subscriber_max_borrowed_samples(1)
 //!     .history_size(2)
-//!     .subscriber_buffer_size(3)
+//!     .subscriber_max_buffer_size(3)
 //!     .max_subscribers(4)
 //!     .max_publishers(5)
 //!     // if the service already exists, open it, otherwise create it
@@ -57,7 +57,7 @@
 //!
 //! let mut custom_config = Config::default();
 //! // adjust the global root path under which every file/directory is stored
-//! custom_config.global.root_path = "/tmp/custom/path".to_string();
+//! custom_config.global.service.directory = "custom_path".to_string();
 //!
 //! let service = zero_copy::Service::new(&service_name)
 //!     .publish_subscribe_with_custom_config(&custom_config)

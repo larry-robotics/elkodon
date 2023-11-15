@@ -14,7 +14,7 @@
 //! println!("type name:                        {:?}", pubsub.static_config().type_name());
 //! println!("max publishers:                   {:?}", pubsub.static_config().max_supported_publishers());
 //! println!("max subscribers:                  {:?}", pubsub.static_config().max_supported_subscribers());
-//! println!("subscriber buffer size:           {:?}", pubsub.static_config().subscriber_buffer_size());
+//! println!("subscriber buffer size:           {:?}", pubsub.static_config().subscriber_max_buffer_size());
 //! println!("history size:                     {:?}", pubsub.static_config().history_size());
 //! println!("subscriber max borrowed samples:  {:?}", pubsub.static_config().subscriber_max_borrowed_samples());
 //! println!("safe overflow:                    {:?}", pubsub.static_config().has_safe_overflow());

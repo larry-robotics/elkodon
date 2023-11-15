@@ -182,7 +182,7 @@
 //!     // the maximum history size a subscriber can request
 //!     .history_size(3)
 //!     // the maximum buffer size of a subscriber
-//!     .subscriber_buffer_size(4)
+//!     .subscriber_max_buffer_size(4)
 //!     // the maximum amount of subscribers of this service
 //!     .max_subscribers(5)
 //!     // the maximum amount of publishers of this service

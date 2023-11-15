@@ -11,7 +11,7 @@
 //! // create a default config and override some entries
 //! let mut custom_config = Config::default();
 //! custom_config.defaults.publish_subscribe.max_publishers = 5;
-//! custom_config.global.root_path = "/tmp/another/root/path".to_string();
+//! custom_config.global.service.directory = "another_service_dir".to_string();
 //!
 //! let service = zero_copy::Service::new(&service_name)
 //!     .publish_subscribe_with_custom_config(&custom_config)
