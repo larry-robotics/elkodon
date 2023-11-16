@@ -1,3 +1,18 @@
+//! # Examples
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     .open_or_create()?;
+//!
+//! let listener = event.listener().create()?;
+//! # Ok(())
+//! # }
+//! ```
 use std::fmt::Debug;
 
 use elkodon_bb_log::fail;
@@ -7,18 +22,19 @@ use crate::service;
 
 use super::event::PortFactory;
 
+/// Factory to create a new [`Listener`] port/endpoint for
+/// [`MessagingPattern::Event`](crate::service::messaging_pattern::MessagingPattern::Event) based
+/// communication.
 #[derive(Debug)]
-pub struct PortFactoryListener<'factory, 'global_config, Service: service::Details<'global_config>>
-{
-    pub(crate) factory: &'factory PortFactory<'global_config, Service>,
+pub struct PortFactoryListener<'factory, 'config, Service: service::Details<'config>> {
+    pub(crate) factory: &'factory PortFactory<'config, Service>,
 }
 
-impl<'factory, 'global_config, Service: service::Details<'global_config>>
-    PortFactoryListener<'factory, 'global_config, Service>
+impl<'factory, 'config, Service: service::Details<'config>>
+    PortFactoryListener<'factory, 'config, Service>
 {
-    pub fn create(
-        &self,
-    ) -> Result<Listener<'factory, 'global_config, Service>, ListenerCreateError> {
+    /// Creates the [`Listener`] port or returns a [`ListenerCreateError`] on failure.
+    pub fn create(&self) -> Result<Listener<'factory, 'config, Service>, ListenerCreateError> {
         Ok(fail!(from self, when Listener::new(&self.factory.service),
                     "Failed to create new Listener port."))
     }

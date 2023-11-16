@@ -1,3 +1,19 @@
+//! # Examples
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     .open_or_create()?;
+//!
+//! println!("number of active listeners:   {:?}", event.dynamic_config().number_of_listeners());
+//! println!("number of active notifiers:   {:?}", event.dynamic_config().number_of_notifiers());
+//! # Ok(())
+//! # }
+//! ```
 use elkodon_bb_elementary::relocatable_container::RelocatableContainer;
 use elkodon_bb_lock_free::mpmc::{container::*, unique_index_set::UniqueIndex};
 use elkodon_bb_log::fatal_panic;
@@ -6,11 +22,13 @@ use elkodon_bb_memory::bump_allocator::BumpAllocator;
 use crate::port::port_identifiers::{UniqueListenerId, UniqueNotifierId};
 
 #[derive(Debug, Clone, Copy)]
-pub struct DynamicConfigSettings {
+pub(crate) struct DynamicConfigSettings {
     pub number_of_listeners: usize,
     pub number_of_notifiers: usize,
 }
 
+/// The dynamic configuration of an [`crate::service::messaging_pattern::MessagingPattern::Event`]
+/// based service. Contains dynamic parameters like the connected endpoints etc..
 #[derive(Debug)]
 pub struct DynamicConfig {
     pub(crate) listeners: Container<UniqueListenerId>,
@@ -18,7 +36,7 @@ pub struct DynamicConfig {
 }
 
 impl DynamicConfig {
-    pub fn new(config: &DynamicConfigSettings) -> Self {
+    pub(crate) fn new(config: &DynamicConfigSettings) -> Self {
         Self {
             listeners: unsafe { Container::new_uninit(config.number_of_listeners) },
             notifiers: unsafe { Container::new_uninit(config.number_of_notifiers) },
@@ -34,32 +52,26 @@ impl DynamicConfig {
             "This should never happen! Unable to initialize notifier port id container.");
     }
 
-    pub fn memory_size(config: &DynamicConfigSettings) -> usize {
+    pub(crate) fn memory_size(config: &DynamicConfigSettings) -> usize {
         Container::<UniqueListenerId>::memory_size(config.number_of_listeners)
             + Container::<UniqueNotifierId>::memory_size(config.number_of_notifiers)
     }
 
-    pub fn number_of_supported_listeners(&self) -> usize {
-        self.listeners.capacity()
-    }
-
-    pub fn number_of_supported_notifiers(&self) -> usize {
-        self.notifiers.capacity()
-    }
-
+    /// Returns the how many [`crate::port::listener::Listener`] ports are currently connected.
     pub fn number_of_listeners(&self) -> usize {
         self.listeners.len()
     }
 
+    /// Returns the how many [`crate::port::notifier::Notifier`] ports are currently connected.
     pub fn number_of_notifiers(&self) -> usize {
         self.notifiers.len()
     }
 
-    pub fn add_listener_id(&self, id: UniqueListenerId) -> Option<UniqueIndex> {
+    pub(crate) fn add_listener_id(&self, id: UniqueListenerId) -> Option<UniqueIndex> {
         unsafe { self.listeners.add(id) }
     }
 
-    pub fn add_notifier_id(&self, id: UniqueNotifierId) -> Option<UniqueIndex> {
+    pub(crate) fn add_notifier_id(&self, id: UniqueNotifierId) -> Option<UniqueIndex> {
         unsafe { self.notifiers.add(id) }
     }
 }

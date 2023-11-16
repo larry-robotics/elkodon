@@ -53,10 +53,10 @@ mod publisher {
 
         let r = subscriber.receive().unwrap();
         assert_that!(r, is_some);
-        assert_that!(unsafe { *r.unwrap().as_ptr() }, eq 4);
+        assert_that!( *r.unwrap(), eq 4);
         let r = subscriber.receive().unwrap();
         assert_that!(r, is_some);
-        assert_that!(unsafe { *r.unwrap().as_ptr() }, eq 3);
+        assert_that!( *r.unwrap(), eq 3);
     }
 
     #[test]
@@ -126,7 +126,7 @@ mod publisher {
         let service_name = generate_name();
         let service = Sut::new(&service_name)
             .publish_subscribe()
-            .subscriber_buffer_size(1)
+            .subscriber_max_buffer_size(1)
             .enable_safe_overflow(false)
             .create::<u64>()
             .unwrap();
@@ -144,7 +144,7 @@ mod publisher {
             s.spawn(|| {
                 let service = Sut::new(&service_name)
                     .publish_subscribe()
-                    .subscriber_buffer_size(1)
+                    .subscriber_max_buffer_size(1)
                     .open::<u64>()
                     .unwrap();
 

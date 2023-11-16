@@ -1,16 +1,131 @@
+//! # Example
+//!
+//! ## Publish-Subscribe
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! let service = zero_copy::Service::new(&service_name)
+//!     // define the messaging pattern
+//!     .publish_subscribe()
+//!     // various QoS
+//!     .enable_safe_overflow(true)
+//!     .subscriber_max_borrowed_samples(1)
+//!     .history_size(2)
+//!     .subscriber_max_buffer_size(3)
+//!     .max_subscribers(4)
+//!     .max_publishers(5)
+//!     // if the service already exists, open it, otherwise create it
+//!     .open_or_create::<u64>()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Event
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//!
+//! let event = zero_copy::Service::new(&event_name)
+//!     // define the messaging pattern
+//!     .event()
+//!     // various QoS
+//!     .max_notifiers(12)
+//!     .max_listeners(2)
+//!     // if the service already exists, open it, otherwise create it
+//!     .open_or_create()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Publish-Subscribe With Custom Configuration
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! use elkodon::config::Config;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! let mut custom_config = Config::default();
+//! // adjust the global root path under which every file/directory is stored
+//! custom_config.global.service.directory = "custom_path".to_string();
+//!
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe_with_custom_config(&custom_config)
+//!     .open_or_create::<u64>()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Event With Custom Configuration
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! use elkodon::config::Config;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! let mut custom_config = Config::default();
+//! // adjust the global service path under which service related files are stored
+//! custom_config.global.service.directory = "custom_services".to_string();
+//!
+//! let service = zero_copy::Service::new(&service_name)
+//!     .event_with_custom_config(&custom_config)
+//!     .open_or_create()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+
+/// The builder to create or open [`Service`]s
 pub mod builder;
+
+/// The dynamic configuration of a [`Service`]
 pub mod dynamic_config;
+
+/// Defines the message headers for various
+/// [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern)s
 pub mod header;
+
+/// The messaging patterns with their custom
+/// [`StaticConfig`]
+pub mod messaging_pattern;
+
+/// After the [`Service`] is created the user owns this factory to create the endpoints of the
+/// [`MessagingPattern`](crate::service::messaging_pattern::MessagingPattern), also known as ports.
 pub mod port_factory;
+
+/// Represents the name of a [`Service`]
+pub mod service_name;
+
+/// Represents the static configuration of a [`Service`]. These are the settings that never change
+/// during the runtime of a service, like:
+///
+///  * name
+///  * data type
+///  * QoS provided when the service was created
 pub mod static_config;
 
+/// A configuration when communicating within a single process or single address space.
 pub mod process_local;
-pub mod service_name;
+
+/// A configuration when communicating between different processes using posix mechanisms.
 pub mod zero_copy;
 
 use std::fmt::Debug;
 
-use crate::global_config;
+use crate::config;
 use crate::port::event_id::EventId;
 use crate::port::port_identifiers::{UniqueListenerId, UniquePublisherId, UniqueSubscriberId};
 use crate::service::dynamic_config::DynamicConfig;
@@ -34,6 +149,8 @@ use self::builder::Builder;
 use self::dynamic_config::DecrementReferenceCounterResult;
 use self::service_name::ServiceName;
 
+/// Failure that can be reported by [`Details::does_exist()`] or
+/// [`Details::does_exist_with_custom_config()`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceDoesExistError {
     InsufficientPermissions,
@@ -48,6 +165,8 @@ impl std::fmt::Display for ServiceDoesExistError {
 
 impl std::error::Error for ServiceDoesExistError {}
 
+/// Failure that can be reported by [`Details::list()`] or
+/// [`Details::list_with_custom_config()`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ServiceListError {
     InsufficientPermissions,
@@ -75,11 +194,8 @@ pub(crate) fn dynamic_config_storage_name(static_config: &StaticConfig) -> FileN
     FileName::new(static_config.uuid().as_bytes()).unwrap()
 }
 
-pub(crate) fn dynamic_config_storage_config<
-    'global_config,
-    Service: crate::service::Details<'global_config>,
->(
-    global_config: &global_config::Entries,
+pub(crate) fn dynamic_config_storage_config<'config, Service: crate::service::Details<'config>>(
+    global_config: &config::Config,
 ) -> <Service::DynamicStorage as NamedConceptMgmt>::Configuration {
     let origin = "dynamic_config_storage_config()";
 
@@ -104,11 +220,8 @@ pub(crate) fn static_config_storage_name(uuid: &str) -> FileName {
     FileName::new(uuid.as_bytes()).unwrap()
 }
 
-pub(crate) fn static_config_storage_config<
-    'global_config,
-    Service: crate::service::Details<'global_config>,
->(
-    global_config: &global_config::Entries,
+pub(crate) fn static_config_storage_config<'config, Service: crate::service::Details<'config>>(
+    global_config: &config::Config,
 ) -> <Service::StaticStorage as NamedConceptMgmt>::Configuration {
     let origin = "dynamic_config_storage_config()";
 
@@ -158,11 +271,8 @@ pub(crate) fn connection_name(
     file
 }
 
-pub(crate) fn connection_config<
-    'global_config,
-    Service: crate::service::Details<'global_config>,
->(
-    global_config: &global_config::Entries,
+pub(crate) fn connection_config<'config, Service: crate::service::Details<'config>>(
+    global_config: &config::Config,
 ) -> <Service::Connection as NamedConceptMgmt>::Configuration {
     let origin = "connection_config()";
 
@@ -176,24 +286,22 @@ pub(crate) fn connection_config<
 
     <Service::Connection as NamedConceptMgmt>::Configuration::default().suffix(f)
 }
+
+/// Represents the [`Service`]s state.
 #[derive(Debug)]
-pub struct ServiceState<
-    'global_config,
-    Static: StaticStorage,
-    Dynamic: DynamicStorage<DynamicConfig>,
-> {
+pub struct ServiceState<'config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>> {
     pub(crate) static_config: StaticConfig,
-    pub(crate) global_config: &'global_config global_config::Entries,
+    pub(crate) global_config: &'config config::Config,
     pub(crate) dynamic_storage: Dynamic,
     pub(crate) static_storage: Static,
 }
 
-impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>>
-    ServiceState<'global_config, Static, Dynamic>
+impl<'config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>>
+    ServiceState<'config, Static, Dynamic>
 {
-    pub fn new(
+    pub(crate) fn new(
         static_config: StaticConfig,
-        global_config: &'global_config global_config::Entries,
+        global_config: &'config config::Config,
         dynamic_storage: Dynamic,
         static_storage: Static,
     ) -> Self {
@@ -208,8 +316,8 @@ impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfi
     }
 }
 
-impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>> Drop
-    for ServiceState<'global_config, Static, Dynamic>
+impl<'config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfig>> Drop
+    for ServiceState<'config, Static, Dynamic>
 {
     fn drop(&mut self) {
         match self.dynamic_storage.get().decrement_reference_counter() {
@@ -225,44 +333,92 @@ impl<'global_config, Static: StaticStorage, Dynamic: DynamicStorage<DynamicConfi
     }
 }
 
+/// Represents a service. Used to create or open new services with the [`Builder`].
 pub trait Service: Sized {
     type Type<'a>: Details<'a>;
 
+    /// Creates a new [`Builder`] for a given service name
     fn new(name: &ServiceName) -> Builder<Self> {
         Builder::new(name)
     }
 }
 
-pub trait Details<'global_config>: Debug + Sized {
+/// Contains the building blocks a [`Service`] requires to create the underlying resources and
+/// establish communication.
+pub trait Details<'config>: Debug + Sized {
+    /// Every service name will be hashed, to allow arbitrary [`ServiceName`]s with as less
+    /// restrictions as possible. The hash of the [`ServiceName`] is the [`Service`]s uuid.
     type ServiceNameHasher: Hash;
+
+    /// Defines the construct that is used to store the [`StaticConfig`] of the [`Service`]
     type StaticStorage: StaticStorage;
+
+    /// Sets the serializer that is used to serialize the [`StaticConfig`] into the [`StaticStorage`]
     type ConfigSerializer: Serialize;
+
+    /// Defines the construct used to store the [`Service`]s dynamic configuration. This
+    /// contains for instance all endpoints and other dynamic details.
     type DynamicStorage: DynamicStorage<DynamicConfig>;
+
+    /// The memory used to store the payload.
     type SharedMemory: SharedMemory<PoolAllocator>;
+
+    /// The connection used to exchange pointers to the payload
     type Connection: ZeroCopyConnection;
+
+    /// The mechanism used to signal events between endpoints.
     type Event: Event<EventId>;
 
-    fn from_state(
-        state: ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>,
-    ) -> Self;
+    #[doc(hidden)]
+    fn from_state(state: ServiceState<'config, Self::StaticStorage, Self::DynamicStorage>) -> Self;
 
-    fn state(&self) -> &ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>;
+    #[doc(hidden)]
+    fn state(&self) -> &ServiceState<'config, Self::StaticStorage, Self::DynamicStorage>;
 
+    #[doc(hidden)]
     fn state_mut(
         &mut self,
-    ) -> &mut ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>;
+    ) -> &mut ServiceState<'config, Self::StaticStorage, Self::DynamicStorage>;
 
+    /// Checks if a service with the name exists.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let name = ServiceName::new(b"Some/Name")?;
+    /// let does_name_exist = zero_copy::Service::does_exist(&name)?;
+    /// # Ok(())
+    /// # }
+    /// ```
     fn does_exist(service_name: &ServiceName) -> Result<bool, ServiceDoesExistError> {
-        Self::does_exist_from_config(service_name, global_config::Config::get_global_config())
+        Self::does_exist_with_custom_config(service_name, config::Config::get_global_config())
     }
 
-    fn does_exist_from_config(
+    /// Checks if a service under a given [`config::Config`] does exist
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    /// use elkodon::config::Config;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let name = ServiceName::new(b"Some/Name")?;
+    /// let mut custom_config = Config::default();
+    /// let does_name_exist = zero_copy::Service::does_exist_with_custom_config(&name, &custom_config)?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    fn does_exist_with_custom_config(
         service_name: &ServiceName,
-        config: &'global_config global_config::Config,
+        config: &'config config::Config,
     ) -> Result<bool, ServiceDoesExistError> {
         let msg = format!("Unable to verify if \"{}\" exists", service_name);
         let origin = "Service::does_exist_from_config()";
-        let static_storage_config = static_config_storage_config::<Self>(config.get());
+        let static_storage_config = static_config_storage_config::<Self>(config);
 
         let services = fail!(from origin,
                  when <Self::StaticStorage as NamedConceptMgmt>::list_cfg(&static_storage_config),
@@ -318,16 +474,50 @@ pub trait Details<'global_config>: Debug + Sized {
         Ok(false)
     }
 
+    /// Returns a list of all created services in the system.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let services = zero_copy::Service::list()?;
+    ///
+    /// for service in services {
+    ///     println!("\n{:#?}", &service);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     fn list() -> Result<Vec<StaticConfig>, ServiceListError> {
-        Self::list_from_config(global_config::Config::get_global_config())
+        Self::list_with_custom_config(config::Config::get_global_config())
     }
 
-    fn list_from_config(
-        config: &'global_config global_config::Config,
+    /// Returns a list of all services created under a given [`config::Config`].
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    /// use elkodon::config::Config;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut custom_config = Config::default();
+    /// let services = zero_copy::Service::list_with_custom_config(&custom_config)?;
+    ///
+    /// for service in services {
+    ///     println!("\n{:#?}", &service);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    fn list_with_custom_config(
+        config: &'config config::Config,
     ) -> Result<Vec<StaticConfig>, ServiceListError> {
         let msg = "Unable to list all services";
         let origin = "Service::list_from_config()";
-        let static_storage_config = static_config_storage_config::<Self>(config.get());
+        let static_storage_config = static_config_storage_config::<Self>(config);
 
         let services = fail!(from origin,
                 when <Self::StaticStorage as NamedConceptMgmt>::list_cfg(&static_storage_config),

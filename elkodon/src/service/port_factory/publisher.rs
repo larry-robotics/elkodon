@@ -1,3 +1,23 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! use elkodon::service::port_factory::publisher::UnableToDeliverStrategy;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let pubsub = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .open_or_create::<u64>()?;
+//!
+//! let publisher = pubsub.publisher()
+//!                     .max_loaned_samples(6)
+//!                     .unable_to_deliver_strategy(UnableToDeliverStrategy::DiscardSample)
+//!                     .create()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
 use std::fmt::Debug;
 
 use elkodon_bb_log::fail;
@@ -10,9 +30,15 @@ use crate::{
 
 use super::publish_subscribe::PortFactory;
 
+/// Defines the strategy the [`Publisher`] shall pursue in [`Publisher::send()`] or
+/// [`Publisher::send_copy()`] when the buffer of a
+/// [`crate::port::subscriber::Subscriber`] is full and the service does not overflow.
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub enum UnableToDeliverStrategy {
+    /// Blocks until the [`crate::port::subscriber::Subscriber`] has consumed the
+    /// [`crate::sample::Sample`] from the buffer and there is space again
     Block,
+    /// Do not deliver the [`crate::sample::Sample`].
     DiscardSample,
 }
 
@@ -59,28 +85,29 @@ impl<'de> Deserialize<'de> for UnableToDeliverStrategy {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct LocalPublisherConfig {
+pub(crate) struct LocalPublisherConfig {
     pub(crate) max_loaned_samples: usize,
     pub(crate) unable_to_deliver_strategy: UnableToDeliverStrategy,
 }
 
+/// Factory to create a new [`Publisher`] port/endpoint for
+/// [`MessagingPattern::PublishSubscribe`](crate::service::messaging_pattern::MessagingPattern::PublishSubscribe) based
+/// communication.
 #[derive(Debug)]
 pub struct PortFactoryPublisher<
     'factory,
-    'global_config,
-    Service: service::Details<'global_config>,
+    'config,
+    Service: service::Details<'config>,
     MessageType: Debug,
 > {
     config: LocalPublisherConfig,
-    pub(crate) factory: &'factory PortFactory<'global_config, Service, MessageType>,
+    pub(crate) factory: &'factory PortFactory<'config, Service, MessageType>,
 }
 
-impl<'factory, 'global_config, Service: service::Details<'global_config>, MessageType: Debug>
-    PortFactoryPublisher<'factory, 'global_config, Service, MessageType>
+impl<'factory, 'config, Service: service::Details<'config>, MessageType: Debug>
+    PortFactoryPublisher<'factory, 'config, Service, MessageType>
 {
-    pub(crate) fn new(
-        factory: &'factory PortFactory<'global_config, Service, MessageType>,
-    ) -> Self {
+    pub(crate) fn new(factory: &'factory PortFactory<'config, Service, MessageType>) -> Self {
         Self {
             config: LocalPublisherConfig {
                 max_loaned_samples: factory
@@ -102,20 +129,23 @@ impl<'factory, 'global_config, Service: service::Details<'global_config>, Messag
         }
     }
 
+    /// Defines how many [`crate::sample_mut::SampleMut`] the [`Publisher`] can loan with
+    /// [`Publisher::loan()`] in parallel.
     pub fn max_loaned_samples(mut self, value: usize) -> Self {
         self.config.max_loaned_samples = value;
         self
     }
 
+    /// Sets the [`UnableToDeliverStrategy`].
     pub fn unable_to_deliver_strategy(mut self, value: UnableToDeliverStrategy) -> Self {
         self.config.unable_to_deliver_strategy = value;
         self
     }
 
+    /// Creates a new [`Publisher`] or returns a [`PublisherCreateError`] on failure.
     pub fn create(
         self,
-    ) -> Result<Publisher<'factory, 'global_config, Service, MessageType>, PublisherCreateError>
-    {
+    ) -> Result<Publisher<'factory, 'config, Service, MessageType>, PublisherCreateError> {
         Ok(
             fail!(from self, when Publisher::new(&self.factory.service, self.factory.service.state().static_config.publish_subscribe(), &self.config),
                 "Failed to create new Publisher port."),

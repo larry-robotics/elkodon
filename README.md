@@ -1,12 +1,20 @@
-# elkodon - Zero-Copy Lock-Free IPC Purely Written In Rust
+[![Benchmarks](https://img.shields.io/badge/Benchmarks-gray)](benchmarks/README.md)
+[![Best Practices](https://img.shields.io/badge/Best_Practices-gray)](BEST_PRACTICES.md)
+[![Changelog](https://img.shields.io/badge/Changelog-gray)](CHANGELOG.md)
+[![Contributing](https://img.shields.io/badge/Contributing-gray)](CONTRIBUTING.md)
+[![Examples](https://img.shields.io/badge/Examples-gray)](examples/)
+[![FAQ](https://img.shields.io/badge/FAQ-gray)](FAQ.md)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Roadmap](https://img.shields.io/badge/Roadmap-gray)](ROADMAP.md)
 
-| [benchmarks](benchmarks/README.md) | [best practices](BEST_PRACTICES.md) | [changelog](CHANGELOG.md) | [contributing](CONTRIBUTING.md) | [examples](examples/README.md) | [faq](FAQ.md) | [roadmap](ROADMAP.md) |
+# elkodon - Zero-Copy Lock-Free IPC Purely Written In Rust
 
  1. [Introduction](#introduction)
  2. [Performance](#performance)
  3. [Getting Started](#getting-started)
     1. [Publish Subscribe](#publish-subscribe)
     2. [Events](#events)
+    3. [Custom Configuration](#custom-configuration)
  4. [Supported Platforms](#supported-platforms)
  5. [Language Bindings](#language-bindings)
  6. [Thanks To All Contributors](#thanks-to-all-contributors)
@@ -231,6 +239,11 @@ cargo run --example event_notifier
 ```sh
 cargo run --example event_listener
 ```
+
+### Custom Configuration
+
+It is possible to configure default quality of service settings, paths and file suffixes in a
+custom configuration file. For more details visit the [configuration directory](config/).
 
 ## Supported Platforms
 

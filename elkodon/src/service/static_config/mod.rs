@@ -1,50 +1,24 @@
+/// The static service configuration of an
+/// [`MessagingPattern::Event`]
+/// based service.
 pub mod event;
+
+/// The static service configuration of an
+/// [`MessagingPattern::PublishSubscribe`]
+/// based service.
 pub mod publish_subscribe;
 
+use crate::service::messaging_pattern::MessagingPattern;
 use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_log::fatal_panic;
 use elkodon_cal::hash::Hash;
 use serde::{Deserialize, Serialize};
 
-use crate::global_config;
+use crate::config;
 
 use super::service_name::ServiceName;
 
-#[derive(Debug, Clone, Eq, Hash, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "messaging_pattern")]
-pub enum MessagingPattern {
-    PublishSubscribe(publish_subscribe::StaticConfig),
-    Event(event::StaticConfig),
-}
-
-impl MessagingPattern {
-    pub fn is_same_pattern(&self, rhs: &MessagingPattern) -> bool {
-        match self {
-            MessagingPattern::PublishSubscribe(_) => {
-                matches!(rhs, MessagingPattern::PublishSubscribe(_))
-            }
-            MessagingPattern::Event(_) => {
-                matches!(rhs, MessagingPattern::Event(_))
-            }
-        }
-    }
-
-    pub fn required_amount_of_samples_per_data_segment(
-        &self,
-        publisher_max_loaned_samples: usize,
-    ) -> usize {
-        match self {
-            MessagingPattern::PublishSubscribe(v) => {
-                v.max_subscribers * (v.subscriber_buffer_size + v.subscriber_max_borrowed_samples)
-                    + v.history_size
-                    + publisher_max_loaned_samples
-                    + 1
-            }
-            _ => 0,
-        }
-    }
-}
-
+/// Defines a common set of static service configuration details every service shares.
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub struct StaticConfig {
     uuid: String,
@@ -53,9 +27,9 @@ pub struct StaticConfig {
 }
 
 impl StaticConfig {
-    pub fn new_event<Hasher: Hash>(
+    pub(crate) fn new_event<Hasher: Hash>(
         service_name: &ServiceName,
-        config: &global_config::Entries,
+        config: &config::Config,
     ) -> Self {
         Self {
             uuid: Hasher::new(service_name.as_bytes()).as_hex_string(),
@@ -64,9 +38,9 @@ impl StaticConfig {
         }
     }
 
-    pub fn new_publish_subscribe<Hasher: Hash>(
+    pub(crate) fn new_publish_subscribe<Hasher: Hash>(
         service_name: &ServiceName,
-        config: &global_config::Entries,
+        config: &config::Config,
     ) -> Self {
         Self {
             uuid: Hasher::new(service_name.as_bytes()).as_hex_string(),
@@ -77,14 +51,17 @@ impl StaticConfig {
         }
     }
 
+    /// Returns the uuid of the [`crate::service::Service`]
     pub fn uuid(&self) -> &str {
         &self.uuid
     }
 
+    /// Returns the [`ServiceName`] of the [`crate::service::Service`]
     pub fn service_name(&self) -> &ServiceName {
         &self.service_name
     }
 
+    /// Returns the [`MessagingPattern`] of the [`crate::service::Service`]
     pub fn messaging_pattern(&self) -> &MessagingPattern {
         &self.messaging_pattern
     }

@@ -35,13 +35,18 @@
 * `Directory`, `Path`, `FileName`, `FilePath` cannot handle UTF-8 file names
   * `Directory` panics when a directory contains non-ascii (UTF-8) characters
 
+* Windows: publisher::zero_copy::publisher_block_when_unable_to_deliver_blocks seems to sometimes deadlock
+
 # continue
 
+* document
+    * service
+* ?is publisher history tested?
+* test all QoS of all services, also with requirements when opening
+
+* Write tests for `Sample` & `SampleMut`
+
 * Fix platforms
-  * windows
-    * fix unix_datagram_sockets for communication channel
-    * publisher::zero_copy::publisher_block_when_unable_to_deliver_blocks
-            seems to sometimes deadlock
   * macos
     * elkodon_bb_posix
       * add timeout to pthread_cond_timedwait

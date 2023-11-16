@@ -1,30 +1,49 @@
+//! # Examples
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     .open_or_create()?;
+//!
+//! println!("name:                         {:?}", event.name());
+//! println!("uuid:                         {:?}", event.uuid());
+//! println!("max listeners:                {:?}", event.static_config().max_supported_listeners());
+//! println!("max notifiers:                {:?}", event.static_config().max_supported_notifiers());
+//! println!("number of active listeners:   {:?}", event.dynamic_config().number_of_listeners());
+//! println!("number of active notifiers:   {:?}", event.dynamic_config().number_of_notifiers());
+//!
+//! let listener = event.listener().create()?;
+//! let notifier = event.notifier().create()?;
+//! # Ok(())
+//! # }
+//! ```
 use elkodon_cal::dynamic_storage::DynamicStorage;
 
-use crate::service;
-use crate::service::ServiceName;
+use crate::service::{self, static_config};
+use crate::service::{dynamic_config, ServiceName};
 use std::marker::PhantomData;
 
 use super::listener::PortFactoryListener;
 use super::notifier::PortFactoryNotifier;
 
+/// The factory for
+/// [`MessagingPattern::Event`](crate::service::messaging_pattern::MessagingPattern::Event). It can
+/// acquire dynamic and static service informations and create [`crate::port::notifier::Notifier`]
+/// or [`crate::port::listener::Listener`] ports.
 #[derive(Debug)]
-pub struct PortFactory<'global_config, Service: service::Details<'global_config>> {
+pub struct PortFactory<'config, Service: service::Details<'config>> {
     pub(crate) service: Service,
-    _phantom_lifetime_b: PhantomData<&'global_config ()>,
+    _phantom_lifetime_b: PhantomData<&'config ()>,
 }
 
-unsafe impl<'global_config, Service: service::Details<'global_config>> Send
-    for PortFactory<'global_config, Service>
-{
-}
-unsafe impl<'global_config, Service: service::Details<'global_config>> Sync
-    for PortFactory<'global_config, Service>
-{
-}
+unsafe impl<'config, Service: service::Details<'config>> Send for PortFactory<'config, Service> {}
+unsafe impl<'config, Service: service::Details<'config>> Sync for PortFactory<'config, Service> {}
 
-impl<'global_config, Service: service::Details<'global_config>>
-    PortFactory<'global_config, Service>
-{
+impl<'config, Service: service::Details<'config>> PortFactory<'config, Service> {
     pub(crate) fn new(service: Service) -> Self {
         Self {
             service,
@@ -32,41 +51,67 @@ impl<'global_config, Service: service::Details<'global_config>>
         }
     }
 
+    /// Returns the [`ServiceName`] of the [`crate::service::Service`]
     pub fn name(&self) -> &ServiceName {
         self.service.state().static_config.service_name()
     }
 
-    pub fn max_supported_listeners(&self) -> usize {
-        self.service.state().static_config.event().max_listeners
+    /// Returns the uuid of the [`crate::service::Service`]
+    pub fn uuid(&self) -> &str {
+        self.service.state().static_config.uuid()
     }
 
-    pub fn max_supported_notifiers(&self) -> usize {
-        self.service.state().static_config.event().max_notifiers
+    /// Returns the [`static_config::event::StaticConfig`] of the [`crate::service::Service`].
+    /// Contains all settings that never change during the lifetime of the service.
+    pub fn static_config(&self) -> &static_config::event::StaticConfig {
+        self.service.state().static_config.event()
     }
 
-    pub fn number_of_listeners(&self) -> usize {
-        self.service
-            .state()
-            .dynamic_storage
-            .get()
-            .event()
-            .number_of_listeners()
+    /// Returns the [`dynamic_config::event::DynamicConfig`] of the [`crate::service::Service`].
+    /// Contains all dynamic settings, like the current participants etc..
+    pub fn dynamic_config(&self) -> &dynamic_config::event::DynamicConfig {
+        self.service.state().dynamic_storage.get().event()
     }
 
-    pub fn number_of_notifiers(&self) -> usize {
-        self.service
-            .state()
-            .dynamic_storage
-            .get()
-            .event()
-            .number_of_notifiers()
-    }
-
-    pub fn notifier<'a>(&'a self) -> PortFactoryNotifier<'a, 'global_config, Service> {
+    /// Returns a [`PortFactoryNotifier`] to create a new [`crate::port::notifier::Notifier`] port
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let event_name = ServiceName::new(b"MyEventName")?;
+    /// let event = zero_copy::Service::new(&event_name)
+    ///     .event()
+    ///     .open_or_create()?;
+    ///
+    /// let notifier = event.notifier().create()?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn notifier<'a>(&'a self) -> PortFactoryNotifier<'a, 'config, Service> {
         PortFactoryNotifier::new(self)
     }
 
-    pub fn listener<'a>(&'a self) -> PortFactoryListener<'a, 'global_config, Service> {
+    /// Returns a [`PortFactoryListener`] to create a new [`crate::port::listener::Listener`] port
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let event_name = ServiceName::new(b"MyEventName")?;
+    /// let event = zero_copy::Service::new(&event_name)
+    ///     .event()
+    ///     .open_or_create()?;
+    ///
+    /// let listener = event.listener().create()?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn listener<'a>(&'a self) -> PortFactoryListener<'a, 'config, Service> {
         PortFactoryListener { factory: self }
     }
 }

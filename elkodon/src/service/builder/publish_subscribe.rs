@@ -1,7 +1,11 @@
+//! # Example
+//!
+//! See [`crate::service`]
+//!
 use crate::service;
 use crate::service::dynamic_config::publish_subscribe::DynamicConfigSettings;
+use crate::service::messaging_pattern::MessagingPattern;
 use crate::service::port_factory::publish_subscribe;
-use crate::service::static_config::MessagingPattern;
 use crate::service::*;
 use elkodon_bb_elementary::enum_gen;
 use elkodon_bb_log::{fail, fatal_panic, warn};
@@ -11,6 +15,7 @@ use elkodon_cal::static_storage::StaticStorageLocked;
 
 use super::ServiceState;
 
+/// Errors that can occur when an existing [`MessagingPattern::PublishSubscribe`] [`Service`] shall be opened.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum PublishSubscribeOpenError {
     DoesNotExist,
@@ -38,6 +43,7 @@ impl std::fmt::Display for PublishSubscribeOpenError {
 
 impl std::error::Error for PublishSubscribeOpenError {}
 
+/// Errors that can occur when a new [`MessagingPattern::PublishSubscribe`] [`Service`] shall be created.
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
 pub enum PublishSubscribeCreateError {
     Corrupted,
@@ -64,6 +70,8 @@ enum ServiceAvailabilityState {
 }
 
 enum_gen! {
+    /// Errors that can occur when a [`MessagingPattern::PublishSubscribe`] [`Service`] shall be
+    /// created or opened.
     PublishSubscribeOpenOrCreateError
   mapping:
     PublishSubscribeOpenError,
@@ -78,26 +86,29 @@ impl std::fmt::Display for PublishSubscribeOpenOrCreateError {
 
 impl std::error::Error for PublishSubscribeOpenOrCreateError {}
 
+/// Builder to create new [`MessagingPattern::PublishSubscribe`] based [`Service`]s
+///
+/// # Example
+///
+/// See [`crate::service`]
 #[derive(Debug)]
-pub struct Builder<'global_config, ServiceType: service::Details<'global_config>> {
-    base: builder::BuilderWithServiceType<'global_config, ServiceType>,
+pub struct Builder<'config, ServiceType: service::Details<'config>> {
+    base: builder::BuilderWithServiceType<'config, ServiceType>,
     verify_number_of_subscribers: bool,
     verify_number_of_publishers: bool,
-    verify_subscriber_buffer_size: bool,
+    verify_subscriber_max_buffer_size: bool,
     verify_subscriber_max_borrowed_samples: bool,
     verify_publisher_history_size: bool,
     verify_enable_safe_overflow: bool,
 }
 
-impl<'global_config, ServiceType: service::Details<'global_config>>
-    Builder<'global_config, ServiceType>
-{
-    pub(crate) fn new(base: builder::BuilderWithServiceType<'global_config, ServiceType>) -> Self {
+impl<'config, ServiceType: service::Details<'config>> Builder<'config, ServiceType> {
+    pub(crate) fn new(base: builder::BuilderWithServiceType<'config, ServiceType>) -> Self {
         let mut new_self = Self {
             base,
             verify_number_of_publishers: false,
             verify_number_of_subscribers: false,
-            verify_subscriber_buffer_size: false,
+            verify_subscriber_max_buffer_size: false,
             verify_publisher_history_size: false,
             verify_subscriber_max_borrowed_samples: false,
             verify_enable_safe_overflow: false,
@@ -128,36 +139,53 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         }
     }
 
+    /// If the [`Service`] is created, defines the overflow behavior of the service. If an existing
+    /// [`Service`] is opened it requires the service to have the defined overflow behavior.
     pub fn enable_safe_overflow(mut self, value: bool) -> Self {
         self.config_details_mut().enable_safe_overflow = value;
         self.verify_enable_safe_overflow = true;
         self
     }
 
+    /// If the [`Service`] is created it defines how many [`crate::sample::Sample`] a
+    /// [`crate::port::subscriber::Subscriber`] can borrow at most in parallel. If an existing
+    /// [`Service`] is opened it defines the minimum required.
     pub fn subscriber_max_borrowed_samples(mut self, value: usize) -> Self {
         self.config_details_mut().subscriber_max_borrowed_samples = std::cmp::max(value, 1);
         self.verify_subscriber_max_borrowed_samples = true;
         self
     }
 
+    /// If the [`Service`] is created it defines the maximum history size a
+    /// [`crate::port::subscriber::Subscriber`] can request on connection. If an existing
+    /// [`Service`] is opened it defines the minimum required.
     pub fn history_size(mut self, value: usize) -> Self {
         self.config_details_mut().history_size = value;
         self.verify_publisher_history_size = true;
         self
     }
 
-    pub fn subscriber_buffer_size(mut self, value: usize) -> Self {
-        self.config_details_mut().subscriber_buffer_size = value;
-        self.verify_subscriber_buffer_size = true;
+    /// If the [`Service`] is created it defines how many [`crate::sample::Sample`] a
+    /// [`crate::port::subscriber::Subscriber`] can store in its internal buffer. If an existing
+    /// [`Service`] is opened it defines the minimum required.
+    pub fn subscriber_max_buffer_size(mut self, value: usize) -> Self {
+        self.config_details_mut().subscriber_max_buffer_size = value;
+        self.verify_subscriber_max_buffer_size = true;
         self
     }
 
+    /// If the [`Service`] is created it defines how many [`crate::port::subscriber::Subscriber`] shall
+    /// be supported at most. If an existing [`Service`] is opened it defines how many
+    /// [`crate::port::subscriber::Subscriber`] must be at least supported.
     pub fn max_subscribers(mut self, value: usize) -> Self {
         self.config_details_mut().max_subscribers = value;
         self.verify_number_of_subscribers = true;
         self
     }
 
+    /// If the [`Service`] is created it defines how many [`crate::port::publisher::Publisher`] shall
+    /// be supported at most. If an existing [`Service`] is opened it defines how many
+    /// [`crate::port::publisher::Publisher`] must be at least supported.
     pub fn max_publishers(mut self, value: usize) -> Self {
         self.config_details_mut().max_publishers = value;
         self.verify_number_of_publishers = true;
@@ -183,10 +211,12 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         }
     }
 
+    /// If the [`Service`] exists, it will be opened otherwise a new [`Service`] will be
+    /// created.
     pub fn open_or_create<MessageType: Debug>(
         mut self,
     ) -> Result<
-        publish_subscribe::PortFactory<'global_config, ServiceType, MessageType>,
+        publish_subscribe::PortFactory<'config, ServiceType, MessageType>,
         PublishSubscribeOpenOrCreateError,
     > {
         let msg = "Unable to open or create publish subscribe service";
@@ -219,10 +249,11 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         }
     }
 
+    /// Opens an existing [`Service`].
     pub fn open<MessageType: Debug>(
         mut self,
     ) -> Result<
-        publish_subscribe::PortFactory<'global_config, ServiceType, MessageType>,
+        publish_subscribe::PortFactory<'config, ServiceType, MessageType>,
         PublishSubscribeOpenError,
     > {
         let msg = "Unable to open publish subscribe service";
@@ -292,10 +323,11 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         }
     }
 
+    /// Creates a new [`Service`].
     pub fn create<MessageType: Debug>(
         mut self,
     ) -> Result<
-        publish_subscribe::PortFactory<'global_config, ServiceType, MessageType>,
+        publish_subscribe::PortFactory<'config, ServiceType, MessageType>,
         PublishSubscribeCreateError,
     > {
         self.adjust_properties_to_meaningful_values();
@@ -304,7 +336,8 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
         self.config_details_mut().type_name = std::any::type_name::<MessageType>().to_string();
 
         if !self.config_details().enable_safe_overflow
-            && (self.config_details().subscriber_buffer_size < self.config_details().history_size)
+            && (self.config_details().subscriber_max_buffer_size
+                < self.config_details().history_size)
         {
             fail!(from self, with PublishSubscribeCreateError::SubscriberBufferMustBeLargerThanHistorySize,
                 "{} since the history size is greater than the subscriber buffer size. The subscriber buffer size must be always greater or equal to the history size in the non-overflowing setup.", msg);
@@ -392,10 +425,10 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
             settings.subscriber_max_borrowed_samples = 1;
         }
 
-        if settings.subscriber_buffer_size == 0 {
+        if settings.subscriber_max_buffer_size == 0 {
             warn!(from origin,
                 "Setting the subscribers buffer size to 0 is not supported. Adjust it to 1, the smallest supported value.");
-            settings.subscriber_buffer_size = 1;
+            settings.subscriber_max_buffer_size = 1;
         }
 
         if settings.max_subscribers == 0 {
@@ -442,12 +475,13 @@ impl<'global_config, ServiceType: service::Details<'global_config>>
                                 msg, existing_settings.max_subscribers, required_settings.max_subscribers);
         }
 
-        if self.verify_subscriber_buffer_size
-            && existing_settings.subscriber_buffer_size < required_settings.subscriber_buffer_size
+        if self.verify_subscriber_max_buffer_size
+            && existing_settings.subscriber_max_buffer_size
+                < required_settings.subscriber_max_buffer_size
         {
             fail!(from self, with PublishSubscribeOpenError::DoesNotSupportRequestedMinBufferSize,
                                 "{} since the service supports only a subscriber buffer size of {} but a buffer size of {} was requested.",
-                                msg, existing_settings.subscriber_buffer_size, required_settings.subscriber_buffer_size);
+                                msg, existing_settings.subscriber_max_buffer_size, required_settings.subscriber_max_buffer_size);
         }
 
         if self.verify_publisher_history_size

@@ -16,7 +16,7 @@ fn perform_benchmark<T: Service>() {
         .max_publishers(1)
         .max_subscribers(1)
         .history_size(0)
-        .subscriber_buffer_size(1)
+        .subscriber_max_buffer_size(1)
         .enable_safe_overflow(false)
         .create::<u64>()
         .unwrap();
@@ -26,7 +26,7 @@ fn perform_benchmark<T: Service>() {
         .max_publishers(1)
         .max_subscribers(1)
         .history_size(0)
-        .subscriber_buffer_size(1)
+        .subscriber_max_buffer_size(1)
         .enable_safe_overflow(false)
         .create::<u64>()
         .unwrap();

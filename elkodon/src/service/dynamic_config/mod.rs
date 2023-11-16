@@ -1,4 +1,11 @@
+/// The dynamic service configuration of an
+/// [`MessagingPattern::Event`](crate::service::messaging_pattern::MessagingPattern::Event)
+/// based service.
 pub mod event;
+
+/// The dynamic service configuration of an
+/// [`MessagingPattern::PublishSubscribe`](crate::service::messaging_pattern::MessagingPattern::PublishSubscribe)
+/// based service.
 pub mod publish_subscribe;
 
 use std::{
@@ -18,11 +25,12 @@ pub(crate) enum DecrementReferenceCounterResult {
 }
 
 #[derive(Debug)]
-pub enum MessagingPattern {
+pub(crate) enum MessagingPattern {
     PublishSubscribe(publish_subscribe::DynamicConfig),
     Event(event::DynamicConfig),
 }
 
+#[doc(hidden)]
 #[derive(Debug)]
 pub struct DynamicConfig {
     messaging_pattern: MessagingPattern,

@@ -1,6 +1,6 @@
 #[generic_tests::define]
 mod service_event {
-    use elkodon::global_config::{Config, Entries};
+    use elkodon::config::Config;
     use elkodon::port::event_id::EventId;
     use elkodon::service::{
         builder::event::{EventCreateError, EventOpenError},
@@ -123,35 +123,34 @@ mod service_event {
             .max_listeners(5)
             .create()
             .unwrap();
-        assert_that!(sut.max_supported_notifiers(), eq 4);
-        assert_that!(sut.max_supported_listeners(), eq 5);
+        assert_that!(sut.static_config().max_supported_notifiers(), eq 4);
+        assert_that!(sut.static_config().max_supported_listeners(), eq 5);
 
         let sut2 = Sut::new(&service_name).event().open().unwrap();
-        assert_that!(sut2.max_supported_notifiers(), eq 4);
-        assert_that!(sut2.max_supported_listeners(), eq 5);
+        assert_that!(sut2.static_config().max_supported_notifiers(), eq 4);
+        assert_that!(sut2.static_config().max_supported_listeners(), eq 5);
     }
 
     #[test]
     fn settings_can_be_modified_via_custom_config<Sut: Service>() {
         let service_name = generate_name();
-        let mut entries = Entries::default();
-        entries.defaults.event.max_notifiers = 9;
-        entries.defaults.event.max_listeners = 10;
+        let mut custom_config = Config::default();
+        custom_config.defaults.event.max_notifiers = 9;
+        custom_config.defaults.event.max_listeners = 10;
 
-        let custom_config = Config::from_entries(&entries);
         let sut = Sut::new(&service_name)
             .event_with_custom_config(&custom_config)
             .create()
             .unwrap();
-        assert_that!(sut.max_supported_notifiers(), eq 9);
-        assert_that!(sut.max_supported_listeners(), eq 10);
+        assert_that!(sut.static_config().max_supported_notifiers(), eq 9);
+        assert_that!(sut.static_config().max_supported_listeners(), eq 10);
 
         let sut2 = Sut::new(&service_name)
             .event_with_custom_config(&custom_config)
             .open()
             .unwrap();
-        assert_that!(sut2.max_supported_notifiers(), eq 9);
-        assert_that!(sut2.max_supported_listeners(), eq 10);
+        assert_that!(sut2.static_config().max_supported_notifiers(), eq 9);
+        assert_that!(sut2.static_config().max_supported_listeners(), eq 10);
     }
 
     #[test]
@@ -310,22 +309,22 @@ mod service_event {
 
         for i in 0..MAX_NOTIFIERS / 2 {
             notifiers.push(sut.notifier().create().unwrap());
-            assert_that!(sut.number_of_notifiers(), eq 2 * i + 1);
-            assert_that!(sut2.number_of_notifiers(), eq 2 * i + 1);
-            assert_that!(sut.number_of_listeners(), eq 0);
-            assert_that!(sut2.number_of_listeners(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_notifiers(), eq 2 * i + 1);
+            assert_that!(sut2.dynamic_config().number_of_notifiers(), eq 2 * i + 1);
+            assert_that!(sut.dynamic_config().number_of_listeners(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_listeners(), eq 0);
 
             notifiers.push(sut2.notifier().create().unwrap());
-            assert_that!(sut.number_of_notifiers(), eq 2 * i + 2);
-            assert_that!(sut2.number_of_notifiers(), eq 2 * i + 2);
-            assert_that!(sut.number_of_listeners(), eq 0);
-            assert_that!(sut2.number_of_listeners(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_notifiers(), eq 2 * i + 2);
+            assert_that!(sut2.dynamic_config().number_of_notifiers(), eq 2 * i + 2);
+            assert_that!(sut.dynamic_config().number_of_listeners(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_listeners(), eq 0);
         }
 
         for i in 0..MAX_NOTIFIERS {
             notifiers.pop();
-            assert_that!(sut.number_of_notifiers(), eq MAX_NOTIFIERS - i - 1);
-            assert_that!(sut2.number_of_notifiers(), eq MAX_NOTIFIERS - i - 1);
+            assert_that!(sut.dynamic_config().number_of_notifiers(), eq MAX_NOTIFIERS - i - 1);
+            assert_that!(sut2.dynamic_config().number_of_notifiers(), eq MAX_NOTIFIERS - i - 1);
         }
     }
 
@@ -346,22 +345,22 @@ mod service_event {
 
         for i in 0..MAX_LISTENERS / 2 {
             listeners.push(sut.listener().create().unwrap());
-            assert_that!(sut.number_of_listeners(), eq 2 * i + 1);
-            assert_that!(sut2.number_of_listeners(), eq 2 * i + 1);
-            assert_that!(sut.number_of_notifiers(), eq 0);
-            assert_that!(sut2.number_of_notifiers(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_listeners(), eq 2 * i + 1);
+            assert_that!(sut2.dynamic_config().number_of_listeners(), eq 2 * i + 1);
+            assert_that!(sut.dynamic_config().number_of_notifiers(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_notifiers(), eq 0);
 
             listeners.push(sut2.listener().create().unwrap());
-            assert_that!(sut.number_of_listeners(), eq 2 * i + 2);
-            assert_that!(sut2.number_of_listeners(), eq 2 * i + 2);
-            assert_that!(sut.number_of_notifiers(), eq 0);
-            assert_that!(sut2.number_of_notifiers(), eq 0);
+            assert_that!(sut.dynamic_config().number_of_listeners(), eq 2 * i + 2);
+            assert_that!(sut2.dynamic_config().number_of_listeners(), eq 2 * i + 2);
+            assert_that!(sut.dynamic_config().number_of_notifiers(), eq 0);
+            assert_that!(sut2.dynamic_config().number_of_notifiers(), eq 0);
         }
 
         for i in 0..MAX_LISTENERS {
             listeners.pop();
-            assert_that!(sut.number_of_listeners(), eq MAX_LISTENERS - i - 1);
-            assert_that!(sut2.number_of_listeners(), eq MAX_LISTENERS - i - 1);
+            assert_that!(sut.dynamic_config().number_of_listeners(), eq MAX_LISTENERS - i - 1);
+            assert_that!(sut2.dynamic_config().number_of_listeners(), eq MAX_LISTENERS - i - 1);
         }
     }
 

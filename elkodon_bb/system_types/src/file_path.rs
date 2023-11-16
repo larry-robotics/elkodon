@@ -15,11 +15,13 @@
 //! assert!(invalid_name.is_err());
 //! ```
 
+pub use elkodon_bb_container::semantic_string::SemanticString;
+
 use crate::file_name::FileName;
 use crate::path::Path;
 use elkodon_bb_container::byte_string::FixedSizeByteString;
 use elkodon_bb_container::semantic_string;
-use elkodon_bb_container::semantic_string::*;
+use elkodon_bb_container::semantic_string::SemanticStringError;
 use elkodon_bb_log::fail;
 use elkodon_pal_settings::{PATH_LENGTH, PATH_SEPARATOR};
 

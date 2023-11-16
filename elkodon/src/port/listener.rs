@@ -1,3 +1,23 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event = zero_copy::Service::new(&event_name)
+//!     .event()
+//!     .open_or_create()?;
+//!
+//! let mut listener = event.listener().create()?;
+//!
+//! for event_id in listener.try_wait()? {
+//!     println!("event was triggered with id: {:?}", event_id);
+//! }
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use elkodon_bb_lock_free::mpmc::unique_index_set::UniqueIndex;
 use elkodon_bb_log::fail;
 use elkodon_cal::dynamic_storage::DynamicStorage;
@@ -10,6 +30,8 @@ use std::{marker::PhantomData, time::Duration};
 
 use super::event_id::EventId;
 
+/// Defines the failures that can occur when a [`Listener`] is created with the
+/// [`crate::service::port_factory::listener::PortFactoryListener`].
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum ListenerCreateError {
     ExceedsMaxSupportedListeners,
@@ -24,18 +46,17 @@ impl std::fmt::Display for ListenerCreateError {
 
 impl std::error::Error for ListenerCreateError {}
 
+/// Represents the receiving endpoint of an event based communication.
 #[derive(Debug)]
-pub struct Listener<'a, 'global_config: 'a, Service: service::Details<'global_config>> {
+pub struct Listener<'a, 'config: 'a, Service: service::Details<'config>> {
     _dynamic_config_guard: Option<UniqueIndex<'a>>,
     listener: <Service::Event as elkodon_cal::event::Event<EventId>>::Listener,
     cache: Vec<EventId>,
     _phantom_a: PhantomData<&'a Service>,
-    _phantom_b: PhantomData<&'global_config ()>,
+    _phantom_b: PhantomData<&'config ()>,
 }
 
-impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
-    Listener<'a, 'global_config, Service>
-{
+impl<'a, 'config: 'a, Service: service::Details<'config>> Listener<'a, 'config, Service> {
     pub(crate) fn new(service: &'a Service) -> Result<Self, ListenerCreateError> {
         let msg = "Failed to create listener";
         let origin = "Listener::new()";
@@ -89,10 +110,17 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
         Ok(())
     }
 
+    /// Returns the cached [`EventId`]s. Whenever [`Listener::try_wait()`],
+    /// [`Listener::timed_wait()`] or [`Listener::blocking_wait()`] is called the cache is reset
+    /// and filled with the events that where signaled since the last call. This cache can be
+    /// accessed until a new wait call resets and fills it again.
     pub fn cache(&self) -> &[EventId] {
         &self.cache
     }
 
+    /// Non-blocking wait for new [`EventId`]s. If no [`EventId`]s were notified the returned slice
+    /// is empty. On error it returns [`ListenerWaitError`] is returned which describes the error
+    /// in detail.
     pub fn try_wait(&mut self) -> Result<&[EventId], ListenerWaitError> {
         self.cache.clear();
         self.fill_cache()?;
@@ -100,6 +128,10 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
         Ok(self.cache())
     }
 
+    /// Blocking wait for new [`EventId`]s until either an [`EventId`] was received or the timeout
+    /// has passed. If no [`EventId`]s were notified the returned slice
+    /// is empty. On error it returns [`ListenerWaitError`] is returned which describes the error
+    /// in detail.
     pub fn timed_wait(&mut self, timeout: Duration) -> Result<&[EventId], ListenerWaitError> {
         use elkodon_cal::event::Listener;
         self.cache.clear();
@@ -115,6 +147,10 @@ impl<'a, 'global_config: 'a, Service: service::Details<'global_config>>
         Ok(self.cache())
     }
 
+    /// Blocking wait for new [`EventId`]s until either an [`EventId`].
+    /// Sporadic wakeups can occur and if no [`EventId`]s were notified the returned slice
+    /// is empty. On error it returns [`ListenerWaitError`] is returned which describes the error
+    /// in detail.
     pub fn blocking_wait(&mut self) -> Result<&[EventId], ListenerWaitError> {
         use elkodon_cal::event::Listener;
         self.cache.clear();

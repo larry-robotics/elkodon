@@ -1,3 +1,23 @@
+//! # Example
+//!
+//! ```
+//! use elkodon::prelude::*;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//!
+//! // use `zero_copy` as communication variant
+//! let service = zero_copy::Service::new(&service_name)
+//!     .publish_subscribe()
+//!     .open_or_create::<u64>()?;
+//!
+//! let publisher = service.publisher().create()?;
+//! let subscriber = service.subscriber().create()?;
+//!
+//! # Ok(())
+//! # }
+//! ```
+
 use crate::port::event_id::EventId;
 use crate::service::dynamic_config::DynamicConfig;
 use elkodon_cal::shm_allocator::pool_allocator::PoolAllocator;
@@ -5,20 +25,21 @@ use elkodon_cal::*;
 
 use super::ServiceState;
 
+/// Defines a zero copy inter-process communication setup based on posix mechanisms.
 #[derive(Debug)]
-pub struct Service<'global_config> {
+pub struct Service<'config> {
     state: ServiceState<
-        'global_config,
+        'config,
         static_storage::file::Storage,
         dynamic_storage::posix_shared_memory::Storage<DynamicConfig>,
     >,
 }
 
-impl<'global_config> crate::service::Service for Service<'global_config> {
+impl<'config> crate::service::Service for Service<'config> {
     type Type<'b> = Service<'b>;
 }
 
-impl<'global_config> crate::service::Details<'global_config> for Service<'global_config> {
+impl<'config> crate::service::Details<'config> for Service<'config> {
     type StaticStorage = static_storage::file::Storage;
     type ConfigSerializer = serialize::toml::Toml;
     type DynamicStorage = dynamic_storage::posix_shared_memory::Storage<DynamicConfig>;
@@ -27,19 +48,17 @@ impl<'global_config> crate::service::Details<'global_config> for Service<'global
     type Connection = zero_copy_connection::posix_shared_memory::Connection;
     type Event = event::unix_datagram_socket::Event<EventId>;
 
-    fn from_state(
-        state: ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage>,
-    ) -> Self {
+    fn from_state(state: ServiceState<'config, Self::StaticStorage, Self::DynamicStorage>) -> Self {
         Self { state }
     }
 
-    fn state(&self) -> &ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage> {
+    fn state(&self) -> &ServiceState<'config, Self::StaticStorage, Self::DynamicStorage> {
         &self.state
     }
 
     fn state_mut(
         &mut self,
-    ) -> &mut ServiceState<'global_config, Self::StaticStorage, Self::DynamicStorage> {
+    ) -> &mut ServiceState<'config, Self::StaticStorage, Self::DynamicStorage> {
         &mut self.state
     }
 }
