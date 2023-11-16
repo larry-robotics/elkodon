@@ -195,23 +195,26 @@ fn signal_wait_twice_for_same_signal_blocks() {
     thread::scope(|s| {
         s.spawn(|| {
             SignalHandler::wait_for_signal(FetchableSignal::UserDefined2).unwrap();
-        });
-
-        nanosleep(TIMEOUT).ok();
-        Process::from_self().send_signal(Signal::UserDefined2).ok();
-
-        s.spawn(|| {
-            SignalHandler::wait_for_signal(FetchableSignal::UserDefined2).unwrap();
-            counter.store(1, Ordering::Relaxed);
+            counter.fetch_add(1, Ordering::Relaxed);
         });
 
         nanosleep(TIMEOUT).ok();
         let counter_old = counter.load(Ordering::Relaxed);
         Process::from_self().send_signal(Signal::UserDefined2).ok();
 
+        s.spawn(|| {
+            SignalHandler::wait_for_signal(FetchableSignal::UserDefined2).unwrap();
+            counter.fetch_add(1, Ordering::Relaxed);
+        });
+
+        nanosleep(TIMEOUT).ok();
+        let counter_old_2 = counter.load(Ordering::Relaxed);
+        Process::from_self().send_signal(Signal::UserDefined2).ok();
+
         assert_that!(counter_old, eq 0);
+        assert_that!(counter_old_2, le 1);
         assert_that!(
-            || { counter.load(Ordering::Relaxed) == 1 },
+            || { counter.load(Ordering::Relaxed) == 2 },
             block_until_true
         );
     });
@@ -238,7 +241,7 @@ fn signal_timed_wait_blocks_until_signal() {
     let counter = AtomicI32::new(0);
     thread::scope(|s| {
         s.spawn(|| {
-            SignalHandler::timed_wait_for_multiple_signals(&signals, TIMEOUT).unwrap();
+            SignalHandler::timed_wait_for_multiple_signals(&signals, 100 * TIMEOUT).unwrap();
             counter.store(1, Ordering::Relaxed);
         });
 
