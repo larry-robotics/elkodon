@@ -3,6 +3,10 @@
 
 pub mod buffer;
 pub mod console;
+#[cfg(feature = "logger_log")]
+pub mod log;
+#[cfg(feature = "logger_tracing")]
+pub mod tracing;
 
 use std::fmt::Arguments;
 
