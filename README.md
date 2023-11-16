@@ -261,7 +261,7 @@ The support levels can be adjusted when required.
 | Mac OS           | in-progress  | tier 3                | tier 2               |
 | QNX              | planned      | -                     | tier 1               |
 | WatchOS          | planned      | -                     | tier 2               |
-| Windows          | in-progress  | tier 3                | tier 2               |
+| Windows          | done         | tier 2                | tier 2               |
 
 - **tier 1** - All safety and security features are working.
 - **tier 2** - Works with a restricted security and safety feature set.
@@ -286,11 +286,11 @@ The support levels can be adjusted when required.
     <tr>
       <td align="center" valign="top" width="14.28%">
           <a href="https://github.com/elfenpiff">
-          <img src="https://avatars.githubusercontent.com/u/56729169" width="100px;" alt="Christian »elfenpiff« Eltzschig"/><br />
+          <img src="https://avatars.githubusercontent.com/u/56729169" width="120px;" alt="Christian »elfenpiff« Eltzschig"/><br />
           <sub><b>Christian »elfenpiff« Eltzschig</b></sub></a></td>
       <td align="center" valign="top" width="14.28%">
           <a href="https://github.com/elboberido">
-          <img src="https://avatars.githubusercontent.com/u/56729607" width="100px;" alt="Mathias »elBoberido« Kraus"/><br />
+          <img src="https://avatars.githubusercontent.com/u/56729607" width="120px;" alt="Mathias »elBoberido« Kraus"/><br />
           <sub><b>Mathias »elBoberido« Kraus</b></sub></a></td>
     </tr>
   </tbody>
