@@ -253,14 +253,18 @@
 //! For in-depth details and examples, please visit the
 //! [GitHub config folder](https://github.com/elkodon/elkodon/tree/main/config).
 
+#[cfg(doctest)]
+mod compiletests;
+
 /// Handles elkodons global configuration
 pub mod config;
 
 pub(crate) mod message;
-pub(crate) mod raw_sample;
 
 /// The ports or communication endpoints of elkodon
 pub mod port;
+
+pub(crate) mod raw_sample;
 
 /// The payload that is received by a [`crate::port::subscriber::Subscriber`].
 pub mod sample;
