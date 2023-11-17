@@ -74,7 +74,7 @@ impl<
     ) -> Self {
         publisher.loan_counter.fetch_add(1, Ordering::Relaxed);
 
-        // SAFETY: the transmute is not nice but safe since MaybeUninit has the same layout as the inner type
+        // SAFETY: the transmute is not nice but safe since MaybeUninit is #[repr(transparent)} to the inner type
         let publisher = unsafe { std::mem::transmute(publisher) };
 
         Self {
@@ -93,7 +93,7 @@ impl<
     pub unsafe fn assume_init(
         self,
     ) -> SampleMut<'a, 'publisher, 'config, Service, Header, MessageType> {
-        // the transmute is not nice but safe since MaybeUninit has the same layout as the inner type
+        // the transmute is not nice but safe since MaybeUninit is #[repr(transparent)] to the inner type
         std::mem::transmute(self)
     }
 }
