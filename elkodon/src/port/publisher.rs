@@ -485,8 +485,12 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
 
     /// Send a previously loaned [`Publisher::loan()`] [`SampleMut`] to all connected
     /// [`crate::port::subscriber::Subscriber`]s of the service.
-    /// On success it returns the number of [`crate::port::subscriber::Subscriber`]s that received
-    /// the data, otherwise a [`ZeroCopyCreationError`] describing the failure.
+    ///
+    /// The payload of the [`SampleMut`] must be initialized before it can be sent. Have a look
+    /// at [`SampleMut::write_payload()`] and [`SampleMut::assume_init()`] for more details.
+    ///
+    /// On success the number of [`crate::port::subscriber::Subscriber`]s that received
+    /// the data is returned, otherwise a [`ZeroCopyCreationError`] describing the failure.
     pub fn send<'publisher>(
         &'publisher self,
         sample: SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>,

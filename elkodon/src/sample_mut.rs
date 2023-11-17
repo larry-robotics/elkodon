@@ -35,6 +35,9 @@ use std::{fmt::Debug, mem::MaybeUninit, sync::atomic::Ordering};
 ///
 /// Does not implement [`Send`] since it releases unsent samples in the [`Publisher`] and the
 /// [`Publisher`] is not thread-safe!
+///
+/// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+/// which API is used to obtain the sample.
 #[derive(Debug)]
 pub struct SampleMut<
     'a,
@@ -42,15 +45,15 @@ pub struct SampleMut<
     'config,
     Service: service::Details<'config>,
     Header: Debug,
-    MessageType: Debug,
+    M: Debug,
 > {
-    publisher: &'publisher Publisher<'a, 'config, Service, MessageType>,
-    ptr: RawSampleMut<Header, MessageType>,
+    publisher: &'publisher Publisher<'a, 'config, Service, M>,
+    ptr: RawSampleMut<Header, M>,
     offset_to_chunk: PointerOffset,
 }
 
-impl<'config, Service: service::Details<'config>, Header: Debug, MessageType: Debug> Drop
-    for SampleMut<'_, '_, 'config, Service, Header, MessageType>
+impl<'config, Service: service::Details<'config>, Header: Debug, M: Debug> Drop
+    for SampleMut<'_, '_, 'config, Service, Header, M>
 {
     fn drop(&mut self) {
         self.publisher.release_sample(self.offset_to_chunk);
@@ -85,7 +88,32 @@ impl<
     }
 
     /// Writes the payload to the sample and labels the sample as initialized
-    pub fn write_payload(mut self, value: MessageType) -> SampleMut<'a, 'publisher, 'config, Service, Header, MessageType> {
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+    /// #
+    /// # let service = zero_copy::Service::new(&service_name)
+    /// #     .publish_subscribe()
+    /// #     .open_or_create::<u64>()?;
+    /// #
+    /// # let publisher = service.publisher().create()?;
+    ///
+    /// let mut sample = publisher.loan()?;
+    /// let sample = sample.write_payload(1234);
+    ///
+    /// publisher.send(sample)?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn write_payload(
+        mut self,
+        value: MessageType,
+    ) -> SampleMut<'a, 'publisher, 'config, Service, Header, MessageType> {
         self.payload_mut().write(value);
         // SAFETY: this is safe since the payload was initialized on the line above
         unsafe { self.assume_init() }
@@ -97,6 +125,29 @@ impl<
     ///
     /// The caller must ensure that `MaybeUninit<MessageType>` really is initialized. Calling this when
     /// the content is not fully initialized causes immediate undefined behavior.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+    /// #
+    /// # let service = zero_copy::Service::new(&service_name)
+    /// #     .publish_subscribe()
+    /// #     .open_or_create::<u64>()?;
+    /// #
+    /// # let publisher = service.publisher().create()?;
+    ///
+    /// let mut sample = publisher.loan()?;
+    /// sample.payload_mut().write(1234);
+    /// let sample = unsafe { sample.assume_init() };
+    ///
+    /// publisher.send(sample)?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
     pub unsafe fn assume_init(
         self,
     ) -> SampleMut<'a, 'publisher, 'config, Service, Header, MessageType> {
@@ -111,7 +162,7 @@ impl<
         'config,
         Service: service::Details<'config>,
         Header: Debug,
-        M: Debug, // M is either MaybeUninit<MessageType> or MessageType
+        M: Debug, // `M` is either a `MessageType` or a `MaybeUninit<MessageType>`
     > SampleMut<'a, 'publisher, 'config, Service, Header, M>
 {
     pub(crate) fn offset_to_chunk(&self) -> PointerOffset {
@@ -125,11 +176,21 @@ impl<
     }
 
     /// Returns a reference to the payload of the sample.
+    ///
+    /// # Notes
+    ///
+    /// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+    /// which API is used to obtain the sample. Obtaining a reference is safe for either type.
     pub fn payload(&self) -> &M {
         self.ptr.as_data_ref()
     }
 
     /// Returns a mutable reference to the payload of the sample.
+    ///
+    /// # Notes
+    ///
+    /// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+    /// which API is used to obtain the sample. Obtaining a mut reference is safe for either type.
     pub fn payload_mut(&mut self) -> &mut M {
         self.ptr.as_data_mut()
     }
