@@ -88,7 +88,8 @@
 //!
 //! while !SignalHandler::termination_requested() {
 //!     let mut sample = publisher.loan()?;
-//!     unsafe { sample.as_mut_ptr().write(1234) };
+//!     sample.payload_mut().write(1234);
+//!     let sample = unsafe { sample.assume_init() };
 //!     publisher.send(sample)?;
 //!
 //!     std::thread::sleep(std::time::Duration::from_secs(1));
@@ -252,6 +253,9 @@
 //! For in-depth details and examples, please visit the
 //! [GitHub config folder](https://github.com/elkodon/elkodon/tree/main/config).
 
+#[cfg(doctest)]
+mod compiletests;
+
 /// Handles elkodons global configuration
 pub mod config;
 
@@ -259,6 +263,8 @@ pub(crate) mod message;
 
 /// The ports or communication endpoints of elkodon
 pub mod port;
+
+pub(crate) mod raw_sample;
 
 /// The payload that is received by a [`crate::port::subscriber::Subscriber`].
 pub mod sample;

@@ -40,9 +40,10 @@ mod publisher {
         let mut sample2 = sut.loan().unwrap();
         let mut sample3 = sut.loan().unwrap();
 
-        unsafe { *sample1.as_mut_ptr() = 1 };
-        unsafe { *sample2.as_mut_ptr() = 2 };
-        unsafe { *sample3.as_mut_ptr() = 3 };
+        sample1.payload_mut().write(1);
+        sample2.payload_mut().write(2);
+        sample3.payload_mut().write(3);
+        let sample3 = unsafe { sample3.assume_init() };
 
         let subscriber = service.subscriber().create().unwrap();
 
@@ -88,7 +89,9 @@ mod publisher {
         let sut = service.publisher().max_loaned_samples(2).create().unwrap();
 
         let _sample1 = sut.loan().unwrap();
-        let sample2 = sut.loan().unwrap();
+        let mut sample2 = sut.loan().unwrap();
+        sample2.payload_mut().write(2);
+        let sample2 = unsafe { sample2.assume_init() };
 
         assert_that!(sut.send(sample2), is_ok);
 

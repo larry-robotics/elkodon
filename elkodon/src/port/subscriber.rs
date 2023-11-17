@@ -21,7 +21,7 @@
 
 use std::cell::UnsafeCell;
 use std::fmt::Debug;
-use std::{marker::PhantomData, ptr::NonNull};
+use std::marker::PhantomData;
 
 use elkodon_bb_lock_free::mpmc::container::ContainerState;
 use elkodon_bb_lock_free::mpmc::unique_index_set::UniqueIndex;
@@ -32,7 +32,8 @@ use elkodon_cal::{shared_memory::*, zero_copy_connection::*};
 use crate::port::DegrationAction;
 use crate::service::static_config::publish_subscribe::StaticConfig;
 use crate::{
-    message::Message, sample::Sample, service, service::header::publish_subscribe::Header,
+    message::Message, raw_sample::RawSample, sample::Sample, service,
+    service::header::publish_subscribe::Header,
 };
 
 use super::details::publisher_connections::{Connection, ConnectionFailure, PublisherConnections};
@@ -139,10 +140,15 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         Ok(new_self)
     }
 
-    pub(crate) fn release_sample(&self, channel_id: usize, message: *const MessageType) {
+    pub(crate) fn release_sample<Header: Debug>(
+        &self,
+        channel_id: usize,
+        sample: RawSample<Header, MessageType>,
+    ) {
         match self.publisher_connections.get(channel_id) {
             Some(c) => {
-                let distance = message as usize - c.data_segment.allocator_data_start_address();
+                let distance =
+                    sample.as_ptr() as usize - c.data_segment.allocator_data_start_address();
                 match c.receiver.release(PointerOffset::new(distance)) {
                     Ok(()) => (),
                     Err(ZeroCopyReleaseError::RetrieveBufferFull) => {
@@ -217,7 +223,7 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
                         subscriber: self,
                         channel_id,
                         ptr: unsafe {
-                            NonNull::new_unchecked(
+                            RawSample::new_unchecked(
                                 absolute_address as *mut Message<Header, MessageType>,
                             )
                         },
