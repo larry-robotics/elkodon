@@ -84,6 +84,13 @@ impl<
         }
     }
 
+    /// Writes the payload to the sample and labels the sample as initialized
+    pub fn write_payload(mut self, value: MessageType) -> SampleMut<'a, 'publisher, 'config, Service, Header, MessageType> {
+        self.payload_mut().write(value);
+        // SAFETY: this is safe since the payload was initialized on the line above
+        unsafe { self.assume_init() }
+    }
+
     /// Extracts the value of the `MaybeUninit<MessageType>` container and labels the sample as initialized
     ///
     /// # Safety
