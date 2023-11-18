@@ -142,11 +142,6 @@ use std::{
 
 use logger::Logger;
 
-#[cfg(feature = "logger_tracing")]
-static DEFAULT_LOGGER: logger::tracing::Logger = logger::tracing::Logger::new();
-#[cfg(feature = "logger_log")]
-static DEFAULT_LOGGER: logger::log::Logger = logger::log::Logger::new();
-#[cfg(not(any(feature = "logger_tracing", feature = "logger_log")))]
 static DEFAULT_LOGGER: logger::console::Logger = logger::console::Logger::new();
 
 static mut LOGGER: Option<&'static dyn logger::Logger> = None;

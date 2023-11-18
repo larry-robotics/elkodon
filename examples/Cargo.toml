@@ -8,8 +8,6 @@ edition = { workspace = true }
 
 [dependencies]
 elkodon = { workspace = true }
-elkodon_bb_posix = { workspace = true }
-elkodon_bb_container = { workspace = true }
 
 [lib]
 name = "transmission_data"
