@@ -47,9 +47,9 @@
 //!
 //! ```no_run
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
 //!
 //! // create our port factory by creating or opening the service
@@ -59,12 +59,10 @@
 //!
 //! let subscriber = service.subscriber().create()?;
 //!
-//! while !SignalHandler::termination_requested() {
+//! while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
 //!     while let Some(sample) = subscriber.receive()? {
 //!         println!("received: {:?}", *sample);
 //!     }
-//!
-//!     std::thread::sleep(std::time::Duration::from_secs(1));
 //! }
 //! # Ok(())
 //! # }
@@ -74,9 +72,9 @@
 //!
 //! ```no_run
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
 //!
 //! // create our port factory by creating or opening the service
@@ -86,12 +84,10 @@
 //!
 //! let publisher = service.publisher().create()?;
 //!
-//! while !SignalHandler::termination_requested() {
+//! while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
 //!     let sample = publisher.loan_uninit()?;
 //!     let sample = sample.write_payload(1234);
 //!     publisher.send(sample)?;
-//!
-//!     std::thread::sleep(std::time::Duration::from_secs(1));
 //! }
 //!
 //! # Ok(())
@@ -108,9 +104,9 @@
 //!
 //! ```no_run
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let event_name = ServiceName::new(b"MyEventName")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
@@ -119,9 +115,11 @@
 //!
 //! let mut listener = event.listener().create()?;
 //!
-//! while !SignalHandler::termination_requested() {
-//!     for event_id in listener.timed_wait(std::time::Duration::from_secs(1))? {
-//!         println!("event was triggered with id: {:?}", event_id);
+//! while let ElkEvent::Tick = Elk::wait(Duration::ZERO) {
+//!     if let Ok(events) = listener.timed_wait(CYCLE_TIME) {
+//!         for event_id in events {
+//!             println!("event was triggered with id: {:?}", event_id);
+//!         }
 //!     }
 //! }
 //!
@@ -133,9 +131,9 @@
 //!
 //! ```no_run
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let event_name = ServiceName::new(b"MyEventName")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
@@ -145,12 +143,11 @@
 //! let notifier = event.notifier().create()?;
 //!
 //! let mut counter: u64 = 0;
-//! while !SignalHandler::termination_requested() {
+//! while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
 //!     counter += 1;
 //!     notifier.notify_with_custom_event_id(EventId::new(counter))?;
 //!
 //!     println!("Trigger event with id {} ...", counter);
-//!     std::thread::sleep(std::time::Duration::from_secs(1));
 //! }
 //!
 //! # Ok(())
@@ -258,6 +255,9 @@ mod compiletests;
 /// Handles elkodons global configuration
 pub mod config;
 
+/// Central instance that handles all incoming events, the event loop
+pub mod elk;
+
 pub(crate) mod message;
 
 /// The ports or communication endpoints of elkodon
@@ -277,9 +277,12 @@ pub mod service;
 
 /// Loads a meaninful subset to cover 90% of the elkodon communication use cases.
 pub mod prelude {
+    pub use crate::elk::Elk;
+    pub use crate::elk::ElkEvent;
     pub use crate::port::event_id::EventId;
     pub use crate::service::{
         process_local, service_name::ServiceName, zero_copy, Details, Service,
     };
+    pub use core::time::Duration;
     pub use elkodon_bb_container::semantic_string::SemanticString;
 }

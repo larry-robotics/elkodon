@@ -1,5 +1,6 @@
 use elkodon::prelude::*;
-use elkodon_bb_posix::signal::SignalHandler;
+
+const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let event_name = ServiceName::new(b"MyEventName")?;
@@ -11,12 +12,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let notifier = event.notifier().create()?;
 
     let mut counter: u64 = 0;
-    while !SignalHandler::termination_requested() {
+    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
         counter += 1;
         notifier.notify_with_custom_event_id(EventId::new(counter))?;
 
         println!("Trigger event with id {} ...", counter);
-        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 
     println!("exit ... ");

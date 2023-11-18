@@ -6,6 +6,12 @@ version = { workspace = true }
 repository = { workspace = true }
 edition = { workspace = true }
 
+[features]
+# Enables https://crates.io/crates/log as default logger
+logger_log = []
+# Enables https://crates.io/crates/tracing as default logger
+logger_tracing = []
+
 [dependencies]
 elkodon_bb_container = { workspace = true }
 elkodon_bb_system_types = { workspace = true }
