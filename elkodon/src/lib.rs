@@ -87,7 +87,7 @@
 //! let publisher = service.publisher().create()?;
 //!
 //! while !SignalHandler::termination_requested() {
-//!     let mut sample = publisher.loan()?;
+//!     let mut sample = publisher.loan_uninit()?;
 //!     sample.payload_mut().write(1234);
 //!     let sample = unsafe { sample.assume_init() };
 //!     publisher.send(sample)?;

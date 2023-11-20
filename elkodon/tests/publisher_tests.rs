@@ -36,9 +36,9 @@ mod publisher {
 
         let sut = service.publisher().max_loaned_samples(4).create().unwrap();
 
-        let mut sample1 = sut.loan().unwrap();
-        let mut sample2 = sut.loan().unwrap();
-        let mut sample3 = sut.loan().unwrap();
+        let mut sample1 = sut.loan_uninit().unwrap();
+        let mut sample2 = sut.loan_uninit().unwrap();
+        let mut sample3 = sut.loan_uninit().unwrap();
 
         sample1.payload_mut().write(1);
         sample2.payload_mut().write(2);
@@ -70,10 +70,10 @@ mod publisher {
 
         let sut = service.publisher().max_loaned_samples(2).create().unwrap();
 
-        let _sample1 = sut.loan().unwrap();
-        let _sample2 = sut.loan().unwrap();
+        let _sample1 = sut.loan_uninit().unwrap();
+        let _sample2 = sut.loan_uninit().unwrap();
 
-        let sample3 = sut.loan();
+        let sample3 = sut.loan_uninit();
         assert_that!(sample3, is_err);
         assert_that!(sample3.err().unwrap(), eq LoanError::ExceedsMaxLoanedChunks);
     }
@@ -88,15 +88,15 @@ mod publisher {
 
         let sut = service.publisher().max_loaned_samples(2).create().unwrap();
 
-        let _sample1 = sut.loan().unwrap();
-        let mut sample2 = sut.loan().unwrap();
+        let _sample1 = sut.loan_uninit().unwrap();
+        let mut sample2 = sut.loan_uninit().unwrap();
         sample2.payload_mut().write(2);
         let sample2 = unsafe { sample2.assume_init() };
 
         assert_that!(sut.send(sample2), is_ok);
 
-        let _sample3 = sut.loan();
-        let sample4 = sut.loan();
+        let _sample3 = sut.loan_uninit();
+        let sample4 = sut.loan_uninit();
         assert_that!(sample4, is_err);
         assert_that!(sample4.err().unwrap(), eq LoanError::ExceedsMaxLoanedChunks);
     }
@@ -111,13 +111,13 @@ mod publisher {
 
         let sut = service.publisher().max_loaned_samples(2).create().unwrap();
 
-        let _sample1 = sut.loan().unwrap();
-        let sample2 = sut.loan().unwrap();
+        let _sample1 = sut.loan_uninit().unwrap();
+        let sample2 = sut.loan_uninit().unwrap();
 
         drop(sample2);
 
-        let _sample3 = sut.loan();
-        let sample4 = sut.loan();
+        let _sample3 = sut.loan_uninit();
+        let sample4 = sut.loan_uninit();
         assert_that!(sample4, is_err);
         assert_that!(sample4.err().unwrap(), eq LoanError::ExceedsMaxLoanedChunks);
     }

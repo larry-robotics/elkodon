@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     while !SignalHandler::termination_requested() {
         counter += 1;
 
-        let mut sample = publisher.loan()?;
+        let mut sample = publisher.loan_uninit()?;
 
         sample.payload_mut().write(TransmissionData {
             x: counter as i32,

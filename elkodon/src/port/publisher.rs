@@ -18,7 +18,7 @@
 //!     .create()?;
 //!
 //! // loan some memory and send it
-//! let mut sample = publisher.loan()?;
+//! let mut sample = publisher.loan_uninit()?;
 //! sample.payload_mut().write(1337);
 //! let sample = unsafe { sample.assume_init() };
 //! publisher.send(sample)?;
@@ -80,7 +80,7 @@ impl std::fmt::Display for PublisherCreateError {
 
 impl std::error::Error for PublisherCreateError {}
 
-/// Defines a failure that can occur in [`Publisher::loan()`] or is part of [`SendCopyError`]
+/// Defines a failure that can occur in [`Publisher::loan()`] and [`Publisher::loan_uninit()`] or is part of [`SendCopyError`]
 /// emitted in [`Publisher::send_copy()`].
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Hash)]
 pub enum LoanError {
@@ -483,7 +483,7 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         Ok(())
     }
 
-    /// Send a previously loaned [`Publisher::loan()`] [`SampleMut`] to all connected
+    /// Send a previously loaned [`Publisher::loan_uninit()`] [`SampleMut`] to all connected
     /// [`crate::port::subscriber::Subscriber`]s of the service.
     ///
     /// The payload of the [`SampleMut`] must be initialized before it can be sent. Have a look
@@ -506,7 +506,7 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
     /// the data, otherwise a [`SendCopyError`] describing the failure.
     pub fn send_copy(&self, value: MessageType) -> Result<usize, SendCopyError> {
         let msg = "Unable to send copy of message";
-        let mut sample = fail!(from self, when self.loan(),
+        let mut sample = fail!(from self, when self.loan_uninit(),
                                     "{} since the loan of a sample failed.", msg);
 
         sample.payload_mut().write(value);
@@ -518,7 +518,7 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
 
     /// Loans/allocates a [`SampleMut`] from the underlying data segment of the [`Publisher`].
     /// On failure it returns [`LoanError`] describing the failure.
-    pub fn loan<'publisher>(
+    pub fn loan_uninit<'publisher>(
         &'publisher self,
     ) -> Result<
         SampleMut<'a, 'publisher, 'config, Service, Header, MaybeUninit<MessageType>>,

@@ -819,12 +819,12 @@ mod service_publish_subscribe {
             // max out loan
             let mut loaned_samples = vec![];
             for _ in 0..max_loan {
-                let sample = sut_publisher.loan();
+                let sample = sut_publisher.loan_uninit();
                 assert_that!(sample, is_ok);
                 loaned_samples.push(sample);
             }
 
-            let sample = sut_publisher.loan();
+            let sample = sut_publisher.loan_uninit();
             assert_that!(sample, is_err);
             assert_that!(sample.err().unwrap(), eq LoanError::ExceedsMaxLoanedChunks);
 

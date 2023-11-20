@@ -11,7 +11,7 @@
 //! #
 //! # let publisher = service.publisher().create()?;
 //!
-//! let mut sample = publisher.loan()?;
+//! let mut sample = publisher.loan_uninit()?;
 //! sample.payload_mut().write(1234);
 //! let sample = unsafe { sample.assume_init() };
 //!
@@ -27,7 +27,7 @@ use crate::{port::publisher::Publisher, raw_sample::RawSampleMut, service};
 use elkodon_cal::shared_memory::*;
 use std::{fmt::Debug, mem::MaybeUninit, sync::atomic::Ordering};
 
-/// Acquired by a [`Publisher`] via [`Publisher::loan()`]. It stores the payload that will be sent
+/// Acquired by a [`Publisher`] via [`Publisher::loan()`] or [`Publisher::loan_uninit()`]. It stores the payload that will be sent
 /// to all connected [`crate::port::subscriber::Subscriber`]s. If the [`SampleMut`] is not sent
 /// it will release the loaned memory when going out of scope.
 ///
@@ -102,7 +102,7 @@ impl<
     /// #
     /// # let publisher = service.publisher().create()?;
     ///
-    /// let mut sample = publisher.loan()?;
+    /// let mut sample = publisher.loan_uninit()?;
     /// let sample = sample.write_payload(1234);
     ///
     /// publisher.send(sample)?;
@@ -139,7 +139,7 @@ impl<
     /// #
     /// # let publisher = service.publisher().create()?;
     ///
-    /// let mut sample = publisher.loan()?;
+    /// let mut sample = publisher.loan_uninit()?;
     /// sample.payload_mut().write(1234);
     /// let sample = unsafe { sample.assume_init() };
     ///
