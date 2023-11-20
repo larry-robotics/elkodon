@@ -576,3 +576,15 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
         }
     }
 }
+
+impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Default + Debug>
+    Publisher<'a, 'config, Service, MessageType>
+{
+    /// Loans/allocates a [`SampleMut`] from the underlying data segment of the [`Publisher`].
+    /// On failure it returns [`LoanError`] describing the failure.
+    pub fn loan<'publisher>(
+        &'publisher self,
+    ) -> Result<SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>, LoanError> {
+        Ok(self.loan_uninit()?.write_payload(MessageType::default()))
+    }
+}
