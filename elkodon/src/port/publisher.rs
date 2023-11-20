@@ -17,7 +17,17 @@
 //!     .unable_to_deliver_strategy(UnableToDeliverStrategy::DiscardSample)
 //!     .create()?;
 //!
-//! // loan some memory and send it
+//! // loan some initialized memory and send it
+//! let mut sample = publisher.loan()?;
+//! *sample.payload_mut() = 1337;
+//! publisher.send(sample)?;
+//!
+//! // loan some uninitialized memory and send it
+//! let sample = publisher.loan_uninit()?;
+//! let sample = sample.write_payload(1337);
+//! publisher.send(sample)?;
+//!
+//! // loan some uninitialized memory and send it (with accessing `MaybeUninit<MessageType>`
 //! let mut sample = publisher.loan_uninit()?;
 //! sample.payload_mut().write(1337);
 //! let sample = unsafe { sample.assume_init() };
@@ -517,7 +527,31 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
     }
 
     /// Loans/allocates a [`SampleMut`] from the underlying data segment of the [`Publisher`].
+    /// The user has to initialize the payload before it can be sent.
+    ///
     /// On failure it returns [`LoanError`] describing the failure.
+    ///
+    /// Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+    /// #
+    /// # let service = zero_copy::Service::new(&service_name)
+    /// #     .publish_subscribe()
+    /// #     .open_or_create::<u64>()?;
+    /// #
+    /// # let publisher = service.publisher().create()?;
+    ///
+    /// let sample = publisher.loan_uninit()?;
+    /// let sample = sample.write_payload(42); // alternatively `sample.payload_mut()` can be use to access the `MaybeUninit<MessageType>
+    ///
+    /// publisher.send(sample)?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn loan_uninit<'publisher>(
         &'publisher self,
     ) -> Result<
@@ -580,8 +614,33 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
 impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Default + Debug>
     Publisher<'a, 'config, Service, MessageType>
 {
-    /// Loans/allocates a [`SampleMut`] from the underlying data segment of the [`Publisher`].
+    /// Loans/allocates a [`SampleMut`] from the underlying data segment of the [`Publisher`]
+    /// and initialize it with the default value. This can be a performance hit and [`Publisher::loan_uninit`]
+    /// can be used to loan a `MaybeUninit<MessageType>`.
+    ///
     /// On failure it returns [`LoanError`] describing the failure.
+    ///
+    /// Example
+    ///
+    /// ```
+    /// use elkodon::prelude::*;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+    /// #
+    /// # let service = zero_copy::Service::new(&service_name)
+    /// #     .publish_subscribe()
+    /// #     .open_or_create::<u64>()?;
+    /// #
+    /// # let publisher = service.publisher().create()?;
+    ///
+    /// let mut sample = publisher.loan()?;
+    /// *sample.payload_mut() = 42;
+    ///
+    /// publisher.send(sample)?;
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn loan<'publisher>(
         &'publisher self,
     ) -> Result<SampleMut<'a, 'publisher, 'config, Service, Header, MessageType>, LoanError> {

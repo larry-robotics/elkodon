@@ -11,9 +11,8 @@
 //! #
 //! # let publisher = service.publisher().create()?;
 //!
-//! let mut sample = publisher.loan_uninit()?;
-//! sample.payload_mut().write(1234);
-//! let sample = unsafe { sample.assume_init() };
+//! let sample = publisher.loan_uninit()?;
+//! let sample = sample.write_payload(1234);
 //!
 //! println!("timestamp: {:?}, publisher port id: {:?}",
 //!     sample.header().time_stamp(), sample.header().publisher_id());
@@ -102,7 +101,7 @@ impl<
     /// #
     /// # let publisher = service.publisher().create()?;
     ///
-    /// let mut sample = publisher.loan_uninit()?;
+    /// let sample = publisher.loan_uninit()?;
     /// let sample = sample.write_payload(1234);
     ///
     /// publisher.send(sample)?;
