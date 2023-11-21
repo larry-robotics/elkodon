@@ -12,7 +12,7 @@
 /// let mut sample = publisher.loan_uninit()?;
 /// sample.payload_mut().write(1234);
 ///
-/// publisher.send(sample)?; // should fail to compile
+/// publisher.send(sample)?; // should fail to compile since sample contains a 'MaybeUninit<T>' instead of a 'T'
 ///
 /// Ok(())
 /// }
@@ -34,7 +34,7 @@ fn sending_uninitialized_sample_fails_to_compile() {}
 ///
 /// let publisher = service.publisher().create()?;
 ///
-/// let sample = publisher.loan()?; // should fail to compile
+/// let sample = publisher.loan()?; // should fail to compile since 'Wrapper' does not implement 'Default'
 ///
 /// Ok(())
 /// }
