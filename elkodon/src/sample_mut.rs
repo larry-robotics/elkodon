@@ -35,7 +35,7 @@ use std::{fmt::Debug, mem::MaybeUninit, sync::atomic::Ordering};
 /// Does not implement [`Send`] since it releases unsent samples in the [`Publisher`] and the
 /// [`Publisher`] is not thread-safe!
 ///
-/// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+/// The generic parameter `M` is either a `MessageType` or a [`core::mem::MaybeUninit<MessageType>`], depending
 /// which API is used to obtain the sample.
 #[derive(Debug)]
 pub struct SampleMut<
@@ -118,11 +118,11 @@ impl<
         unsafe { self.assume_init() }
     }
 
-    /// Extracts the value of the `MaybeUninit<MessageType>` container and labels the sample as initialized
+    /// Extracts the value of the [`core::mem::MaybeUninit<MessageType>`] container and labels the sample as initialized
     ///
     /// # Safety
     ///
-    /// The caller must ensure that `MaybeUninit<MessageType>` really is initialized. Calling this when
+    /// The caller must ensure that [`core::mem::MaybeUninit<MessageType>`] really is initialized. Calling this when
     /// the content is not fully initialized causes immediate undefined behavior.
     ///
     /// # Example
@@ -178,7 +178,7 @@ impl<
     ///
     /// # Notes
     ///
-    /// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+    /// The generic parameter `M` is either a `MessageType` or a [`core::mem::MaybeUninit<MessageType>`], depending
     /// which API is used to obtain the sample. Obtaining a reference is safe for either type.
     pub fn payload(&self) -> &M {
         self.ptr.as_data_ref()
@@ -188,7 +188,7 @@ impl<
     ///
     /// # Notes
     ///
-    /// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+    /// The generic parameter `M` is either a `MessageType` or a [`core::mem::MaybeUninit<MessageType>`], depending
     /// which API is used to obtain the sample. Obtaining a mut reference is safe for either type.
     pub fn payload_mut(&mut self) -> &mut M {
         self.ptr.as_data_mut()

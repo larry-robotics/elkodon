@@ -18,6 +18,7 @@
 //!     .create()?;
 //!
 //! // loan some initialized memory and send it
+//! // the message type must implement the [`core::default::Default`] trait in order to be able to use this API
 //! let mut sample = publisher.loan()?;
 //! *sample.payload_mut() = 1337;
 //! publisher.send(sample)?;
@@ -27,7 +28,7 @@
 //! let sample = sample.write_payload(1337);
 //! publisher.send(sample)?;
 //!
-//! // loan some uninitialized memory and send it (with accessing `MaybeUninit<MessageType>`
+//! // loan some uninitialized memory and send it (with direct access of [`core::mem::MaybeUninit<MessageType>`])
 //! let mut sample = publisher.loan_uninit()?;
 //! sample.payload_mut().write(1337);
 //! let sample = unsafe { sample.assume_init() };
@@ -545,7 +546,7 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Debug>
     /// # let publisher = service.publisher().create()?;
     ///
     /// let sample = publisher.loan_uninit()?;
-    /// let sample = sample.write_payload(42); // alternatively `sample.payload_mut()` can be use to access the `MaybeUninit<MessageType>
+    /// let sample = sample.write_payload(42); // alternatively `sample.payload_mut()` can be use to access the `MaybeUninit<MessageType>`
     ///
     /// publisher.send(sample)?;
     ///
@@ -616,7 +617,7 @@ impl<'a, 'config: 'a, Service: service::Details<'config>, MessageType: Default +
 {
     /// Loans/allocates a [`SampleMut`] from the underlying data segment of the [`Publisher`]
     /// and initialize it with the default value. This can be a performance hit and [`Publisher::loan_uninit`]
-    /// can be used to loan a `MaybeUninit<MessageType>`.
+    /// can be used to loan a [`core::mem::MaybeUninit<MessageType>`].
     ///
     /// On failure it returns [`LoanError`] describing the failure.
     ///
