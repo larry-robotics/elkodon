@@ -10,6 +10,8 @@ mod publisher {
     use elkodon_bb_posix::unique_system_id::UniqueSystemId;
     use elkodon_bb_testing::assert_that;
 
+    type TestResult<T> = core::result::Result<T, Box<dyn std::error::Error>>;
+
     const TIMEOUT: Duration = Duration::from_millis(25);
 
     fn generate_name() -> ServiceName {
@@ -24,6 +26,38 @@ mod publisher {
             )
             .unwrap();
         service
+    }
+
+    #[test]
+    fn publisher_loan_and_send_sample_works<Sut: Service>() ->  TestResult<()>  {
+        let service_name = generate_name();
+        let service = Sut::new(&service_name)
+        .publish_subscribe()
+        .create::<u64>()?;
+
+        let sut = service.publisher().max_loaned_samples(2).create()?;
+
+        let sample = sut.loan()?;
+
+        assert_that!(sut.send(sample), is_ok);
+
+        Ok(())
+    }
+
+    #[test]
+    fn publisher_loan_unit_and_send_sample_works<Sut: Service>() ->  TestResult<()> {
+        let service_name = generate_name();
+        let service = Sut::new(&service_name)
+        .publish_subscribe()
+        .create::<u64>()?;
+
+        let sut = service.publisher().max_loaned_samples(2).create()?;
+
+        let sample = sut.loan_uninit()?.write_payload(42);
+
+        assert_that!(sut.send(sample), is_ok);
+
+        Ok(())
     }
 
     #[test]
