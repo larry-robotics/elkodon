@@ -60,6 +60,7 @@ static PROCESS_LOCAL_STORAGE: Lazy<Mutex<HashMap<FilePath, Arc<SharedMemoryEntry
 #[derive(Clone, Debug)]
 pub struct Configuration {
     suffix: FileName,
+    prefix: FileName,
     path: Path,
 }
 
@@ -68,11 +69,21 @@ impl Default for Configuration {
         Self {
             path: DEFAULT_PATH_HINT,
             suffix: DEFAULT_SUFFIX,
+            prefix: DEFAULT_PREFIX,
         }
     }
 }
 
 impl NamedConceptConfiguration for Configuration {
+    fn prefix(mut self, value: FileName) -> Self {
+        self.prefix = value;
+        self
+    }
+
+    fn get_prefix(&self) -> &FileName {
+        &self.prefix
+    }
+
     fn suffix(mut self, value: FileName) -> Self {
         self.suffix = value;
         self

@@ -123,17 +123,17 @@ pub mod process_local;
 /// A configuration when communicating between different processes using posix mechanisms.
 pub mod zero_copy;
 
+pub(crate) mod config_scheme;
+pub(crate) mod naming_scheme;
+
 use std::fmt::Debug;
 
 use crate::config;
 use crate::port::event_id::EventId;
-use crate::port::port_identifiers::{UniqueListenerId, UniquePublisherId, UniqueSubscriberId};
 use crate::service::dynamic_config::DynamicConfig;
 use crate::service::static_config::*;
 use elkodon_bb_container::semantic_string::SemanticString;
-use elkodon_bb_log::{fail, fatal_panic, trace, warn};
-use elkodon_bb_system_types::file_name::FileName;
-use elkodon_bb_system_types::path::Path;
+use elkodon_bb_log::{fail, trace, warn};
 use elkodon_cal::dynamic_storage::DynamicStorage;
 use elkodon_cal::event::Event;
 use elkodon_cal::hash::Hash;
@@ -180,112 +180,6 @@ impl std::fmt::Display for ServiceListError {
 }
 
 impl std::error::Error for ServiceListError {}
-
-pub(crate) fn event_concept_name(listener_id: &UniqueListenerId) -> FileName {
-    let msg = "The system does not support the required file name length for the listeners event concept name.";
-    let origin = "event_concept_name()";
-    let mut file = fatal_panic!(from origin, when FileName::new(listener_id.0.pid().to_string().as_bytes()), "{}", msg);
-    fatal_panic!(from origin, when file.push(b'_'), "{}", msg);
-    fatal_panic!(from origin, when file.push_bytes(listener_id.0.value().to_string().as_bytes()), "{}", msg);
-    file
-}
-
-pub(crate) fn dynamic_config_storage_name(static_config: &StaticConfig) -> FileName {
-    FileName::new(static_config.uuid().as_bytes()).unwrap()
-}
-
-pub(crate) fn dynamic_config_storage_config<'config, Service: crate::service::Details<'config>>(
-    global_config: &config::Config,
-) -> <Service::DynamicStorage as NamedConceptMgmt>::Configuration {
-    let origin = "dynamic_config_storage_config()";
-
-    let f = match FileName::new(
-        global_config
-            .global
-            .service
-            .dynamic_config_storage_suffix
-            .as_bytes(),
-    ) {
-        Err(_) => {
-            fatal_panic!(from origin, "The dynamic_config_storage_suffix \"{}\" provided by the config contains either invalid file name characters or is too long.",
-                                       global_config.global.service.dynamic_config_storage_suffix);
-        }
-        Ok(v) => v,
-    };
-
-    <Service::DynamicStorage as NamedConceptMgmt>::Configuration::default().suffix(f)
-}
-
-pub(crate) fn static_config_storage_name(uuid: &str) -> FileName {
-    FileName::new(uuid.as_bytes()).unwrap()
-}
-
-pub(crate) fn static_config_storage_config<'config, Service: crate::service::Details<'config>>(
-    global_config: &config::Config,
-) -> <Service::StaticStorage as NamedConceptMgmt>::Configuration {
-    let origin = "dynamic_config_storage_config()";
-
-    let f = match FileName::new(
-        global_config
-            .global
-            .service
-            .static_config_storage_suffix
-            .as_bytes(),
-    ) {
-        Err(_) => {
-            fatal_panic!(from origin, "The static_config_storage_suffix \"{}\" provided by the config contains either invalid file name characters or is too long.",
-                                       global_config.global.service.static_config_storage_suffix);
-        }
-        Ok(v) => v,
-    };
-
-    let mut path_hint = match Path::new(global_config.global.root_path.as_bytes()) {
-        Err(_) => {
-            fatal_panic!(from origin, "The root_path \"{}\" provided by the config contains either invalid file name characters or is too long.",
-                                       global_config.global.root_path);
-        }
-        Ok(v) => v,
-    };
-
-    if path_hint
-        .push_bytes(global_config.global.service.directory.as_bytes())
-        .is_err()
-    {
-        fatal_panic!(from origin, "The service.directory \"{}\" provided by the config contains either invalid file name characters or is too long.",
-                                       global_config.global.service.directory);
-    }
-
-    <Service::StaticStorage as NamedConceptMgmt>::Configuration::default()
-        .suffix(f)
-        .path_hint(path_hint)
-}
-
-pub(crate) fn connection_name(
-    publisher_id: UniquePublisherId,
-    subscriber_id: UniqueSubscriberId,
-) -> FileName {
-    let mut file = FileName::new(publisher_id.0.value().to_string().as_bytes()).unwrap();
-    file.push(b'_').unwrap();
-    file.push_bytes(subscriber_id.0.value().to_string().as_bytes())
-        .unwrap();
-    file
-}
-
-pub(crate) fn connection_config<'config, Service: crate::service::Details<'config>>(
-    global_config: &config::Config,
-) -> <Service::Connection as NamedConceptMgmt>::Configuration {
-    let origin = "connection_config()";
-
-    let f = match FileName::new(global_config.global.service.connection_suffix.as_bytes()) {
-        Err(_) => {
-            fatal_panic!(from origin, "The connection_suffix \"{}\" provided by the config contains either invalid file name characters or is too long.",
-                                       global_config.global.service.connection_suffix);
-        }
-        Ok(v) => v,
-    };
-
-    <Service::Connection as NamedConceptMgmt>::Configuration::default().suffix(f)
-}
 
 /// Represents the [`Service`]s state.
 #[derive(Debug)]
@@ -418,7 +312,7 @@ pub trait Details<'config>: Debug + Sized {
     ) -> Result<bool, ServiceDoesExistError> {
         let msg = format!("Unable to verify if \"{}\" exists", service_name);
         let origin = "Service::does_exist_from_config()";
-        let static_storage_config = static_config_storage_config::<Self>(config);
+        let static_storage_config = config_scheme::static_config_storage_config::<Self>(config);
 
         let services = fail!(from origin,
                  when <Self::StaticStorage as NamedConceptMgmt>::list_cfg(&static_storage_config),
@@ -517,7 +411,7 @@ pub trait Details<'config>: Debug + Sized {
     ) -> Result<Vec<StaticConfig>, ServiceListError> {
         let msg = "Unable to list all services";
         let origin = "Service::list_from_config()";
-        let static_storage_config = static_config_storage_config::<Self>(config);
+        let static_storage_config = config_scheme::static_config_storage_config::<Self>(config);
 
         let services = fail!(from origin,
                 when <Self::StaticStorage as NamedConceptMgmt>::list_cfg(&static_storage_config),

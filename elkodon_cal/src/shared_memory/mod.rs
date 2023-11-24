@@ -58,6 +58,9 @@ use elkodon_bb_system_types::path::Path;
 /// The default suffix of every shared memory
 pub const DEFAULT_SUFFIX: FileName = unsafe { FileName::new_unchecked(b".shm") };
 
+/// The default prefix of every shared memory
+pub const DEFAULT_PREFIX: FileName = unsafe { FileName::new_unchecked(b"elk_") };
+
 /// The default path hint for every shared memory
 pub const DEFAULT_PATH_HINT: Path = TEMP_DIRECTORY;
 

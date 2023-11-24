@@ -55,13 +55,12 @@ pub enum ElkEvent {
 
 /// The main event loop handling mechanism.
 #[derive(Debug)]
-pub struct Elk {
-    _priv: (),
-}
+#[non_exhaustive]
+pub struct Elk {}
 
 impl Elk {
     fn get_instance() -> &'static Self {
-        static INSTANCE: Elk = Elk { _priv: () };
+        static INSTANCE: Elk = Elk {};
         &INSTANCE
     }
 

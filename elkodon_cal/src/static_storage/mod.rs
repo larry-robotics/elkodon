@@ -18,6 +18,9 @@ use crate::named_concept::{
 /// The default suffix of every static storage
 pub const DEFAULT_SUFFIX: FileName = unsafe { FileName::new_unchecked(b".static_storage") };
 
+/// The default prefix of every static storage
+pub const DEFAULT_PREFIX: FileName = unsafe { FileName::new_unchecked(b"elk_") };
+
 /// The default path hint for every static storage
 pub const DEFAULT_PATH_HINT: Path = TEMP_DIRECTORY;
 

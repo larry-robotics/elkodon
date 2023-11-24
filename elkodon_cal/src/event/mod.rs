@@ -69,6 +69,9 @@ impl std::error::Error for ListenerCreateError {}
 /// The default suffix of every event
 pub const DEFAULT_SUFFIX: FileName = unsafe { FileName::new_unchecked(b".event") };
 
+/// The default prefix of every event
+pub const DEFAULT_PREFIX: FileName = unsafe { FileName::new_unchecked(b"elk_") };
+
 /// The default path hint for every event
 pub const DEFAULT_PATH_HINT: Path = TEMP_DIRECTORY;
 

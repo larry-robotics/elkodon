@@ -27,11 +27,11 @@ use elkodon_cal::serialize::Serialize;
 use elkodon_cal::static_storage::*;
 use std::marker::PhantomData;
 
-use super::dynamic_config_storage_config;
-use super::dynamic_config_storage_name;
+use super::config_scheme::dynamic_config_storage_config;
+use super::config_scheme::static_config_storage_config;
+use super::naming_scheme::dynamic_config_storage_name;
+use super::naming_scheme::static_config_storage_name;
 use super::service_name::ServiceName;
-use super::static_config_storage_config;
-use super::static_config_storage_name;
 use super::Service;
 
 #[derive(Debug, Clone, Copy, Eq, Hash, PartialEq)]
