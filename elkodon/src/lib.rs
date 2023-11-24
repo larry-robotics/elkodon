@@ -241,6 +241,12 @@
 //! # }
 //! ```
 //!
+//! # Feature Flags
+//!
+//!  * `logger_log` - Uses the [log crate](https://crates.io/crates/log) as default log backend
+//!  * `logger_tracing` - Uses the [tracing crate](https://crates.io/crates/tracing) as default log
+//!     backend
+//!
 //! # Custom Configuration
 //!
 //! Elkodon offers the flexibility to configure default quality of service settings, paths, and

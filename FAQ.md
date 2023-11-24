@@ -24,7 +24,7 @@ cleaned up manually. If this occurs, stop all services and remove manually all
 shared memory segments and static service config files.
 
 ```sh
-rm -rf /dev/shm/*
+rm -rf /dev/shm/elk_*
 rm -rf /tmp/elkodon/*
 ```
 
@@ -40,7 +40,7 @@ grep -RIne "My/Funk/ServiceName"
 ```
 provides us with the output
 ```
-25b25afeb7557886e9f69408151e018e268e5917.service:2:service_name = "My/Funk/ServiceName"
+elk_25b25afeb7557886e9f69408151e018e268e5917.service:2:service_name = "My/Funk/ServiceName"
 ```
 
 The file name corresponds with the `uuid` of the service. So removing the dynamic and
@@ -48,10 +48,10 @@ static service config with the following commands, removes the service completel
 the system.
 ```sh
 # static service config
-rm /tmp/elkodon/service/25b25afeb7557886e9f69408151e018e268e5917.service
+rm /tmp/elkodon/service/elk_25b25afeb7557886e9f69408151e018e268e5917.service
 
 # dynamic service config
-rm /dev/shm/25b25afeb7557886e9f69408151e018e268e5917.dynamic
+rm /dev/shm/elk_25b25afeb7557886e9f69408151e018e268e5917.dynamic
 ```
 
 Be aware, that if an application with a publisher crashes, the data segment of the
