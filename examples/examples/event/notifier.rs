@@ -1,3 +1,4 @@
+use core::time::Duration;
 use elkodon::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);

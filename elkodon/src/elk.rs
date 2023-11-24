@@ -3,6 +3,7 @@
 //! ## Simple Event Loop
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,6 +19,7 @@
 //! ## Advanced Event Loop
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {

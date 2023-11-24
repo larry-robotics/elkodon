@@ -98,6 +98,7 @@ while a subscriber efficiently receives and prints the data.
 **publisher.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
@@ -124,6 +125,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 **subscriber.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
@@ -170,6 +172,7 @@ This minimal example showcases an event notification between two processes.
 **notifier.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
@@ -198,6 +201,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 **listener.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);

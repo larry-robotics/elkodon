@@ -46,6 +46,7 @@
 //! **Subscriber (Process 1)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -71,6 +72,7 @@
 //! **Publisher (Process 2)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -103,6 +105,7 @@
 //! **Listener (Process 1)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -130,6 +133,7 @@
 //! **Notifier (Process 2)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -282,13 +286,4 @@ pub mod sample_mut;
 pub mod service;
 
 /// Loads a meaninful subset to cover 90% of the elkodon communication use cases.
-pub mod prelude {
-    pub use crate::elk::Elk;
-    pub use crate::elk::ElkEvent;
-    pub use crate::port::event_id::EventId;
-    pub use crate::service::{
-        process_local, service_name::ServiceName, zero_copy, Details, Service,
-    };
-    pub use core::time::Duration;
-    pub use elkodon_bb_container::semantic_string::SemanticString;
-}
+pub mod prelude;
