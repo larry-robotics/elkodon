@@ -111,10 +111,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let publisher = service.publisher().create()?;
 
     while !SignalHandler::termination_requested() {
-        let mut sample = publisher.loan()?;
-        unsafe {
-            sample.as_mut_ptr().write(1234);
-        }
+        let sample = publisher.loan_uninit()?;
+        let sample = sample.write_payload(1234);
         publisher.send(sample)?;
 
         std::thread::sleep(std::time::Duration::from_secs(1));

@@ -16,15 +16,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     while !SignalHandler::termination_requested() {
         counter += 1;
 
-        let mut sample = publisher.loan()?;
+        let sample = publisher.loan_uninit()?;
 
-        sample.payload_mut().write(TransmissionData {
+        let sample = sample.write_payload(TransmissionData {
             x: counter as i32,
             y: counter as i32 * 3,
             funky: counter as f64 * 812.12,
         });
 
-        let sample = unsafe { sample.assume_init() };
         publisher.send(sample)?;
 
         println!("Send sample {} ...", counter);

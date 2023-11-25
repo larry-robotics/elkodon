@@ -1,21 +1,43 @@
 /// ```compile_fail
 /// use elkodon::prelude::*;
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// # let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
-/// #
-/// # let service = zero_copy::Service::new(&service_name)
-/// #     .publish_subscribe()
-/// #     .open_or_create::<u64>()?;
-/// #
-/// # let publisher = service.publisher().create()?;
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
 ///
-/// let mut sample = publisher.loan()?;
+/// let service = zero_copy::Service::new(&service_name)
+///     .publish_subscribe()
+///     .open_or_create::<u64>()?;
+///
+/// let publisher = service.publisher().create()?;
+///
+/// let mut sample = publisher.loan_uninit()?;
 /// sample.payload_mut().write(1234);
 ///
-/// publisher.send(sample)?; // should fail to compile
+/// publisher.send(sample)?; // should fail to compile since sample contains a 'MaybeUninit<T>' instead of a 'T'
 ///
-/// # Ok(())
-/// # }
+/// Ok(())
+/// }
 /// ```
 #[cfg(doctest)]
 fn sending_uninitialized_sample_fails_to_compile() {}
+
+/// ```compile_fail
+/// use elkodon::prelude::*;
+///
+/// struct Wrapper(u64);
+///
+/// fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+///
+/// let service = zero_copy::Service::new(&service_name)
+///     .publish_subscribe()
+///     .open_or_create::<Wrapper>()?;
+///
+/// let publisher = service.publisher().create()?;
+///
+/// let sample = publisher.loan()?; // should fail to compile since 'Wrapper' does not implement 'Default'
+///
+/// Ok(())
+/// }
+/// ```
+#[cfg(doctest)]
+fn loan_with_type_not_implementing_default_fails_to_compile() {}

@@ -130,7 +130,7 @@ impl<'factory, 'config, Service: service::Details<'config>, MessageType: Debug>
     }
 
     /// Defines how many [`crate::sample_mut::SampleMut`] the [`Publisher`] can loan with
-    /// [`Publisher::loan()`] in parallel.
+    /// [`Publisher::loan()`] or [`Publisher::loan_uninit()`] in parallel.
     pub fn max_loaned_samples(mut self, value: usize) -> Self {
         self.config.max_loaned_samples = value;
         self

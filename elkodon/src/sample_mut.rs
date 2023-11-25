@@ -11,9 +11,8 @@
 //! #
 //! # let publisher = service.publisher().create()?;
 //!
-//! let mut sample = publisher.loan()?;
-//! sample.payload_mut().write(1234);
-//! let sample = unsafe { sample.assume_init() };
+//! let sample = publisher.loan_uninit()?;
+//! let sample = sample.write_payload(1234);
 //!
 //! println!("timestamp: {:?}, publisher port id: {:?}",
 //!     sample.header().time_stamp(), sample.header().publisher_id());
@@ -27,7 +26,7 @@ use crate::{port::publisher::Publisher, raw_sample::RawSampleMut, service};
 use elkodon_cal::shared_memory::*;
 use std::{fmt::Debug, mem::MaybeUninit, sync::atomic::Ordering};
 
-/// Acquired by a [`Publisher`] via [`Publisher::loan()`]. It stores the payload that will be sent
+/// Acquired by a [`Publisher`] via [`Publisher::loan()`] or [`Publisher::loan_uninit()`]. It stores the payload that will be sent
 /// to all connected [`crate::port::subscriber::Subscriber`]s. If the [`SampleMut`] is not sent
 /// it will release the loaned memory when going out of scope.
 ///
@@ -36,7 +35,7 @@ use std::{fmt::Debug, mem::MaybeUninit, sync::atomic::Ordering};
 /// Does not implement [`Send`] since it releases unsent samples in the [`Publisher`] and the
 /// [`Publisher`] is not thread-safe!
 ///
-/// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+/// The generic parameter `M` is either a `MessageType` or a [`core::mem::MaybeUninit<MessageType>`], depending
 /// which API is used to obtain the sample.
 #[derive(Debug)]
 pub struct SampleMut<
@@ -102,7 +101,7 @@ impl<
     /// #
     /// # let publisher = service.publisher().create()?;
     ///
-    /// let mut sample = publisher.loan()?;
+    /// let sample = publisher.loan_uninit()?;
     /// let sample = sample.write_payload(1234);
     ///
     /// publisher.send(sample)?;
@@ -119,11 +118,11 @@ impl<
         unsafe { self.assume_init() }
     }
 
-    /// Extracts the value of the `MaybeUninit<MessageType>` container and labels the sample as initialized
+    /// Extracts the value of the [`core::mem::MaybeUninit<MessageType>`] container and labels the sample as initialized
     ///
     /// # Safety
     ///
-    /// The caller must ensure that `MaybeUninit<MessageType>` really is initialized. Calling this when
+    /// The caller must ensure that [`core::mem::MaybeUninit<MessageType>`] really is initialized. Calling this when
     /// the content is not fully initialized causes immediate undefined behavior.
     ///
     /// # Example
@@ -139,7 +138,7 @@ impl<
     /// #
     /// # let publisher = service.publisher().create()?;
     ///
-    /// let mut sample = publisher.loan()?;
+    /// let mut sample = publisher.loan_uninit()?;
     /// sample.payload_mut().write(1234);
     /// let sample = unsafe { sample.assume_init() };
     ///
@@ -179,7 +178,7 @@ impl<
     ///
     /// # Notes
     ///
-    /// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+    /// The generic parameter `M` is either a `MessageType` or a [`core::mem::MaybeUninit<MessageType>`], depending
     /// which API is used to obtain the sample. Obtaining a reference is safe for either type.
     pub fn payload(&self) -> &M {
         self.ptr.as_data_ref()
@@ -189,7 +188,7 @@ impl<
     ///
     /// # Notes
     ///
-    /// The generic parameter `M` is either a `MessageType` or a `MaybeUninit<MessageType>`, depending
+    /// The generic parameter `M` is either a `MessageType` or a [`core::mem::MaybeUninit<MessageType>`], depending
     /// which API is used to obtain the sample. Obtaining a mut reference is safe for either type.
     pub fn payload_mut(&mut self) -> &mut M {
         self.ptr.as_data_mut()
