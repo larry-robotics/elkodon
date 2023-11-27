@@ -46,10 +46,11 @@
 //! **Subscriber (Process 1)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
 //!
 //! // create our port factory by creating or opening the service
@@ -59,12 +60,10 @@
 //!
 //! let subscriber = service.subscriber().create()?;
 //!
-//! while !SignalHandler::termination_requested() {
+//! while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
 //!     while let Some(sample) = subscriber.receive()? {
 //!         println!("received: {:?}", *sample);
 //!     }
-//!
-//!     std::thread::sleep(std::time::Duration::from_secs(1));
 //! }
 //! # Ok(())
 //! # }
@@ -73,10 +72,11 @@
 //! **Publisher (Process 2)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
 //!
 //! // create our port factory by creating or opening the service
@@ -86,12 +86,10 @@
 //!
 //! let publisher = service.publisher().create()?;
 //!
-//! while !SignalHandler::termination_requested() {
+//! while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
 //!     let sample = publisher.loan_uninit()?;
 //!     let sample = sample.write_payload(1234);
 //!     publisher.send(sample)?;
-//!
-//!     std::thread::sleep(std::time::Duration::from_secs(1));
 //! }
 //!
 //! # Ok(())
@@ -107,10 +105,11 @@
 //! **Listener (Process 1)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let event_name = ServiceName::new(b"MyEventName")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
@@ -119,9 +118,11 @@
 //!
 //! let mut listener = event.listener().create()?;
 //!
-//! while !SignalHandler::termination_requested() {
-//!     for event_id in listener.timed_wait(std::time::Duration::from_secs(1))? {
-//!         println!("event was triggered with id: {:?}", event_id);
+//! while let ElkEvent::Tick = Elk::wait(Duration::ZERO) {
+//!     if let Ok(events) = listener.timed_wait(CYCLE_TIME) {
+//!         for event_id in events {
+//!             println!("event was triggered with id: {:?}", event_id);
+//!         }
 //!     }
 //! }
 //!
@@ -132,10 +133,11 @@
 //! **Notifier (Process 2)**
 //!
 //! ```no_run
+//! use core::time::Duration;
 //! use elkodon::prelude::*;
-//! use elkodon_bb_posix::signal::SignalHandler;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! const CYCLE_TIME: Duration = Duration::from_secs(1);
 //! let event_name = ServiceName::new(b"MyEventName")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
@@ -145,12 +147,11 @@
 //! let notifier = event.notifier().create()?;
 //!
 //! let mut counter: u64 = 0;
-//! while !SignalHandler::termination_requested() {
+//! while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
 //!     counter += 1;
 //!     notifier.notify_with_custom_event_id(EventId::new(counter))?;
 //!
 //!     println!("Trigger event with id {} ...", counter);
-//!     std::thread::sleep(std::time::Duration::from_secs(1));
 //! }
 //!
 //! # Ok(())
@@ -244,6 +245,12 @@
 //! # }
 //! ```
 //!
+//! # Feature Flags
+//!
+//!  * `logger_log` - Uses the [log crate](https://crates.io/crates/log) as default log backend
+//!  * `logger_tracing` - Uses the [tracing crate](https://crates.io/crates/tracing) as default log
+//!     backend
+//!
 //! # Custom Configuration
 //!
 //! Elkodon offers the flexibility to configure default quality of service settings, paths, and
@@ -257,6 +264,9 @@ mod compiletests;
 
 /// Handles elkodons global configuration
 pub mod config;
+
+/// Central instance that handles all incoming events, the event loop
+pub mod elk;
 
 pub(crate) mod message;
 
@@ -276,10 +286,4 @@ pub mod sample_mut;
 pub mod service;
 
 /// Loads a meaninful subset to cover 90% of the elkodon communication use cases.
-pub mod prelude {
-    pub use crate::port::event_id::EventId;
-    pub use crate::service::{
-        process_local, service_name::ServiceName, zero_copy, Details, Service,
-    };
-    pub use elkodon_bb_container::semantic_string::SemanticString;
-}
+pub mod prelude;

@@ -1,5 +1,6 @@
 [global]
 root_path                                   = '/tmp/elkodon/'
+prefix                                      = 'elk_'
 
 [global.service]
 directory                                   = 'services'

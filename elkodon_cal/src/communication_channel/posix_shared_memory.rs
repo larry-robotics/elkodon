@@ -60,6 +60,7 @@ impl CommunicationChannel<usize> for Channel {
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Configuration {
     suffix: FileName,
+    prefix: FileName,
     path_hint: Path,
 }
 
@@ -68,6 +69,7 @@ impl Default for Configuration {
         Self {
             suffix: DEFAULT_SUFFIX,
             path_hint: DEFAULT_PATH_HINT,
+            prefix: DEFAULT_PREFIX,
         }
     }
 }
@@ -81,6 +83,15 @@ impl From<Configuration> for dynamic_storage::posix_shared_memory::Configuration
 }
 
 impl NamedConceptConfiguration for Configuration {
+    fn prefix(mut self, value: FileName) -> Self {
+        self.prefix = value;
+        self
+    }
+
+    fn get_prefix(&self) -> &FileName {
+        &self.prefix
+    }
+
     fn suffix(mut self, value: FileName) -> Self {
         self.suffix = value;
         self

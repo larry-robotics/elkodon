@@ -1,6 +1,8 @@
+use core::time::Duration;
 use elkodon::prelude::*;
-use elkodon_bb_posix::signal::SignalHandler;
 use transmission_data::TransmissionData;
+
+const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
@@ -13,9 +15,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut counter: u64 = 0;
 
-    while !SignalHandler::termination_requested() {
+    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
         counter += 1;
-
         let sample = publisher.loan_uninit()?;
 
         let sample = sample.write_payload(TransmissionData {
@@ -27,8 +28,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         publisher.send(sample)?;
 
         println!("Send sample {} ...", counter);
-
-        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 
     println!("exit ...");

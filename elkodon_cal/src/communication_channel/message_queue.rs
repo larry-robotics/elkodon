@@ -128,6 +128,7 @@ impl<T: Copy + Debug> CommunicationChannel<T> for Channel<T> {
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct Configuration {
     suffix: FileName,
+    prefix: FileName,
     path_hint: Path,
 }
 
@@ -135,12 +136,22 @@ impl Default for Configuration {
     fn default() -> Self {
         Self {
             suffix: DEFAULT_SUFFIX,
+            prefix: DEFAULT_PREFIX,
             path_hint: DEFAULT_PATH_HINT,
         }
     }
 }
 
 impl NamedConceptConfiguration for Configuration {
+    fn prefix(mut self, value: FileName) -> Self {
+        self.prefix = value;
+        self
+    }
+
+    fn get_prefix(&self) -> &FileName {
+        &self.prefix
+    }
+
     fn suffix(mut self, value: FileName) -> Self {
         self.suffix = value;
         self

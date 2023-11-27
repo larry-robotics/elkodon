@@ -32,6 +32,12 @@ pub enum NamedConceptListError {
 /// usage as well as a [`NamedConceptConfiguration::path_hint()`] that can be ignored if the
 /// underlying resource does not support it.
 pub trait NamedConceptConfiguration: Default + Clone + Debug {
+    /// Defines the prefix that the concept will use.
+    fn prefix(self, value: FileName) -> Self;
+
+    /// Returns the configurations prefix.
+    fn get_prefix(&self) -> &FileName;
+
     /// Defines the suffix that the concept will use.
     fn suffix(self, value: FileName) -> Self;
 
@@ -49,7 +55,10 @@ pub trait NamedConceptConfiguration: Default + Clone + Debug {
     /// Returns the full path for a given value under the given configuration.
     fn path_for(&self, value: &FileName) -> FilePath {
         let mut path = *self.get_path_hint();
-        fatal_panic!(from self, when path.add_path_entry(value.as_string()),
+        fatal_panic!(from self, when path.add_path_entry(self.get_prefix().as_string()),
+                    "The path hint \"{}\" in combination with the prefix \"{}\" exceed the maximum supported path length of {} of the operating system.",
+                    path, value, Path::max_len());
+        fatal_panic!(from self, when path.push_bytes(value.as_string()),
                     "The path hint \"{}\" in combination with the file name \"{}\" exceed the maximum supported path length of {} of the operating system.",
                     path, value, Path::max_len());
         fatal_panic!(from self, when path.push_bytes(self.get_suffix()),
@@ -65,26 +74,24 @@ pub trait NamedConceptConfiguration: Default + Clone + Debug {
             return None;
         }
 
-        let mut file = unsafe { FileName::new_unchecked(value.file_name()) };
-        let strip_result = fatal_panic!(from self, when file.strip_suffix(self.get_suffix().as_bytes()),
-                    "Stripping the suffix \"{}\" from the file name \"{}\" leads to invalid content.",
-                    self.get_suffix(), file);
-
-        if !strip_result {
-            return None;
-        }
-
-        Some(file)
+        self.extract_name_from_file(unsafe { &FileName::new_unchecked(value.file_name()) })
     }
 
     /// Extracts the name from a file name under a given configuration.
     fn extract_name_from_file(&self, value: &FileName) -> Option<FileName> {
         let mut file = *value;
-        let strip_result = fatal_panic!(from self, when file.strip_suffix(self.get_suffix().as_bytes()),
-                    "Stripping the suffix \"{}\" from the file name \"{}\" leads to invalid content.",
-                    self.get_suffix(), file);
 
-        if !strip_result {
+        if !fatal_panic!(from self, when file.strip_prefix(self.get_prefix().as_bytes()),
+                    "Stripping the prefix \"{}\" from the file name \"{}\" leads to invalid content.",
+                    self.get_prefix(), file)
+        {
+            return None;
+        }
+
+        if !fatal_panic!(from self, when file.strip_suffix(self.get_suffix().as_bytes()),
+                    "Stripping the suffix \"{}\" from the file name \"{}\" leads to invalid content.",
+                    self.get_suffix(), file)
+        {
             return None;
         }
 

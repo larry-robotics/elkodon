@@ -98,8 +98,10 @@ while a subscriber efficiently receives and prints the data.
 **publisher.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
-use elkodon_bb_posix::signal::SignalHandler;
+
+const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
@@ -110,12 +112,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let publisher = service.publisher().create()?;
 
-    while !SignalHandler::termination_requested() {
+    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
         let sample = publisher.loan_uninit()?;
         let sample = sample.write_payload(1234);
         publisher.send(sample)?;
-
-        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 
     Ok(())
@@ -125,8 +125,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 **subscriber.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
-use elkodon_bb_posix::signal::SignalHandler;
+
+const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
@@ -137,12 +139,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let subscriber = service.subscriber().create()?;
 
-    while !SignalHandler::termination_requested() {
+    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
         while let Some(sample) = subscriber.receive()? {
             println!("received: {:?}", *sample);
         }
-
-        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 
     Ok(())
@@ -172,8 +172,10 @@ This minimal example showcases an event notification between two processes.
 **notifier.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
-use elkodon_bb_posix::signal::SignalHandler;
+
+const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let event_name = ServiceName::new(b"MyEventName")?;
@@ -185,12 +187,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let notifier = event.notifier().create()?;
 
     let mut counter: u64 = 0;
-    while !SignalHandler::termination_requested() {
+    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
         counter += 1;
         notifier.notify_with_custom_event_id(EventId::new(counter))?;
 
         println!("Trigger event with id {} ...", counter);
-        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 
     Ok(())
@@ -200,8 +201,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 **listener.rs**
 
 ```rust
+use core::time::Duration;
 use elkodon::prelude::*;
-use elkodon_bb_posix::signal::SignalHandler;
+
+const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let event_name = ServiceName::new(b"MyEventName")?;
@@ -212,9 +215,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut listener = event.listener().create()?;
 
-    while !SignalHandler::termination_requested() {
-        for event_id in listener.timed_wait(std::time::Duration::from_secs(1))? {
-            println!("event was triggered with id: {:?}", event_id);
+    while let ElkEvent::Tick = Elk::wait(Duration::ZERO) {
+        if let Ok(events) = listener.timed_wait(CYCLE_TIME) {
+            for event_id in events {
+                println!("event was triggered with id: {:?}", event_id);
+            }
         }
     }
 

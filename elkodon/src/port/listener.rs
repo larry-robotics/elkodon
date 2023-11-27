@@ -24,7 +24,7 @@ use elkodon_cal::dynamic_storage::DynamicStorage;
 use elkodon_cal::event::{ListenerBuilder, ListenerWaitError};
 use elkodon_cal::named_concept::NamedConceptBuilder;
 
-use crate::service::event_concept_name;
+use crate::service::naming_scheme::event_concept_name;
 use crate::{port::port_identifiers::UniqueListenerId, service};
 use std::{marker::PhantomData, time::Duration};
 

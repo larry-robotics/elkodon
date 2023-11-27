@@ -6,12 +6,12 @@ use elkodon_cal::zero_copy_connection::{
     ZeroCopyConnection, ZeroCopyConnectionBuilder, ZeroCopyCreationError,
 };
 
-use crate::service::connection_config;
+use crate::service::config_scheme::connection_config;
 use crate::{
     config,
     port::port_identifiers::{UniquePublisherId, UniqueSubscriberId},
     service,
-    service::{connection_name, static_config::publish_subscribe::StaticConfig},
+    service::{naming_scheme::connection_name, static_config::publish_subscribe::StaticConfig},
 };
 
 #[derive(Debug)]

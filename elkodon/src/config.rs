@@ -140,6 +140,8 @@ pub struct Service {
 pub struct Global {
     /// The path under which all other directories or files will be created
     pub root_path: String,
+    /// Prefix used for all files created during runtime
+    pub prefix: String,
     /// [`crate::service::Service`] settings
     pub service: Service,
 }
@@ -228,6 +230,7 @@ impl Default for Config {
             global: Global {
                 #[cfg(not(target_os = "windows"))]
                 root_path: "/tmp/elkodon/".to_string(),
+                prefix: "elk_".to_string(),
                 #[cfg(target_os = "windows")]
                 root_path: "C:\\Windows\\Temp\\elkodon\\".to_string(),
                 service: Service {

@@ -46,6 +46,7 @@ const FINAL_PERMISSIONS: Permission = Permission::OWNER_READ;
 pub struct Configuration {
     path: Path,
     suffix: FileName,
+    prefix: FileName,
 }
 
 impl Default for Configuration {
@@ -53,11 +54,21 @@ impl Default for Configuration {
         Configuration {
             path: DEFAULT_PATH_HINT,
             suffix: DEFAULT_SUFFIX,
+            prefix: DEFAULT_PREFIX,
         }
     }
 }
 
 impl crate::named_concept::NamedConceptConfiguration for Configuration {
+    fn prefix(mut self, value: FileName) -> Self {
+        self.prefix = value;
+        self
+    }
+
+    fn get_prefix(&self) -> &FileName {
+        &self.prefix
+    }
+
     fn suffix(mut self, value: FileName) -> Self {
         self.suffix = value;
         self

@@ -52,22 +52,20 @@ use crate::port::details::subscriber_connections::*;
 use crate::port::{DegrationAction, DegrationCallback};
 use crate::raw_sample::RawSampleMut;
 use crate::service;
+use crate::service::config_scheme::data_segment_config;
 use crate::service::header::publish_subscribe::Header;
+use crate::service::naming_scheme::data_segment_name;
 use crate::service::port_factory::publisher::{LocalPublisherConfig, UnableToDeliverStrategy};
 use crate::service::static_config::publish_subscribe;
 use crate::{config, sample_mut::SampleMut};
 use elkodon_bb_container::queue::Queue;
-use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_elementary::allocator::AllocationError;
 use elkodon_bb_elementary::enum_gen;
 use elkodon_bb_lock_free::mpmc::container::ContainerState;
 use elkodon_bb_lock_free::mpmc::unique_index_set::UniqueIndex;
 use elkodon_bb_log::{fail, fatal_panic, warn};
-use elkodon_bb_system_types::file_name::FileName;
 use elkodon_cal::dynamic_storage::DynamicStorage;
-use elkodon_cal::named_concept::{
-    NamedConceptBuilder, NamedConceptConfiguration, NamedConceptMgmt,
-};
+use elkodon_cal::named_concept::NamedConceptBuilder;
 use elkodon_cal::shared_memory::{SharedMemory, SharedMemoryBuilder, SharedMemoryCreateError};
 use elkodon_cal::shm_allocator::pool_allocator::PoolAllocator;
 use elkodon_cal::shm_allocator::{self, PointerOffset, ShmAllocationError};
@@ -123,38 +121,6 @@ impl std::fmt::Display for SendCopyError {
 }
 
 impl std::error::Error for SendCopyError {}
-
-pub(crate) fn data_segment_name(publisher_id: UniquePublisherId) -> FileName {
-    let msg = "The system does not support the required file name length for the publishers data segment.";
-    let origin = "data_segment_name()";
-
-    let mut file = fatal_panic!(from origin, when FileName::new(publisher_id.0.pid().to_string().as_bytes()), "{}", msg);
-    fatal_panic!(from origin, when file.push(b'_'), "{}", msg);
-    fatal_panic!(from origin, when file.push_bytes(publisher_id.0.value().to_string().as_bytes()), "{}", msg);
-    file
-}
-
-pub(crate) fn data_segment_config<'config, Service: service::Details<'config>>(
-    global_config: &config::Config,
-) -> <Service::SharedMemory as NamedConceptMgmt>::Configuration {
-    let origin = "data_segment_config()";
-
-    let f = match FileName::new(
-        global_config
-            .global
-            .service
-            .publisher_data_segment_suffix
-            .as_bytes(),
-    ) {
-        Err(_) => {
-            fatal_panic!(from origin, "The publisher_data_segment_suffix \"{}\" provided by the config contains either invalid file name characters or is too long.",
-                                       global_config.global.service.publisher_data_segment_suffix);
-        }
-        Ok(v) => v,
-    };
-
-    <Service::SharedMemory as NamedConceptMgmt>::Configuration::default().suffix(f)
-}
 
 /// Sending endpoint of a publish-subscriber based communication.
 #[derive(Debug)]

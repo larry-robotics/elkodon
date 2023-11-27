@@ -85,6 +85,9 @@ pub const DEFAULT_MAX_BORROWED_SAMPLES: usize = 4;
 /// The default suffix of every zero copy connection
 pub const DEFAULT_SUFFIX: FileName = unsafe { FileName::new_unchecked(b".rx") };
 
+/// The default prefix of every zero copy connection
+pub const DEFAULT_PREFIX: FileName = unsafe { FileName::new_unchecked(b"elk_") };
+
 /// The default path hint for every zero copy connection
 pub const DEFAULT_PATH_HINT: Path = TEMP_DIRECTORY;
 

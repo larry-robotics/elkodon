@@ -2,12 +2,15 @@ use std::cell::UnsafeCell;
 
 use crate::{
     config,
-    port::{
-        port_identifiers::{UniquePublisherId, UniqueSubscriberId},
-        publisher::{data_segment_config, data_segment_name},
+    port::port_identifiers::{UniquePublisherId, UniqueSubscriberId},
+    service::{
+        self,
+        config_scheme::{connection_config, data_segment_config},
     },
-    service::{self, connection_config},
-    service::{connection_name, static_config::publish_subscribe::StaticConfig},
+    service::{
+        naming_scheme::{connection_name, data_segment_name},
+        static_config::publish_subscribe::StaticConfig,
+    },
 };
 
 use elkodon_bb_elementary::enum_gen;

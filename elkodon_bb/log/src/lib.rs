@@ -142,9 +142,19 @@ use std::{
 
 use logger::Logger;
 
+#[cfg(feature = "logger_tracing")]
+static DEFAULT_LOGGER: logger::tracing::Logger = logger::tracing::Logger::new();
+
+#[cfg(feature = "logger_log")]
+static DEFAULT_LOGGER: logger::log::Logger = logger::log::Logger::new();
+
+#[cfg(not(any(feature = "logger_log", feature = "logger_tracing")))]
 static DEFAULT_LOGGER: logger::console::Logger = logger::console::Logger::new();
+
+const DEFAULT_LOG_LEVEL: u8 = LogLevel::Trace as u8;
+
 static mut LOGGER: Option<&'static dyn logger::Logger> = None;
-static LOG_LEVEL: AtomicU8 = AtomicU8::new(LogLevel::Info as u8);
+static LOG_LEVEL: AtomicU8 = AtomicU8::new(DEFAULT_LOG_LEVEL);
 static INIT: Once = Once::new();
 
 /// Describes the log level.
@@ -159,7 +169,8 @@ pub enum LogLevel {
     Fatal = 5,
 }
 
-/// Sets the current log level
+/// Sets the current log level. This is ignored for external frameworks like `log` or `tracing`.
+/// Here you have to use the log-level settings of that framework.
 pub fn set_log_level(v: LogLevel) {
     LOG_LEVEL.store(v as u8, Ordering::Relaxed);
 }

@@ -25,7 +25,7 @@
 
 use crate::{
     port::port_identifiers::UniqueNotifierId,
-    service::{self, event_concept_name},
+    service::{self, naming_scheme::event_concept_name},
 };
 use elkodon_bb_lock_free::mpmc::{container::ContainerState, unique_index_set::UniqueIndex};
 use elkodon_bb_log::{fail, warn};

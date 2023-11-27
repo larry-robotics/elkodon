@@ -1,5 +1,6 @@
 [global]
 root_path                                   = 'c:\Temp\elkodon\'
+prefix                                      = 'elk_'
 
 [global.service]
 directory                                   = 'services'

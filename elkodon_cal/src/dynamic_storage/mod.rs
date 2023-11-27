@@ -57,6 +57,9 @@ pub mod process_local;
 /// The default suffix of every dynamic storage
 pub const DEFAULT_SUFFIX: FileName = unsafe { FileName::new_unchecked(b".dyn") };
 
+/// The default prefix of every dynamic storage
+pub const DEFAULT_PREFIX: FileName = unsafe { FileName::new_unchecked(b"elk_") };
+
 /// The default path hint for every dynamic storage
 pub const DEFAULT_PATH_HINT: Path = TEMP_DIRECTORY;
 
