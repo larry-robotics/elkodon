@@ -7,22 +7,15 @@ mod service_event {
         service_name::ServiceName,
         Service,
     };
-    use elkodon_bb_container::semantic_string::*;
     use elkodon_bb_posix::unique_system_id::UniqueSystemId;
     use elkodon_bb_testing::assert_that;
 
     fn generate_name() -> ServiceName {
-        let mut service = ServiceName::new(b"service_tests_").unwrap();
-        service
-            .push_bytes(
-                UniqueSystemId::new()
-                    .unwrap()
-                    .value()
-                    .to_string()
-                    .as_bytes(),
-            )
-            .unwrap();
-        service
+        ServiceName::new(&format!(
+            "service_tests_{}",
+            UniqueSystemId::new().unwrap().value()
+        ))
+        .unwrap()
     }
 
     #[test]

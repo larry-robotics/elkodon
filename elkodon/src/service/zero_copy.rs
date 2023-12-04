@@ -4,7 +4,7 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! // use `zero_copy` as communication variant
 //! let service = zero_copy::Service::new(&service_name)

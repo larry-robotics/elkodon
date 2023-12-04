@@ -6,7 +6,7 @@
 //! use elkodon::prelude::*;
 //! use elkodon::config::Config;
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! # let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! // create a default config and override some entries
 //! let mut custom_config = Config::default();
@@ -27,7 +27,7 @@
 //! use elkodon::prelude::*;
 //! use elkodon::config::Config;
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let event_name = ServiceName::new(b"MyEventName")?;
+//! # let event_name = ServiceName::new("MyEventName")?;
 //!
 //! // create a default config and override some entries
 //! let mut custom_config = Config::default();

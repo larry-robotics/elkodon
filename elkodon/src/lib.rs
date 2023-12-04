@@ -51,7 +51,7 @@
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! const CYCLE_TIME: Duration = Duration::from_secs(1);
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! // create our port factory by creating or opening the service
 //! let service = zero_copy::Service::new(&service_name)
@@ -77,7 +77,7 @@
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! const CYCLE_TIME: Duration = Duration::from_secs(1);
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+//! let service_name = ServiceName::new("My/Funk/ServiceName").unwrap();
 //!
 //! // create our port factory by creating or opening the service
 //! let service = zero_copy::Service::new(&service_name)
@@ -110,7 +110,7 @@
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! const CYCLE_TIME: Duration = Duration::from_secs(1);
-//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event_name = ServiceName::new("MyEventName")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
 //!     .event()
@@ -138,7 +138,7 @@
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! const CYCLE_TIME: Duration = Duration::from_secs(1);
-//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event_name = ServiceName::new("MyEventName")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
 //!     .event()
@@ -173,7 +173,7 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"PubSubQos")?;
+//! let service_name = ServiceName::new("PubSubQos")?;
 //!
 //! let service = zero_copy::Service::new(&service_name)
 //!     .publish_subscribe()
@@ -200,7 +200,7 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let event_name = ServiceName::new(b"EventQos")?;
+//! let event_name = ServiceName::new("EventQos")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
 //!     .event()
@@ -226,7 +226,7 @@
 //! use elkodon::service::port_factory::publisher::UnableToDeliverStrategy;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! let service = zero_copy::Service::new(&service_name)
 //!     .publish_subscribe()

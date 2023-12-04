@@ -5,7 +5,6 @@ mod publisher {
     use elkodon::port::publisher::LoanError;
     use elkodon::service::port_factory::publisher::UnableToDeliverStrategy;
     use elkodon::service::{service_name::ServiceName, Service};
-    use elkodon_bb_container::semantic_string::*;
     use elkodon_bb_posix::barrier::{BarrierBuilder, BarrierHandle};
     use elkodon_bb_posix::unique_system_id::UniqueSystemId;
     use elkodon_bb_testing::assert_that;
@@ -15,15 +14,10 @@ mod publisher {
     const TIMEOUT: Duration = Duration::from_millis(25);
 
     fn generate_name() -> TestResult<ServiceName> {
-        let mut service = ServiceName::new(b"service_tests_")?;
-        service.push_bytes(
-            UniqueSystemId::new()
-                .unwrap()
-                .value()
-                .to_string()
-                .as_bytes(),
-        )?;
-        Ok(service)
+        Ok(ServiceName::new(&format!(
+            "service_tests_{}",
+            UniqueSystemId::new().unwrap().value()
+        ))?)
     }
 
     #[test]

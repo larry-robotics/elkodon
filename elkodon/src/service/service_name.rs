@@ -4,29 +4,65 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! # Ok(())
 //! # }
 //! ```
 
-use elkodon_bb_container::semantic_string;
-use elkodon_bb_container::semantic_string::SemanticString;
+use elkodon_bb_container::semantic_string::SemanticStringError;
 use serde::{de::Visitor, Deserialize, Serialize};
 
 const SERVICE_NAME_LENGTH: usize = 255;
 
-semantic_string! {
-  /// The unique name for a service.
-  name: ServiceName,
-  capacity: SERVICE_NAME_LENGTH,
-  invalid_content: |value: &[u8]| {
-                        matches!(value, b"")
-                    },
-  invalid_characters: |_: &[u8]| { false },
-  comparision: |lhs: &[u8], rhs: &[u8]| {
-      *lhs == *rhs
-  }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ServiceName {
+    value: elkodon_bb_container::byte_string::FixedSizeByteString<SERVICE_NAME_LENGTH>,
+}
+
+impl ServiceName {
+    pub fn new(name: &str) -> Result<Self, SemanticStringError> {
+        if name.is_empty() {
+            return Err(SemanticStringError::InvalidName);
+        }
+
+        Ok(Self {
+            value: elkodon_bb_container::byte_string::FixedSizeByteString::from_bytes(
+                name.as_bytes(),
+            )?,
+        })
+    }
+
+    fn as_str(&self) -> &str {
+        // SAFETY: `ServieName` was created from a `&str` and therefore this conversion is safe
+        unsafe { std::str::from_utf8_unchecked(self.value.as_bytes()) }
+    }
+}
+
+impl std::fmt::Display for ServiceName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::write!(f, "{}", self.value)
+    }
+}
+
+impl PartialEq<&str> for ServiceName {
+    fn eq(&self, other: &&str) -> bool {
+        *self.as_str() == **other
+    }
+}
+
+impl PartialEq<&str> for &ServiceName {
+    fn eq(&self, other: &&str) -> bool {
+        *self.as_str() == **other
+    }
+}
+
+impl std::ops::Deref for ServiceName {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
+    }
 }
 
 struct ServiceNameVisitor;
@@ -42,7 +78,7 @@ impl<'de> Visitor<'de> for ServiceNameVisitor {
     where
         E: serde::de::Error,
     {
-        match ServiceName::new(v.as_bytes()) {
+        match ServiceName::new(v) {
             Ok(v) => Ok(v),
             Err(v) => Err(E::custom(format!("invalid service name provided {:?}.", v))),
         }

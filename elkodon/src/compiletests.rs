@@ -1,7 +1,7 @@
 /// ```compile_fail
 /// use elkodon::prelude::*;
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+/// let service_name = ServiceName::new("My/Funk/ServiceName").unwrap();
 ///
 /// let service = zero_copy::Service::new(&service_name)
 ///     .publish_subscribe()
@@ -26,7 +26,7 @@ fn sending_uninitialized_sample_fails_to_compile() {}
 /// struct Wrapper(u64);
 ///
 /// fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let service_name = ServiceName::new(b"My/Funk/ServiceName").unwrap();
+/// let service_name = ServiceName::new("My/Funk/ServiceName").unwrap();
 ///
 /// let service = zero_copy::Service::new(&service_name)
 ///     .publish_subscribe()

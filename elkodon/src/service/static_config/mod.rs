@@ -9,7 +9,6 @@ pub mod event;
 pub mod publish_subscribe;
 
 use crate::service::messaging_pattern::MessagingPattern;
-use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_log::fatal_panic;
 use elkodon_cal::hash::Hash;
 use serde::{Deserialize, Serialize};

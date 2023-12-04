@@ -1,4 +1,6 @@
-use crate::byte_string::{as_escaped_string, strlen, FixedSizeByteString};
+use crate::byte_string::{
+    as_escaped_string, strlen, FixedSizeByteString, FixedSizeByteStringModificationError,
+};
 use elkodon_bb_log::fail;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
@@ -19,6 +21,16 @@ impl std::fmt::Display for SemanticStringError {
 }
 
 impl std::error::Error for SemanticStringError {}
+
+impl From<FixedSizeByteStringModificationError> for SemanticStringError {
+    fn from(value: FixedSizeByteStringModificationError) -> Self {
+        match value {
+            FixedSizeByteStringModificationError::InsertWouldExceedCapacity => {
+                SemanticStringError::ExceedsMaximumLength
+            }
+        }
+    }
+}
 
 pub trait SemanticStringAccessor<const CAPACITY: usize> {
     /// Creates a new empty SemanticStringAccessor which may violates the content contract.

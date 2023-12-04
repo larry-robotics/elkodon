@@ -5,7 +5,7 @@
 //! use elkodon::service::header::publish_subscribe::Header;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! # let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! # let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //! let service = zero_copy::Service::new(&service_name)
 //!     .publish_subscribe()
 //!     .open_or_create::<u64>()?;

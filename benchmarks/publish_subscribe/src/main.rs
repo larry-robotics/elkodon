@@ -1,6 +1,5 @@
 use elkodon::service::{process_local, zero_copy};
 use elkodon::service::{service_name::ServiceName, Service};
-use elkodon_bb_container::semantic_string::SemanticString;
 use elkodon_bb_log::set_log_level;
 use elkodon_bb_posix::barrier::BarrierHandle;
 use elkodon_bb_posix::{barrier::BarrierBuilder, clock::Time};
@@ -8,8 +7,8 @@ use elkodon_bb_posix::{barrier::BarrierBuilder, clock::Time};
 const ITERATIONS: u64 = 10000000;
 
 fn perform_benchmark<T: Service>() {
-    let service_name_a2b = ServiceName::new(b"a2b").unwrap();
-    let service_name_b2a = ServiceName::new(b"b2a").unwrap();
+    let service_name_a2b = ServiceName::new("a2b").unwrap();
+    let service_name_b2a = ServiceName::new("b2a").unwrap();
 
     let service_a2b = T::new(&service_name_a2b)
         .publish_subscribe()
