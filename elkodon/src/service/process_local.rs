@@ -4,7 +4,7 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! // use `process_local` as communication variant
 //! let service = process_local::Service::new(&service_name)

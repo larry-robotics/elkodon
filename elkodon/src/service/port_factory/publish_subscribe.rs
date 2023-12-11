@@ -4,7 +4,7 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //! let pubsub = zero_copy::Service::new(&service_name)
 //!     .publish_subscribe()
 //!     .open_or_create::<u64>()?;
@@ -104,7 +104,7 @@ impl<'config, Service: service::Details<'config>, MessageType: Debug>
     /// use elkodon::prelude::*;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+    /// let service_name = ServiceName::new("My/Funk/ServiceName")?;
     /// let pubsub = zero_copy::Service::new(&service_name)
     ///     .publish_subscribe()
     ///     .open_or_create::<u64>()?;
@@ -128,7 +128,7 @@ impl<'config, Service: service::Details<'config>, MessageType: Debug>
     /// use elkodon::service::port_factory::publisher::UnableToDeliverStrategy;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+    /// let service_name = ServiceName::new("My/Funk/ServiceName")?;
     /// let pubsub = zero_copy::Service::new(&service_name)
     ///     .publish_subscribe()
     ///     .open_or_create::<u64>()?;

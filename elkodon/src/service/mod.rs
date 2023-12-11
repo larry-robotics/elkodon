@@ -6,7 +6,7 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! let service = zero_copy::Service::new(&service_name)
 //!     // define the messaging pattern
@@ -31,7 +31,7 @@
 //! use elkodon::prelude::*;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let event_name = ServiceName::new(b"MyEventName")?;
+//! let event_name = ServiceName::new("MyEventName")?;
 //!
 //! let event = zero_copy::Service::new(&event_name)
 //!     // define the messaging pattern
@@ -53,7 +53,7 @@
 //! use elkodon::config::Config;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! let mut custom_config = Config::default();
 //! // adjust the global root path under which every file/directory is stored
@@ -74,7 +74,7 @@
 //! use elkodon::config::Config;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+//! let service_name = ServiceName::new("My/Funk/ServiceName")?;
 //!
 //! let mut custom_config = Config::default();
 //! // adjust the global service path under which service related files are stored
@@ -282,7 +282,7 @@ pub trait Details<'config>: Debug + Sized {
     /// use elkodon::prelude::*;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let name = ServiceName::new(b"Some/Name")?;
+    /// let name = ServiceName::new("Some/Name")?;
     /// let does_name_exist = zero_copy::Service::does_exist(&name)?;
     /// # Ok(())
     /// # }
@@ -300,7 +300,7 @@ pub trait Details<'config>: Debug + Sized {
     /// use elkodon::config::Config;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let name = ServiceName::new(b"Some/Name")?;
+    /// let name = ServiceName::new("Some/Name")?;
     /// let mut custom_config = Config::default();
     /// let does_name_exist = zero_copy::Service::does_exist_with_custom_config(&name, &custom_config)?;
     /// # Ok(())

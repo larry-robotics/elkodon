@@ -104,7 +104,7 @@ use elkodon::prelude::*;
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+    let service_name = ServiceName::new("My/Funk/ServiceName")?;
 
     let service = zero_copy::Service::new(&service_name)
         .publish_subscribe()
@@ -131,7 +131,7 @@ use elkodon::prelude::*;
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let service_name = ServiceName::new(b"My/Funk/ServiceName")?;
+    let service_name = ServiceName::new("My/Funk/ServiceName")?;
 
     let service = zero_copy::Service::new(&service_name)
         .publish_subscribe()
@@ -178,7 +178,7 @@ use elkodon::prelude::*;
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let event_name = ServiceName::new(b"MyEventName")?;
+    let event_name = ServiceName::new("MyEventName")?;
 
     let event = zero_copy::Service::new(&event_name)
         .event()
@@ -207,7 +207,7 @@ use elkodon::prelude::*;
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let event_name = ServiceName::new(b"MyEventName")?;
+    let event_name = ServiceName::new("MyEventName")?;
 
     let event = zero_copy::Service::new(&event_name)
         .event()
