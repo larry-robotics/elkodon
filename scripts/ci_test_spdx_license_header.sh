@@ -21,7 +21,7 @@ check_license_header() {
 
     for FILE in $FILES
     do
-        HAS_CORRECT_HEADER=$(diff <(head -n 12 $FILE | tail -n 11 | sed "s/$COMMENT_SYMBOL\(.*\)/\1/") <(head -n 12 scripts/copyright_header.txt | tail -n 11) | wc -l)
+        HAS_CORRECT_HEADER=$(diff <(head -n 12 $FILE | tail -n 11 | sed "s/$COMMENT_SYMBOL\(.*\)/\1/") <(head -n 12 scripts/copyright_header.template | tail -n 11) | wc -l)
         HAS_CORRECT_HEADER_YEAR_LINE=$(head -n 1 $FILE | grep -E "^$COMMENT_SYMBOL_GREP Copyright \(c\) 20[2-9][0-9] Contributors to the Eclipse Foundation\$" | wc -l)
 
         if [[ "$HAS_CORRECT_HEADER" != "0" ]] || [[ "$HAS_CORRECT_HEADER_YEAR_LINE" != "1" ]]
