@@ -15,10 +15,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Check format of all commit messages
-        run: ./scripts/ci_test_commit_msg.sh
+        run: ./internal/scripts/ci_test_commit_msg.sh
 
       - name: Check license header
-        run: ./scripts/ci_test_spdx_license_header.sh
+        run: ./internal/scripts/ci_test_spdx_license_header.sh
 
   windows:
     needs: preflight-check
@@ -102,10 +102,10 @@ jobs:
       run: chmod +x ~/.cargo/bin/grcov
 
     - name: Generate raw coverage results
-      run: ./scripts/generate-cov-report.sh --generate
+      run: ./internal/scripts/generate-cov-report.sh --generate
 
     - name: Generate coverage results for html artifacts
-      run: ./scripts/generate-cov-report.sh --html
+      run: ./internal/scripts/generate-cov-report.sh --html
 
     - name: Archive coverage-html artifacts
       uses: actions/upload-artifact@v3
@@ -115,7 +115,7 @@ jobs:
         retention-days: 90
 
     - name: Generate coverage report for Codecov
-      run: ./scripts/generate-cov-report.sh --lcov
+      run: ./internal/scripts/generate-cov-report.sh --lcov
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
