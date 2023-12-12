@@ -13,10 +13,10 @@
 //! Provides information about the POSIX [`SystemInfo`], [`Limit`]s, available [`SysOption`] and
 //! [`Feature`]s.
 
+use enum_iterator::{all, Sequence};
 use iceoryx2_bb_log::{fatal_panic, warn};
 use iceoryx2_pal_posix::posix::Struct;
 use iceoryx2_pal_posix::*;
-use enum_iterator::{all, Sequence};
 
 /// Generic information about the POSIX system.
 /// ```

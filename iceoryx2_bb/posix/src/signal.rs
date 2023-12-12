@@ -63,11 +63,11 @@ use crate::{
     file_lock::ClockType,
     mutex::*,
 };
+use enum_iterator::{all, Sequence};
 use iceoryx2_bb_elementary::enum_gen;
 use iceoryx2_bb_log::{fail, fatal_panic};
 use iceoryx2_pal_posix::posix::Struct;
 use iceoryx2_pal_posix::*;
-use enum_iterator::{all, Sequence};
 use lazy_static::lazy_static;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tiny_fn::tiny_fn;
