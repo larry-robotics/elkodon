@@ -6,7 +6,7 @@
 1. [ ] Add sensible notes for the reviewer
 1. [ ] PR title is short, expressive and meaningful
 1. [ ] Relevant issues are linked
-1. [ ] Every source code file has the SPDX header `SPDX-License-Identifier: $(LICENSE_CODE)`
+1. [ ] Every source code file has a copyright header with `SPDX-License-Identifier: Apache-2.0 OR MIT`
 1. [ ] Branch follows the naming format (`elk-123-introduce-posix-ipc-example`)
 1. [ ] Commits messages are according to this [guideline][commit-guidelines]
     - [ ] Commit messages have the issue ID (`[#123] Add posix ipc example`)
