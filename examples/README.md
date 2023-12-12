@@ -1,15 +1,15 @@
 # Examples
 
-## Foundations of Communication in Elkodon Applications
+## Foundations of Communication in Iceoryx2 Applications
 
-In the world of Elkodon, communication is at the core of everything. To
+In the world of Iceoryx2, communication is at the core of everything. To
 facilitate seamless communication, we always begin by opening or creating a
-service, the fundamental building block of an Elkodon application. Services
+service, the fundamental building block of an Iceoryx2 application. Services
 serve as the conduit through which different parts of your application
 interact.
 
 The type of service you create is defined by a messaging pattern, which
-dictates how data flows between participants. Elkodon supports various
+dictates how data flows between participants. Iceoryx2 supports various
 messaging patterns, including:
 
 * **Publish-Subscribe:** In this pattern, a publisher sends a continuous stream

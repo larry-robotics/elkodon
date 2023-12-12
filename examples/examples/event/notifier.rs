@@ -11,7 +11,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use core::time::Duration;
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let notifier = event.notifier().create()?;
 
     let mut counter: u64 = 0;
-    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
+    while let Iox2Event::Tick = Iox2::wait(CYCLE_TIME) {
         counter += 1;
         notifier.notify_with_custom_event_id(EventId::new(counter))?;
 

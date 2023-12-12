@@ -1,9 +1,0 @@
-[package]
-name = "elkodon_pal_settings"
-description = "Elkodon: platform specific settings"
-rust-version = { workspace = true }
-version = { workspace = true }
-repository = { workspace = true }
-edition = { workspace = true }
-
-[dependencies]

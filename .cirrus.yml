@@ -18,70 +18,70 @@
 
 # Constants
 
-elk_task_timeout_template: &ELK_TASK_TIMEOUT
+iox2_task_timeout_template: &IOX2_TASK_TIMEOUT
   timeout_in: 30m  # This needs to be reasonable large in order not to run in a timeout in the docker image re-builds
 
-elk_common_cpu_and_memory_config_for_build_and_test_template: &ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+iox2_common_cpu_and_memory_config_for_build_and_test_template: &IOX2_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
   cpu: 2
   memory: 4GB
 
 # Container
 
-elk_container_ubuntu_22_04_x64_template: &ELK_CONTAINER_UBUNTU_22_04_X64
-  <<: *ELK_TASK_TIMEOUT
+iox2_container_ubuntu_22_04_x64_template: &IOX2_CONTAINER_UBUNTU_22_04_X64
+  <<: *IOX2_TASK_TIMEOUT
   container:
     dockerfile: internal/docker/ubuntu-22.04
-    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+    <<: *IOX2_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
-elk_container_ubuntu_22_04_aarch64_template: &ELK_CONTAINER_UBUNTU_22_04_AARCH64
-  <<: *ELK_TASK_TIMEOUT
+iox2_container_ubuntu_22_04_aarch64_template: &IOX2_CONTAINER_UBUNTU_22_04_AARCH64
+  <<: *IOX2_TASK_TIMEOUT
   arm_container:
     dockerfile: internal/docker/ubuntu-22.04
-    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+    <<: *IOX2_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
-elk_container_arch_linux_x64_template: &ELK_CONTAINER_ARCH_LINUX_X64
-  <<: *ELK_TASK_TIMEOUT
+iox2_container_arch_linux_x64_template: &IOX2_CONTAINER_ARCH_LINUX_X64
+  <<: *IOX2_TASK_TIMEOUT
   container:
     dockerfile: internal/docker/archlinux-base-devel
-    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+    <<: *IOX2_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
-elk_container_windows_server_2019_x64_template: &ELK_CONTAINER_WINDOWS_SERVER_2019_X64
-  <<: *ELK_TASK_TIMEOUT
+iox2_container_windows_server_2019_x64_template: &IOX2_CONTAINER_WINDOWS_SERVER_2019_X64
+  <<: *IOX2_TASK_TIMEOUT
   windows_container:
     dockerfile: internal/docker/windowsservercore-2019
-    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+    <<: *IOX2_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
-elk_container_freebsd_x64_template: &ELK_CONTAINER_FREEBSD_X64
-  <<: *ELK_TASK_TIMEOUT
+iox2_container_freebsd_x64_template: &IOX2_CONTAINER_FREEBSD_X64
+  <<: *IOX2_TASK_TIMEOUT
   freebsd_instance:
     image_family: freebsd-13-2
-    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+    <<: *IOX2_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
-elk_container_macos_aarch64_template: &ELK_CONTAINER_MACOS_AARCH64
-  <<: *ELK_TASK_TIMEOUT
+iox2_container_macos_aarch64_template: &IOX2_CONTAINER_MACOS_AARCH64
+  <<: *IOX2_TASK_TIMEOUT
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
-    <<: *ELK_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
+    <<: *IOX2_COMMON_CPU_AND_MEMORY_CONFIG_FOR_BUILD_AND_TEST
 
 # Build and Test
 
-elk_cargo_fmt_and_clippy_template: &ELK_CARGO_FMT_AND_CLIPPY
+iox2_cargo_fmt_and_clippy_template: &IOX2_CARGO_FMT_AND_CLIPPY
   cargo_fmt_and_clippy_script:
     - cargo fmt --all -- --check
     - cargo clippy -- -D warnings
 
-elk_common_build_debug_template: &ELK_COMMON_BUILD_DEBUG
+iox2_common_build_debug_template: &IOX2_COMMON_BUILD_DEBUG
   build_script: cargo build --workspace --all-targets
 
-elk_common_build_and_test_debug_template: &ELK_COMMON_BUILD_AND_TEST_DEBUG
-  <<: *ELK_COMMON_BUILD_DEBUG
+iox2_common_build_and_test_debug_template: &IOX2_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_COMMON_BUILD_DEBUG
   test_script: cargo test --workspace --no-fail-fast
 
-elk_common_build_release_template: &ELK_COMMON_BUILD_RELEASE
+iox2_common_build_release_template: &IOX2_COMMON_BUILD_RELEASE
   build_script: cargo build --release --workspace --all-targets
 
-elk_common_build_and_test_no_doc_tests_release_template: &ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
-  <<: *ELK_COMMON_BUILD_RELEASE
+iox2_common_build_and_test_no_doc_tests_release_template: &IOX2_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
+  <<: *IOX2_COMMON_BUILD_RELEASE
   test_script: cargo test --release --tests --workspace --no-fail-fast
 
 #
@@ -95,11 +95,11 @@ only_if: $CIRRUS_BRANCH == 'main' || ($CIRRUS_PR != '' && $CIRRUS_BASE_BRANCH ==
 #
 
 preflight_check_task:
-  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default stable
-  # TODO elk-#8: add more preflight-checks here
-  <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_DEBUG # only build without tests to not slow down other tasks due to failures in flaky tests
+  # TODO iox2-#8: add more preflight-checks here
+  <<: *IOX2_CARGO_FMT_AND_CLIPPY
+  <<: *IOX2_COMMON_BUILD_DEBUG # only build without tests to not slow down other tasks due to failures in flaky tests
   doc_script: cargo doc
 
 #
@@ -108,43 +108,43 @@ preflight_check_task:
 
 # Pipeline 1
 
-# TODO elk-#8: Add code coverage
+# TODO iox2-#8: Add code coverage
 # ubuntu_22_04_x64_stable_debug_coverage_task:
 #   depends_on: preflight_check
-#   <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+#   <<: *IOX2_CONTAINER_UBUNTU_22_04_X64
 #   set_toolchain_script: rustup default stable
-#   <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+#   <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 # Pipeline 2
 
 ubuntu_22_04_x64_stable_debug_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_CARGO_FMT_AND_CLIPPY
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
   linux_only_doc_test_script: cargo test --doc -- --ignored
 
 ubuntu_22_04_x64_beta_debug_task:
   depends_on: ubuntu_22_04_x64_stable_debug
-  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default beta
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 ubuntu_22_04_x64_nightly_debug_task:
   depends_on: ubuntu_22_04_x64_beta_debug
   allow_failures: true
-  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default nightly
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 # Pipeline 3
 
 ubuntu_22_04_x64_stable_release_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_UBUNTU_22_04_X64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
+  <<: *IOX2_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # Ubuntu aarch64
@@ -154,25 +154,25 @@ ubuntu_22_04_x64_stable_release_task:
 
 ubuntu_22_04_aarch64_stable_debug_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_UBUNTU_22_04_AARCH64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_AARCH64
   set_toolchain_script: rustup default stable
-  <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_CARGO_FMT_AND_CLIPPY
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 ubuntu_22_04_aarch64_beta_debug_task:
   depends_on: ubuntu_22_04_aarch64_stable_debug
   allow_failures: true
-  <<: *ELK_CONTAINER_UBUNTU_22_04_AARCH64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_AARCH64
   set_toolchain_script: rustup default beta
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 # Pipeline 5
 
 ubuntu_22_04_aarch64_stable_release_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_UBUNTU_22_04_AARCH64
+  <<: *IOX2_CONTAINER_UBUNTU_22_04_AARCH64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
+  <<: *IOX2_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # Arch Linux x86
@@ -182,24 +182,24 @@ ubuntu_22_04_aarch64_stable_release_task:
 
 arch_linux_x64_stable_debug_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_ARCH_LINUX_X64
+  <<: *IOX2_CONTAINER_ARCH_LINUX_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_CARGO_FMT_AND_CLIPPY
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 arch_linux_x64_beta_debug_task:
   depends_on: arch_linux_x64_stable_debug
-  <<: *ELK_CONTAINER_ARCH_LINUX_X64
+  <<: *IOX2_CONTAINER_ARCH_LINUX_X64
   set_toolchain_script: rustup default beta
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 # Pipeline 7
 
 arch_linux_x64_stable_release_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_ARCH_LINUX_X64
+  <<: *IOX2_CONTAINER_ARCH_LINUX_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
+  <<: *IOX2_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # Windows Server 2019 x86
@@ -208,21 +208,21 @@ arch_linux_x64_stable_release_task:
 # Pipeline 8
 
 windows_server_2019_x64_stable_debug_task:
-  # TODO elk-#43: fix elkodon_cal list (underlying shm) tests
+  # TODO iox2-#43: fix iceoryx2_cal list (underlying shm) tests
   only_if: false
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_WINDOWS_SERVER_2019_X64
+  <<: *IOX2_CONTAINER_WINDOWS_SERVER_2019_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_CARGO_FMT_AND_CLIPPY
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 windows_server_2019_x64_stable_release_task:
-  # TODO elk-#43: fix elkodon_cal list (underlying shm) tests
+  # TODO iox2-#43: fix iceoryx2_cal list (underlying shm) tests
   only_if: false
   depends_on: windows_server_2019_x64_stable_debug
-  <<: *ELK_CONTAINER_WINDOWS_SERVER_2019_X64
+  <<: *IOX2_CONTAINER_WINDOWS_SERVER_2019_X64
   set_toolchain_script: rustup default stable
-  <<: *ELK_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
+  <<: *IOX2_COMMON_BUILD_AND_TEST_NO_DOC_TESTS_RELEASE
 
 #
 # FreeBSD
@@ -232,7 +232,7 @@ windows_server_2019_x64_stable_release_task:
 
 freebsd_x64_stable_debug_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_FREEBSD_X64
+  <<: *IOX2_CONTAINER_FREEBSD_X64
   env:
     PATH: /root/.cargo/bin:$PATH
     HOME: /root  # must be set manually to '/root' or 'rustup' will throw an error
@@ -249,8 +249,8 @@ freebsd_x64_stable_debug_task:
     - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
     - rustup component add clippy rustfmt
   set_toolchain_script: rustup default stable
-  <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_AND_TEST_DEBUG
+  <<: *IOX2_CARGO_FMT_AND_CLIPPY
+  <<: *IOX2_COMMON_BUILD_AND_TEST_DEBUG
 
 #
 # macOS
@@ -260,7 +260,7 @@ freebsd_x64_stable_debug_task:
 
 macos_aarch64_stable_debug_task:
   depends_on: preflight_check
-  <<: *ELK_CONTAINER_MACOS_AARCH64
+  <<: *IOX2_CONTAINER_MACOS_AARCH64
   env:
     PATH: /Users/admin/.cargo/bin:$PATH
   setup_script:
@@ -268,16 +268,16 @@ macos_aarch64_stable_debug_task:
     - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
     - rustup component add clippy rustfmt
   set_toolchain_script: rustup default stable
-  <<: *ELK_CARGO_FMT_AND_CLIPPY
-  <<: *ELK_COMMON_BUILD_DEBUG
+  <<: *IOX2_CARGO_FMT_AND_CLIPPY
+  <<: *IOX2_COMMON_BUILD_DEBUG
   test_script:
-    - cargo test -p elkodon_pal_concurrency_primitives
-                 -p elkodon_pal_posix
-                 -p elkodon_bb_container
-                 -p elkodon_bb_elementary
-                 -p elkodon_bb_lock_free
-                 -p elkodon_bb_log
-                 -p elkodon_bb_memory
-                 -p elkodon_bb_system_types
-                 -p elkodon_bb_testing
+    - cargo test -p iceoryx2_pal_concurrency_primitives
+                 -p iceoryx2_pal_posix
+                 -p iceoryx2_bb_container
+                 -p iceoryx2_bb_elementary
+                 -p iceoryx2_bb_lock_free
+                 -p iceoryx2_bb_log
+                 -p iceoryx2_bb_memory
+                 -p iceoryx2_bb_system_types
+                 -p iceoryx2_bb_testing
                  --lib --bins --tests --no-fail-fast

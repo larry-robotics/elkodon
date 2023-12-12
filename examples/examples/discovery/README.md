@@ -2,7 +2,7 @@
 
 ## Running The Example
 
-This example demonstrates how to list all active services within your Elkodon
+This example demonstrates how to list all active services within your Iceoryx2
 application. To get the most out of this example, you can combine it with other
 examples, such as the [event example](../event/) or the
 [publish-subscribe example](../publish_subscribe/), to see active services in
@@ -31,4 +31,4 @@ cargo run --example discovery
 
 This will display the static service details of both the event and the
 publish-subscribe service, giving you a comprehensive view of the active
-services in your Elkodon application.
+services in your Iceoryx2 application.

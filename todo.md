@@ -48,7 +48,7 @@
 
 * Fix platforms
   * macos
-    * elkodon_bb_posix
+    * iceoryx2_bb_posix
       * add timeout to pthread_cond_timedwait
     * use concepts based on shared memory directory to circumvent to 30 char restriction on
             the shm name in mac os
@@ -154,7 +154,7 @@
 
 * subscriber internal cache which orders samples from multiple publishers
 
-* elkodon_ipc finalize
+* iceoryx2_ipc finalize
   * remove all unwrap()
   * global_config.rs use correct string types
     * introduce file_suffix_name.rs and use it there
@@ -168,7 +168,7 @@
 * rename things
   * with modules, every public thing should be named like the module, it will be differentiate
         with the namespace
-    * all elkodon_cals
+    * all iceoryx2_cals
 
 * what if reference_counter == 0 when creating new service ... wait for cleanup
 
@@ -216,7 +216,7 @@
 
 * Make relative_ptr/OffsetRepository lock-free
 * introduce deadline timer
-* bitset enums like elkodon_bb_posix::Permission require const construction with
+* bitset enums like iceoryx2_bb_posix::Permission require const construction with
     bitset operations
 * Make posix shared memory resizable with mremap & ftruncate,
     see: <https://stackoverflow.com/questions/40398901/resize-posix-shared-memory-a-working-example>
@@ -249,7 +249,7 @@
 
 # Open Problems
 
-* elkodon_config use lock free singleton approach from elkodon
+* iceoryx2_config use lock free singleton approach from iceoryx2
 * remove ENAMETOOLONG and replace it with a path/filename string with maximum size
   * see unlink, does_file_exist
 * semaphore

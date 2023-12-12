@@ -10,7 +10,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let services = zero_copy::Service::list()?;

@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Roadmap](https://img.shields.io/badge/Roadmap-gray)](ROADMAP.md)
 
-# elkodon - Zero-Copy Lock-Free IPC Purely Written In Rust
+# iceoryx2 - Zero-Copy Lock-Free IPC Purely Written In Rust
 
  1. [Introduction](#introduction)
  2. [Performance](#performance)
@@ -21,30 +21,30 @@
 
 ## Introduction
 
-Welcome to Elkodon, the efficient, and ultra-low latency inter-process communication
+Welcome to Iceoryx2, the efficient, and ultra-low latency inter-process communication
 middleware. This library is designed to provide you with fast and reliable
 zero-copy and lock-free inter-process communication mechanisms.
 
-Elkodon is all about providing a seamless experience for inter-process
+Iceoryx2 is all about providing a seamless experience for inter-process
 communication, featuring versatile messaging patterns. Whether you're diving
 into publish-subscribe, events, or the promise of upcoming features like
-request-response, pipelines, and blackboard, Elkodon has you covered.
+request-response, pipelines, and blackboard, Iceoryx2 has you covered.
 
-One of the features of Elkodon is its consistently low transmission latency
+One of the features of Iceoryx2 is its consistently low transmission latency
 regardless of payload size, ensuring a predictable and reliable
 communication experience.
 
-Elkodon's origins can be traced back to
+Iceoryx2's origins can be traced back to
 [iceoryx](https://github.com/eclipse-iceoryx/iceoryx). By overcoming past
-technical debts and refining the architecture, Elkodon enables the modularity
+technical debts and refining the architecture, Iceoryx2 enables the modularity
 we've always desired.
 
-In the near future, Elkodon is poised to support at least the same feature set
+In the near future, Iceoryx2 is poised to support at least the same feature set
 and platforms as [iceoryx](https://github.com/eclipse-iceoryx/iceoryx),
 ensuring a seamless transition and offering enhanced
 capabilities for your inter-process communication needs. So, if you're looking
 for lightning-fast, cross-platform communication that doesn't compromise on
-performance or modularity, Elkodon is your answer.
+performance or modularity, Iceoryx2 is your answer.
 
 ## Performance
 
@@ -54,7 +54,7 @@ gantt
     dateFormat X
     axisFormat %s
 
-    section elkodon
+    section iceoryx2
     240 : 0, 240
     section iceoryx
     1000 : 0, 1000
@@ -70,7 +70,7 @@ gantt
     dateFormat X
     axisFormat %s
 
-    section elkodon
+    section iceoryx2
     240 : 0, 240
     section iceoryx
     1000 : 0, 1000
@@ -99,7 +99,7 @@ while a subscriber efficiently receives and prints the data.
 
 ```rust
 use core::time::Duration;
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -112,7 +112,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let publisher = service.publisher().create()?;
 
-    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
+    while let Iox2Event::Tick = Iox2::wait(CYCLE_TIME) {
         let sample = publisher.loan_uninit()?;
         let sample = sample.write_payload(1234);
         publisher.send(sample)?;
@@ -126,7 +126,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use core::time::Duration;
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -139,7 +139,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let subscriber = service.subscriber().create()?;
 
-    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
+    while let Iox2Event::Tick = Iox2::wait(CYCLE_TIME) {
         while let Some(sample) = subscriber.receive()? {
             println!("received: {:?}", *sample);
         }
@@ -173,7 +173,7 @@ This minimal example showcases an event notification between two processes.
 
 ```rust
 use core::time::Duration;
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -187,7 +187,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let notifier = event.notifier().create()?;
 
     let mut counter: u64 = 0;
-    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
+    while let Iox2Event::Tick = Iox2::wait(CYCLE_TIME) {
         counter += 1;
         notifier.notify_with_custom_event_id(EventId::new(counter))?;
 
@@ -202,7 +202,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 use core::time::Duration;
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -215,7 +215,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut listener = event.listener().create()?;
 
-    while let ElkEvent::Tick = Elk::wait(Duration::ZERO) {
+    while let Iox2Event::Tick = Iox2::wait(Duration::ZERO) {
         if let Ok(events) = listener.timed_wait(CYCLE_TIME) {
             for event_id in events {
                 println!("event was triggered with id: {:?}", event_id);

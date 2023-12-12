@@ -18,7 +18,7 @@ COLOR_GREEN='\033[1;32m'
 COLOR_YELLOW='\033[1;33m'
 
 LLVM_PROFILE_PATH="target/debug/llvm-profile-files"
-export LLVM_PROFILE_FILE="${LLVM_PROFILE_PATH}/elkodon-%p-%m.profraw"
+export LLVM_PROFILE_FILE="${LLVM_PROFILE_PATH}/iceoryx2-%p-%m.profraw"
 export RUSTFLAGS="-Cinstrument-coverage"
 
 COVERAGE_DIR="target/debug/coverage"

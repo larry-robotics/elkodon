@@ -10,11 +10,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
-use elkodon::service::{process_local, zero_copy};
-use elkodon::service::{service_name::ServiceName, Service};
-use elkodon_bb_log::set_log_level;
-use elkodon_bb_posix::barrier::BarrierHandle;
-use elkodon_bb_posix::{barrier::BarrierBuilder, clock::Time};
+use iceoryx2::service::{process_local, zero_copy};
+use iceoryx2::service::{service_name::ServiceName, Service};
+use iceoryx2_bb_log::set_log_level;
+use iceoryx2_bb_posix::barrier::BarrierHandle;
+use iceoryx2_bb_posix::{barrier::BarrierBuilder, clock::Time};
 
 const ITERATIONS: u64 = 10000000;
 
@@ -89,7 +89,7 @@ fn perform_benchmark<T: Service>() {
 }
 
 fn main() {
-    set_log_level(elkodon_bb_log::LogLevel::Error);
+    set_log_level(iceoryx2_bb_log::LogLevel::Error);
     perform_benchmark::<zero_copy::Service>();
     perform_benchmark::<process_local::Service>();
 }

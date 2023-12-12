@@ -36,9 +36,9 @@ jobs:
 
       - name: Prepare system
         run: |
-          mkdir "C:\Temp\elkodon\services"
-          mkdir "C:\Temp\elkodon\tests"
-          mkdir "C:\Temp\elkodon\shm"
+          mkdir "C:\Temp\iceoryx2\services"
+          mkdir "C:\Temp\iceoryx2\tests"
+          mkdir "C:\Temp\iceoryx2\shm"
           icacls "C:\Temp" /t /c /grant Everyone:F
 
       - name: Run cargo fmt
@@ -181,14 +181,14 @@ jobs:
 #             mkdir -p /mnt/mqueue/
 #             mount -t mqueuefs null /mnt/mqueue/
 #             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-#             git config --global --add safe.directory /Users/runner/work/elkodon/elkodon
+#             git config --global --add safe.directory /Users/runner/work/iceoryx2/iceoryx2
 #           run: |
 #             ln -sf ~/.cargo/bin/* /usr/bin/
 #             cargo fmt --all -- --check
 #             cargo clippy -- -D warnings
 #             cargo test --workspace -- --test-threads=1
 # 
-#   mac_os_no_bb_posix__cal__elkodon:
+#   mac_os_no_bb_posix__cal__iceoryx2:
 #     timeout-minutes: 20
 #     runs-on: macos-latest
 #     steps:
@@ -213,13 +213,13 @@ jobs:
 #       - name: Run cargo test subset
 #         run: |
 #           cargo test
-#             -p elkodon_pal_concurrency_primitives 
-#             -p elkodon_pal_posix
-#             -p elkodon_bb_container
-#             -p elkodon_bb_elementary
-#             -p elkodon_bb_lock_free
-#             -p elkodon_bb_log
-#             -p elkodon_bb_memory
-#             -p elkodon_bb_system_types
-#             -p elkodon_bb_testing
+#             -p iceoryx2_pal_concurrency_primitives 
+#             -p iceoryx2_pal_posix
+#             -p iceoryx2_bb_container
+#             -p iceoryx2_bb_elementary
+#             -p iceoryx2_bb_lock_free
+#             -p iceoryx2_bb_log
+#             -p iceoryx2_bb_memory
+#             -p iceoryx2_bb_system_types
+#             -p iceoryx2_bb_testing
 #             --lib --bins --tests
