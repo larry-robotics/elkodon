@@ -2,11 +2,12 @@
 
 cd $(git rev-parse --show-toplevel)
 
+REQUIRED_LICENSE_HEADER="SPDX-License-Identifier: Apache-2.0"
 RET_VAL=0
 
 check_license_header() {
     FILES=$(find . -type f -iwholename "${FILE_SUFFIX}" )
-    CHECK_LICENSE="${COMMENT_SYMBOL} SPDX-License-Identifier: Apache-2.0"
+    CHECK_LICENSE="${COMMENT_SYMBOL} ${REQUIRED_LICENSE_HEADER}"
 
     for FILE in $FILES
     do

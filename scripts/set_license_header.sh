@@ -2,58 +2,43 @@
 
 cd $(git rev-parse --show-toplevel)
 
-LICENSE_PREFIX="SPDX-License-Identifier:"
-LICENSE=$1
-
 set_license_header() {
     FILES=$(find . -type f -iwholename "${FILE_SUFFIX}" )
 
     for FILE in $FILES
     do
-        HAS_LICENSE_IDENTIFIER=$(cat $FILE | head -n 1 | grep -E "^${COMMENT_SYMBOL} ${LICENSE_PREFIX}" | wc -l)
-        if [[ "$HAS_LICENSE_IDENTIFIER" == "1" ]]
-        then
-            sed -i "1c ${COMMENT_SYMBOL} ${LICENSE_PREFIX} ${LICENSE}" $FILE
-        else
-            sed -i "1i ${COMMENT_SYMBOL} ${LICENSE_PREFIX} ${LICENSE}" $FILE
-        fi
-
-        HAS_NEW_LINE=$(cat $FILE | head -n 2 | tail -n 1 | grep -E "^[ ]*\$" | wc -l)
-        if [[ "$HAS_NEW_LINE" == "0" ]]
-        then
-            sed -i '2i\
-' $FILE
-        fi
+        sed -i "1s/^/\n/" $FILE
+        sed -i "1s/^/$C SPDX-License-Identifier: Apache-2.0 OR MIT\n/" $FILE
+        sed -i "1s/^/$C\n/" $FILE
+        sed -i "1s/^/$C which is available at https:\/\/opensource.org\/licenses\/MIT.\n/" $FILE
+        sed -i "1s/^/$C https:\/\/www.apache.org\/licenses\/LICENSE-2.0, or the MIT license\n/" $FILE
+        sed -i "1s/^/$C terms of the Apache Software License 2.0 which is available at\n/" $FILE
+        sed -i "1s/^/$C This program and the accompanying materials are made available under the\n/" $FILE
+        sed -i "1s/^/$C\n/" $FILE
+        sed -i "1s/^/$C information regarding copyright ownership.\n/" $FILE
+        sed -i "1s/^/$C See the NOTICE file(s) distributed with this work for additional\n/" $FILE
+        sed -i "1s/^/$C\n/" $FILE
+        sed -i "1s/^/$C Copyright (c) 2023 Contributors to the Eclipse Foundation\n/" $FILE
     done
 }
 
 set_rust() {
     FILE_SUFFIX="*.rs"
-    COMMENT_SYMBOL="//"
+    C="\/\/"
     set_license_header
 }
 
 set_shell() {
     FILE_SUFFIX="*.sh"
-    COMMENT_SYMBOL="#"
+    C="#"
     set_license_header
 }
 
 set_toml() {
     FILE_SUFFIX="*.toml"
-    COMMENT_SYMBOL="#"
+    C="#"
     set_license_header
 }
-
-if [[ -z $1 ]]
-then
-    echo
-    echo Usage: $0 LICENSE_SPDX_IDENTIFIER
-    echo
-    exit 1
-fi
-
-echo Setting license to: $LICENSE
 
 set_rust
 set_shell
