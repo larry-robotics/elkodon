@@ -23,7 +23,7 @@ RUN choco install -y rustup.install; \
     Remove-Item C:\ProgramData\chocolatey\logs\* -Force -Recurse ; \
     Remove-Item $Env:localappdata\Nuget\Cache\*nupkg ; \
     Remove-Item $Env:temp\* -Force -Recurse ; \
-    mkdir "C:\Temp\elkodon\services" ; \
-    mkdir "C:\Temp\elkodon\tests" ; \
-    mkdir "C:\Temp\elkodon\shm" ; \
+    mkdir "C:\Temp\iceoryx2\services" ; \
+    mkdir "C:\Temp\iceoryx2\tests" ; \
+    mkdir "C:\Temp\iceoryx2\shm" ; \
     icacls "C:\Temp" /t /c /grant Everyone:F

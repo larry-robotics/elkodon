@@ -1,8 +1,8 @@
-# Elkodon Global Configuration
+# Iceoryx2 Global Configuration
 
 For streamlined multi-instance operation and interference-free communication,
-Elkodon introduces global configuration settings. It enables the concurrent
-execution of multiple Elkodon setups on the same machine or within a single
+Iceoryx2 introduces global configuration settings. It enables the concurrent
+execution of multiple Iceoryx2 setups on the same machine or within a single
 process by employing distinct configurations.
 
 ## Sections
@@ -18,8 +18,8 @@ Adjusting `global` settings ensures a non-interfering setup.
 
 ### Global
 
- * `global.root_path` - [string]: Defines the path for all Elkodon files and directories.
- * `global.prefix` - [string]: Prefix that is used for every file Elkodon creates.
+ * `global.root_path` - [string]: Defines the path for all Iceoryx2 files and directories.
+ * `global.prefix` - [string]: Prefix that is used for every file Iceoryx2 creates.
  * `global.service.directory` - [string]: Specifies the path for service-related files under `global.root_path`.
  * `global.service.publisher_data_segment_suffix` - [string]: Suffix added to the publisher's data segment.
  * `global.service.static_config_storage_suffix` - [string]: Suffix for static service configuration files.

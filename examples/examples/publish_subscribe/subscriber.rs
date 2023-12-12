@@ -11,7 +11,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use core::time::Duration;
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 use transmission_data::TransmissionData;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let subscriber = service.subscriber().create()?;
 
-    while let ElkEvent::Tick = Elk::wait(CYCLE_TIME) {
+    while let Iox2Event::Tick = Iox2::wait(CYCLE_TIME) {
         while let Some(sample) = subscriber.receive()? {
             println!("received: {:?}", *sample);
         }

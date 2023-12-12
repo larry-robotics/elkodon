@@ -2,7 +2,7 @@
 
 ## Running The Example
 
-Here's an improved description for the publish-subscribe example of Elkodon:
+Here's an improved description for the publish-subscribe example of Iceoryx2:
 
 "This example vividly illustrates a robust publisher-subscriber communication
 pattern between two separate processes. The publisher diligently sends two
@@ -28,5 +28,5 @@ cargo run --example publish_subscribe_publisher
 ```
 
 Feel free to run multiple instances of publisher or subscriber processes
-simultaneously to explore how Elkodon handles publisher-subscriber communication
+simultaneously to explore how Iceoryx2 handles publisher-subscriber communication
 efficiently.

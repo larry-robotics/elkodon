@@ -57,7 +57,7 @@
   * add detection when subscriber returns non-received samples
 * [ ] Huge Communication Setup Support
   * handle the restriction of a max amount of posix shared memory objects of an OS
-  * add `elkodon_cal` implementations that are using the `SharedMemoryGroup`
+  * add `iceoryx2_cal` implementations that are using the `SharedMemoryGroup`
 
 ## Platform Support
 
@@ -108,7 +108,7 @@
   * all error classes should implement `std::error::Error` for the non `no_std` build  (maybe use `thiserror`)
   * should be compatible with `anyhow` and `eyre`
   * explore error pyramid concept
-* [ ] Evaluate crate `log` and `tracing` as backend for elkodon logger
+* [ ] Evaluate crate `log` and `tracing` as backend for iceoryx2 logger
   * `log` / `tracing` / `console_logger` one of them should be the default logger, depending on feature flagA
 * [ ] Use `&str` and UTF-8 in `ServiceName`, there is no need for a length or ASCII restriction
 * [ ] Rename `enable_safe_overflow` into `set_safe_overflow` in `ServiceBuilder` `publish_subscribe`

@@ -11,7 +11,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 use core::time::Duration;
-use elkodon::prelude::*;
+use iceoryx2::prelude::*;
 
 const CYCLE_TIME: Duration = Duration::from_secs(1);
 
@@ -24,7 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut listener = event.listener().create()?;
 
-    while let ElkEvent::Tick = Elk::wait(Duration::ZERO) {
+    while let Iox2Event::Tick = Iox2::wait(Duration::ZERO) {
         if let Ok(events) = listener.timed_wait(CYCLE_TIME) {
             for event_id in events {
                 println!("event was triggered with id: {:?}", event_id);

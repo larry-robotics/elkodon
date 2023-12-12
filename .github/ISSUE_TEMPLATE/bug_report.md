@@ -20,7 +20,7 @@ Output of: `rustc --version`
 **Cargo version:**
 Output of: `cargo --version`
 
-**elkodon version:**
+**iceoryx2 version:**
 E.g. `v1.2.3` or `main` branch
 
 **Observed result or behaviour:**

@@ -24,7 +24,7 @@
 ### Error Handling
 
  * Never return `Err(...)`, always use `fail!` macro.
-   * Elkodon shall always log a message to `DEBUG` whenever an `Err(...)` is.
+   * Iceoryx2 shall always log a message to `DEBUG` whenever an `Err(...)` is.
    * When providing for instance `self` as origin, the current state of the object that caused the
      problem is logged.
 
@@ -37,7 +37,7 @@
    }
 
    // good
-   use elkodon_bb_log::fail;
+   use iceoryx2_bb_log::fail;
 
    impl MyStruct {
      fn do_stuff(&self) -> Result<u64, u64> {
@@ -50,7 +50,7 @@
 ### Fatal Error Handling
 
  * Never call `panic!(...)` directly, always use the `fatal_panic!` macro.
-   * Elkodon shall always log a message to `FATAL` whenever a panic occurs.
+   * Iceoryx2 shall always log a message to `FATAL` whenever a panic occurs.
    * When providing for instance `self` as origin, the current state of the object that caused the
      problem is logged.
 
@@ -95,14 +95,14 @@
 
 ### Testing
 
- * Always use the `assert_that!` macro from `elkodon_bb_testing`
+ * Always use the `assert_that!` macro from `iceoryx2_bb_testing`
 
 ### Timing tests
 
  * Never test a maximum runtime in a unit or integration test.
  * Test at least runtimes with `assert_that!(start.elapsed(), time_at_least TIMEOUT)`
  * Do not wait for events (indefinitely), use `assert_that!(|| { some_condition }, block_until_true)`
-    * It starts a `elkodon_bb_testing::watchdog::Watchdog` in the background that terminates the
+    * It starts a `iceoryx2_bb_testing::watchdog::Watchdog` in the background that terminates the
         test when it deadlocks.
- * If the test can deadlock, instantiate a `elkodon_bb_testing::watchdog::Watchdog` in the
+ * If the test can deadlock, instantiate a `iceoryx2_bb_testing::watchdog::Watchdog` in the
     beginning of the test.

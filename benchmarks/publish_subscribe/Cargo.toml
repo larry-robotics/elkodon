@@ -1,13 +1,13 @@
 [package]
 name = "benchmark_publish_subscribe"
-description = "Elkodon: benchmark for publish-subscribe messaging pattern"
+description = "Iceoryx2: benchmark for publish-subscribe messaging pattern"
 rust-version = { workspace = true }
 version = { workspace = true }
 repository = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
-elkodon_bb_log = { workspace = true }
-elkodon = { workspace = true }
-elkodon_bb_posix = { workspace = true }
-elkodon_bb_container = { workspace = true }
+iceoryx2_bb_log = { workspace = true }
+iceoryx2 = { workspace = true }
+iceoryx2_bb_posix = { workspace = true }
+iceoryx2_bb_container = { workspace = true }

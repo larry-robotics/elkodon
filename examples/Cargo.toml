@@ -1,13 +1,13 @@
 [package]
 name = "example"
-description = "Elkodon examples"
+description = "Iceoryx2 examples"
 rust-version = { workspace = true }
 version = { workspace = true }
 repository = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
-elkodon = { workspace = true }
+iceoryx2 = { workspace = true }
 
 [lib]
 name = "transmission_data"
